@@ -10,6 +10,8 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import org.apache.xml.serialize.OutputFormat;
+
 public class MRS {
 	
 	public String ltop = "";
@@ -192,6 +194,10 @@ public class MRS {
 			chars.append(ch, start, length);
 		}
 
+	}
+	
+	public void printXML() {
+		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
 	}
 	
 	public static void main(String args[]) 
