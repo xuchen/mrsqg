@@ -1,21 +1,34 @@
 package de.uni_saarland.coli.MrsQG;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Stack;
 
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 
 public class MRS {
 	
+	// h1
 	public String ltop = "";
+	// 1
+	public String label_vid = "";
+	// 2
 	public String index = "";
+	// 2
+	public String index_vid = "";
 	public ArrayList <ElementaryPredication> ep;
 	public ArrayList<HCONS> hcons;
 	private MrsParser parser = new MrsParser();
@@ -26,9 +39,22 @@ public class MRS {
 	}
 	
 	private class HCONS {
+//		;;; <!ELEMENT hcons (hi, lo)>
+//		;;; <!ATTLIST hcons 
+//		;;;          hreln (qeq|lheq|outscopes) #REQUIRED >
+//		;;;
+//		;;; <!ELEMENT hi (var)>
+//		;;; <!ELEMENT lo (label|var)>
+
+		
 		public String rel = null;
 		public String hi = null;
 		public String lo = null;
+		public Var hi_var = null;
+		
+		// could be either var or label
+		public Var lo_var = null;
+		public String lo_label = null;
 		
 		public HCONS(String rel) {
 			this.rel = rel;
@@ -40,6 +66,42 @@ public class MRS {
 			} else {
 				return false;
 			}
+		}
+		
+		public void serializeXML (ContentHandler hd) {
+			//<hcons hreln='qeq'><hi><var vid='4' sort='h'></var></hi><lo><var vid='7' sort='h'></var></lo></hcons>
+			AttributesImpl atts = new AttributesImpl();
+			atts.addAttribute("", "", "hreln", "CDATA", rel);
+			try {
+				// <hcons>
+				hd.startElement("", "", "hcons", atts);
+				// <hi>
+				atts.clear();
+				hd.startElement("", "", "hi", atts);
+				hi_var.serializeXML(hd);
+				hd.endElement("", "", "hi");
+				// <lo>
+				atts.clear();
+				hd.startElement("", "", "lo", atts);
+				if (lo_var != null) {
+					lo_var.serializeXML(hd);
+				} else if (lo_label != null) {
+					// <label>
+					atts.clear();
+					atts.addAttribute("", "", "vid", "CDATA", lo_label);
+					hd.startElement("", "", "label", atts);
+					hd.endElement("", "", "label");
+				} else {
+					
+					System.err.println("Error, <lo> must have either <lo> or <label>");
+				}
+				hd.endElement("", "", "lo");
+				
+				hd.endElement("", "", "hcons");
+			} catch (SAXException e) {
+				e.printStackTrace();
+			}
+			
 		}
 	}
 
@@ -102,9 +164,16 @@ public class MRS {
 				// top element, indicating the LTOP of MRS
 				if (parent.equals("mrs")) {
 					ltop = "h"+vid;
+					label_vid = vid;
 				} else if (parent.equals("ep")) {
 					// label for <ep>
 					currentEP.processStartElement(qName, atts);
+				} else if (parent.equals("lo")) {
+					HCONS h = hcons.get(hcons.size()-1);
+					h.lo_label = atts.getValue("vid");
+					h.lo = h.lo_label;
+					System.err.println("Warning: <label> inisde <lo>. " +
+							"not in sample. check the code!");
 				} else {
 					System.err.println("file format error: unknown" +
 							"element label");
@@ -116,6 +185,7 @@ public class MRS {
 				// top element, indicating the INDEX of MRS
 				if (parent.equals("mrs")) {
 					index = vid;
+					index_vid = vid;
 				} else if (parent.equals("fvpair")) {
 					// label for <fvpair>
 					if (inEP) {
@@ -129,12 +199,14 @@ public class MRS {
 					HCONS h = hcons.get(hcons.size()-1);
 					// should be sth. like "h11"
 					h.hi = sort+vid;
+					h.hi_var = new Var(atts);
 				} else if (parent.equals("lo")) {
 					String sort = atts.getValue("sort");
 					// get the last one in the list
 					HCONS h = hcons.get(hcons.size()-1);
 					// should be sth. like "h11"
 					h.lo = sort+vid;
+					h.lo_var = new Var(atts);
 				} else {
 					System.err.println("file format error: unknown" +
 							"element var");
@@ -198,6 +270,50 @@ public class MRS {
 	
 	public void printXML() {
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
+		of.setIndent(1);
+		of.setIndenting(true);
+//		FileOutputStream fos = null;
+//		try {
+//			fos = new FileOutputStream("");
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
+		XMLSerializer serializer = new XMLSerializer(System.out,of);
+		// SAX2.0 ContentHandler.
+		ContentHandler hd;
+		try {
+			hd = serializer.asContentHandler();
+			hd.startDocument();
+			AttributesImpl atts = new AttributesImpl();
+			// <mrs>
+			hd.startElement("", "", "mrs", atts);
+			// <label  vid='1'/>
+			atts.clear();
+			atts.addAttribute("", "", "vid", "CDATA", label_vid);
+			hd.startElement("", "", "label", atts);
+			hd.endElement("", "", "label");
+			// <var vid='2'/>
+			atts.clear();
+			atts.addAttribute("", "", "vid", "CDATA", index_vid);
+			hd.startElement("", "", "var", atts);
+			hd.endElement("", "", "var");
+			// <ep>
+			for (ElementaryPredication e: ep) {
+				e.serializeXML(hd);
+			}
+			// <hcons>
+			for (HCONS h: hcons) {
+				h.serializeXML(hd);
+			}
+			
+			hd.endElement("", "", "mrs");
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	public static void main(String args[]) 
@@ -205,5 +321,6 @@ public class MRS {
 		MRS m = new MRS();
 		m.parser.main(args);
 		System.out.println("done");
+		m.printXML();
 	}
 }
