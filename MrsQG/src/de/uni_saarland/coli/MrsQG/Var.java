@@ -1,6 +1,7 @@
 package de.uni_saarland.coli.MrsQG;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 import org.xml.sax.Attributes;
 
@@ -18,34 +19,32 @@ public class Var {
 	public String sort = null;
 	// label = sort+vid
 	public String label = null;
-	public ArrayList<ExtraPair> extrapair = null;
-	public ExtraPair currentExtraPair = null;
+//	;;; <!ELEMENT extrapair (path,value)>
+//	;;; <!ELEMENT path (#PCDATA)>
+//	;;; <!ELEMENT value (#PCDATA)>
+	public TreeMap<String, String> extrapair = null;
+	private String path;
+
 	
 	public Var(Attributes atts) {
 		vid = atts.getValue("vid");
 		sort = atts.getValue("sort");
 		label = sort+vid;
-		extrapair = new ArrayList<ExtraPair>();
+		extrapair = new TreeMap<String, String>();
 	}
 	
 	public void newExtraPair () {
-		currentExtraPair = new ExtraPair();
-		extrapair.add(currentExtraPair);
+
 	}
 	
 	public void updatePath (String path) {
-		currentExtraPair.path = path;
+		this.path = path;
 	}
 	
 	public void updateValue (String value) {
-		currentExtraPair.value = value;
+		extrapair.put(path, value);
 	}
 	
-//	;;; <!ELEMENT extrapair (path,value)>
-//	;;; <!ELEMENT path (#PCDATA)>
-//	;;; <!ELEMENT value (#PCDATA)>
-	private class ExtraPair {
-		public String path = null;
-		public String value = null;
-	}
+
+
 }
