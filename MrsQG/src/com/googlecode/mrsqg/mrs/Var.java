@@ -1,4 +1,4 @@
-package com.googlecode.mrsqg.MRS;
+package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
 import java.util.TreeMap;

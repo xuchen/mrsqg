@@ -1,4 +1,4 @@
-package com.googlecode.mrsqg.MRS;
+package com.googlecode.mrsqg.mrs;
 
 import java.io.FileReader;
 import java.io.IOException;
