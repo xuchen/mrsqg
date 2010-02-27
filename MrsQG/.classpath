@@ -10,5 +10,6 @@
 	<classpathentry kind="lib" path="lib/maxent.jar"/>
 	<classpathentry kind="lib" path="lib/stanford-ner.jar"/>
 	<classpathentry kind="lib" path="lib/trove.jar"/>
+	<classpathentry kind="lib" path="lib/jwnl.jar"/>
 	<classpathentry kind="output" path="src"/>
 </classpath>
