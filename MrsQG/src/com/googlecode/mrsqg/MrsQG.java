@@ -1,5 +1,9 @@
 package com.googlecode.mrsqg;
 
+import com.googlecode.mrsqg.nlp.indices.FunctionWords;
+import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
+import com.googlecode.mrsqg.nlp.indices.Prepositions;
+import com.googlecode.mrsqg.nlp.indices.WordFrequencies;
 
 import java.text.SimpleDateFormat;
 import org.apache.log4j.PropertyConfigurator;
@@ -9,6 +13,8 @@ import com.googlecode.mrsqg.nlp.NETagger;
 import com.googlecode.mrsqg.nlp.OpenNLP;
 import com.googlecode.mrsqg.nlp.SnowballStemmer;
 import com.googlecode.mrsqg.nlp.StanfordNeTagger;
+import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
+import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
 
 
 public class MrsQG {
@@ -65,6 +71,9 @@ public class MrsQG {
 				log.info("MrsQG ended at "+getTimestamp());
 				System.exit(0);
 			}
+			MrsTransformer t = new MrsTransformer();
+			// possibly fail because of dict is not loaded
+			t.preprocess(input);
 		}
 	}
 	
@@ -93,6 +102,41 @@ public class MrsQG {
 		log = org.apache.log4j.Logger.getLogger(MrsQG.class);
 		log.info("MrsQG started at "+getTimestamp());
 		
+		// create WordNet dictionary
+		System.out.println("Creating WordNet dictionary...");
+		if (!WordNet.initialize(dir +
+				"res/ontologies/wordnet/file_properties.xml"))
+			System.err.println("Could not create WordNet dictionary.");
+		
+		// init wordnet
+		Ontology wordNet = new WordNet();
+		// - dictionaries for term extraction
+		MrsTransformer.clearDictionaries();
+		MrsTransformer.addDictionary(wordNet);
+		
+
+		// load function words (numbers are excluded)
+		System.out.println("Loading function verbs...");
+		if (!FunctionWords.loadIndex(dir +
+				"res/indices/functionwords_nonumbers"))
+			System.err.println("Could not load function words.");
+		
+		// load prepositions
+		System.out.println("Loading prepositions...");
+		if (!Prepositions.loadIndex(dir +
+				"res/indices/prepositions"))
+			System.err.println("Could not load prepositions.");
+		
+		// load irregular verbs
+		System.out.println("Loading irregular verbs...");
+		if (!IrregularVerbs.loadVerbs(dir + "res/indices/irregularverbs"))
+			System.err.println("Could not load irregular verbs.");
+		
+		// load word frequencies
+		System.out.println("Loading word frequencies...");
+		if (!WordFrequencies.loadIndex(dir + "res/indices/wordfrequencies"))
+			System.err.println("Could not load word frequencies.");
+
 		// create tokenizer
 		System.out.println("Creating tokenizer...");
 		if (!OpenNLP.createTokenizer(dir +
@@ -118,6 +162,12 @@ public class MrsQG {
 				dir + "res/nlp/postagger/opennlp/tagdict"))
 			System.err.println("Could not create OpenNLP POS tagger.");
 		
+		// create chunker
+		System.out.println("Creating chunker...");
+		if (!OpenNLP.createChunker(dir +
+				"res/nlp/phrasechunker/opennlp/EnglishChunk.bin.gz"))
+			System.err.println("Could not create chunker.");
+		
 		// create named entity taggers
 		System.out.println("Creating NE taggers...");
 		NETagger.loadListTaggers(dir + "res/nlp/netagger/lists/");
@@ -127,7 +177,7 @@ public class MrsQG {
 //			System.err.println("Could not create OpenNLP NE tagger.");
 		if (!StanfordNeTagger.isInitialized() && !StanfordNeTagger.init())
 			System.err.println("Could not create Stanford NE tagger.");
-		
+				
 		System.out.println("  ...done");
 	}
 	
