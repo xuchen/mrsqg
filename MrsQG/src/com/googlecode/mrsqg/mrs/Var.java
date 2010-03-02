@@ -18,16 +18,35 @@ public class Var {
 //	;;; <!ATTLIST var
 //	;;;          vid  CDATA #REQUIRED 
 //	;;;          sort (x|e|h|u|l) #IMPLIED >	
-	public String vid = null;
-	public String sort = null;
+	private String vid = null;
+	private String sort = null;
 	// label = sort+vid
-	public String label = null;
+	private String label = null;
 //	;;; <!ELEMENT extrapair (path,value)>
 //	;;; <!ELEMENT path (#PCDATA)>
 //	;;; <!ELEMENT value (#PCDATA)>
-	public TreeMap<String, String> extrapair = null;
+	private TreeMap<String, String> extrapair = null;
 	private String path;
+	
+	public String getVid() {return vid;}
+	public String getSort() {return sort;}
+	public String getLabel() {return label;}
+	public String getPath() {return path;}
+	public TreeMap<String, String> getExtrapair() {return extrapair;}
 
+	/**
+	* Copy constructor.
+	*/
+	public Var(Var old) {
+		if (old == null) return;
+		this.vid = old.getVid();
+		this.sort = old.getSort();
+		this.label = old.getLabel();
+		this.path = old.getPath();
+		// values and keys of this TreeMap are of class String.
+		// so shallow copy equals deep copy in this case.
+		this.extrapair = (TreeMap<String, String>)old.getExtrapair().clone();
+	}
 	
 	public Var(Attributes atts) {
 		vid = atts.getValue("vid");
