@@ -25,6 +25,8 @@ import net.didion.jwnl.data.POS;
  * 
  * @author Nico Schlaefer
  * @version 2008-01-23
+ * 
+ * X. Yao: Add more class members to support FSC output
  */
 public class Term implements Serializable {
 	/** Version number used during deserialization. */
@@ -35,6 +37,11 @@ public class Term implements Serializable {
 	
 	/** The textual representation of the term. */
 	private String text;
+	
+	/** position in a sentence, such as "Al Gore" has
+	 * from = 0, to = 2 in sentence "Al Gore was born in Washington DC."*/
+	private int from;
+	private int to;
 	/** The lemma of the term. */
 	private String lemma;
 	/**
@@ -42,6 +49,11 @@ public class Term implements Serializable {
 	 * it comprises multiple tokens.
 	 */
 	private String pos;
+	/**
+	 * POS for the FSC format. e.g. "Al(NNP) Gore(NNP)" is an NP but FSC doesn't support this.
+	 * Thus the pos_fsc is set to NNP for this term.
+	 */
+	private String pos_fsc;
 	/** The named entity types of the term (optional). */
 	private String[] neTypes = new String[0];
 	/** Relative frequency of the term. */
@@ -53,8 +65,11 @@ public class Term implements Serializable {
 	
 	// Getters/Setters
 	public String getText() {return text;}
+	public int getFrom() {return from;}
+	public int getTo() {return to;}
 	public String getLemma() {return lemma;}
 	public String getPos() {return pos;}
+	public String getPosFSC() {return pos_fsc;}
 	public String[] getNeTypes() {return neTypes;}
 	public void setNeTypes(String[] neTypes) {this.neTypes = neTypes;}
 	public double getRelFrequency() {return relFrequency;}
@@ -89,6 +104,13 @@ public class Term implements Serializable {
 	public Term(String text, String pos, String[] neTypes) {
 		this(text, pos);
 		this.neTypes = neTypes;
+	}
+	
+	public Term(String text, String pos, String[] neTypes, int from, int to) {
+		this(text, pos);
+		this.neTypes = neTypes;
+		this.from = from;
+		this.to = to;
 	}
 	
 	public Term(String text, String pos, String[] neTypes, String lemma) {
@@ -221,6 +243,41 @@ public class Term implements Serializable {
 		}
 		
 		return simScore;
+	}
+	
+	/**
+	 * Set the pos_fsc field of this term.
+	 */
+	public void setPosFSC(String[] pos) {
+		// if this is not a named entity, we'll use this.pos rather than this.pos_fsc 
+		if (this.neTypes == null) return;
+		if (this.from == this.to) {
+			this.pos_fsc = pos[this.from];
+			return;
+		}
+		
+		Set<String> posSet = new HashSet<String>();
+		for (int i=this.from; i<this.to; i++) {
+			posSet.add(pos[i]);
+		}
+		
+		// All has the same POS. Such as "Al Gore", are all NNP.
+		if (posSet.size() == 1) {
+			this.pos_fsc = pos[this.from];
+			return;
+		} else {
+			// we should have used the CollinsHeadFinder in Stanford parser
+			// to find out the POS tag of the head. But there are two issues:
+			// 1. the POS returned might not be compatible with the POS from OpenNLP
+			// 2. it's not worth using a heavy parser for this simple function
+			String[] posL = posSet.toArray(new String[posSet.size()]);
+			// Ascending order: NN, NNP, NNPS, NNS
+			Arrays.sort(posL);
+			this.pos_fsc = posL[posL.length];
+			System.err.println("Warning: different POS in term. Check your code to" +
+					"make sure this is right"+posSet);
+			return;
+		}
 	}
 	
 	/**

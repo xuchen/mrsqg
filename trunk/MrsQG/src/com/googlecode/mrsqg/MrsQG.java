@@ -26,7 +26,7 @@ public class MrsQG {
 	
 	/**	the DateFormat object used in getTimespamt
 	 */
-	private static SimpleDateFormat timestampFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); 
+	private static SimpleDateFormat timestampFormatter; 
 	
 	/**
 	 * @return	a timestamp String for logging
@@ -71,9 +71,10 @@ public class MrsQG {
 				log.info("MrsQG ended at "+getTimestamp());
 				System.exit(0);
 			}
-			MrsTransformer t = new MrsTransformer();
+			Preprocessor t = new Preprocessor();
 			// possibly fail because of dict is not loaded
 			t.preprocess(input);
+			t.outputFSCbyTerms();
 		}
 	}
 	
@@ -95,6 +96,8 @@ public class MrsQG {
 	 * @param dir directory of MrsQG
 	 */
 	public MrsQG(String dir) {
+		
+		timestampFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		this.dir = dir;
 		
 		// get logging working
@@ -111,8 +114,8 @@ public class MrsQG {
 		// init wordnet
 		Ontology wordNet = new WordNet();
 		// - dictionaries for term extraction
-		MrsTransformer.clearDictionaries();
-		MrsTransformer.addDictionary(wordNet);
+		Preprocessor.clearDictionaries();
+		Preprocessor.addDictionary(wordNet);
 		
 
 		// load function words (numbers are excluded)
