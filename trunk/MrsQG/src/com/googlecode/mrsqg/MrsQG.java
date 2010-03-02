@@ -63,6 +63,7 @@ public class MrsQG {
 	 * <p>The command <code>exit</code> can be used to quit the program.</p>
 	 */
 	public void commandLine() {
+		Preprocessor p = null;
 		while (true) {
 			System.out.println("Input: ");
 			String input = readLine().trim();
@@ -71,10 +72,17 @@ public class MrsQG {
 				log.info("MrsQG ended at "+getTimestamp());
 				System.exit(0);
 			}
-			Preprocessor t = new Preprocessor();
-			// possibly fail because of dict is not loaded
-			t.preprocess(input);
-			t.outputFSCbyTerms();
+			
+			if (input.startsWith("mrx: ")||input.startsWith("MRX: ")) {
+				String fileLine = input.substring(5).trim();
+				MrsTransformer t = new MrsTransformer(fileLine, p);
+				t.transform();
+			} else {
+				p = new Preprocessor();
+				// possibly fail because of dict is not loaded
+				p.preprocess(input);
+				p.outputFSCbyTerms();
+			}
 		}
 	}
 	

@@ -14,28 +14,64 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
+import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+
+import com.googlecode.mrsqg.Preprocessor;
 
 
 public class MRS {
 	
+	private static Logger log = Logger.getLogger(MRS.class);
 	// h1
-	public String ltop = "";
+	private String ltop = "";
 	// 1
-	public String label_vid = "";
+	private String label_vid = "";
 	// 2
-	public String index = "";
+	private String index = "";
 	// 2
-	public String index_vid = "";
-	public ArrayList <ElementaryPredication> ep;
-	public ArrayList<HCONS> hcons;
+	private String index_vid = "";
+	private ArrayList <ElementaryPredication> eps;
+	private ArrayList<HCONS> hcons;
 	private MrsParser parser = new MrsParser();
+	
+	public String getLTOP() {return ltop;}
+	public String getLabelVid() {return label_vid;}
+	public String getIndex() {return index;}
+	public String getIndexVid() {return index_vid;} 
+	public ArrayList <ElementaryPredication> getEps() {return eps;}
+	public ArrayList<HCONS> getHcons() {return hcons;}
 
 	public MRS() {
 		hcons = new ArrayList<HCONS>();
-		ep = new ArrayList<ElementaryPredication>();
+		eps = new ArrayList<ElementaryPredication>();
 	}
+	
+	public MRS(String file) {
+		this();
+		parser.parse(file);
+	}
+	
+	/**
+	* Copy constructor.
+	*/
+	public MRS(MRS old) {
+		if (old == null) return;
+		this.ltop = old.getLabelVid();
+		this.label_vid = old.getLabelVid();
+		this.index = old.getIndex();
+		this.index_vid = old.getIndexVid();
+		this.eps = new ArrayList<ElementaryPredication>();
+		for (ElementaryPredication ep:old.getEps()) {
+			this.eps.add(new ElementaryPredication(ep));
+		}
+		this.hcons = new ArrayList<HCONS>();
+		for (HCONS h:old.getHcons()) {
+			this.hcons.add(new HCONS(h));
+		}
+	}
+
 	
 	private class HCONS {
 //		;;; <!ELEMENT hcons (hi, lo)>
@@ -46,14 +82,34 @@ public class MRS {
 //		;;; <!ELEMENT lo (label|var)>
 
 		
-		public String rel = null;
-		public String hi = null;
-		public String lo = null;
-		public Var hi_var = null;
+		private String rel = null;
+		private String hi = null;
+		private String lo = null;
+		private Var hi_var = null;
 		
 		// could be either var or label
-		public Var lo_var = null;
-		public String lo_label = null;
+		private Var lo_var = null;
+		private String lo_label = null;
+		
+		public String getRel() {return rel;}
+		public String getHi() {return hi;}
+		public String getLo() {return lo;}
+		public Var getHiVar() {return hi_var;}
+		public Var getLoVar() {return lo_var;}
+		public String getLoLabel() {return lo_label;}
+		
+		/**
+		* Copy constructor.
+		*/
+		public HCONS(HCONS old) {
+			if (old == null) return;
+			this.rel = old.getRel();
+			this.hi = old.getHi();
+			this.lo = old.getLo();
+			this.hi_var = new Var(old.getHiVar());
+			this.lo_var = new Var(old.getLoVar());
+			this.lo_label = old.getLoLabel();
+		}
 		
 		public HCONS(String rel) {
 			this.rel = rel;
@@ -118,18 +174,18 @@ public class MRS {
 			this.chars = new StringBuilder();
 		}
 		
-		public void main(String args[]) 
-			throws Exception {
-			XMLReader xr = XMLReaderFactory.createXMLReader();
-			MrsParser handler = new MrsParser();
-			xr.setContentHandler(handler);
-			xr.setErrorHandler(handler);
-			
-			// Parse each file provided on the
-			// command line.
-			for (int i = 0; i < args.length; i++) {
-			    FileReader r = new FileReader(args[i]);
-			    xr.parse(new InputSource(r));
+		public void parse(String file) {
+			try {
+				XMLReader xr = XMLReaderFactory.createXMLReader();
+				MrsParser handler = new MrsParser();
+				xr.setContentHandler(handler);
+				xr.setErrorHandler(handler);
+				
+
+				FileReader r = new FileReader(file);
+				xr.parse(new InputSource(r));
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 	
 		}
@@ -229,7 +285,7 @@ public class MRS {
 			} else if (qName.equals("ep")) {
 				inEP = true;
 				ElementaryPredication e = new ElementaryPredication();
-				ep.add(e);
+				eps.add(e);
 				currentEP = e;
 				currentEP.processStartElement(qName, atts);
 			} else if (inEP == true) {
@@ -267,6 +323,22 @@ public class MRS {
 
 	}
 	
+	public ArrayList<ElementaryPredication> getEPS (int from, int to) {
+		ArrayList<ElementaryPredication> epsList= new ArrayList<ElementaryPredication>();
+		
+		for (ElementaryPredication ep:this.eps) {
+			if (ep.getFrom()==from && ep.getTo()==to) {
+				epsList.add(ep);
+			}
+		}
+		
+		if (epsList.size() == 0) {
+			log.error(String.format("EPS(%d-%d) not found.", from, to));
+		}
+		
+		return epsList;
+	}
+	
 	public void printXML() {
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
 		of.setIndent(1);
@@ -297,7 +369,7 @@ public class MRS {
 			hd.startElement("", "", "var", atts);
 			hd.endElement("", "", "var");
 			// <ep>
-			for (ElementaryPredication e: ep) {
+			for (ElementaryPredication e: eps) {
 				e.serializeXML(hd);
 			}
 			// <hcons>
@@ -318,8 +390,10 @@ public class MRS {
 	public static void main(String args[]) 
 	throws Exception {
 		MRS m = new MRS();
-		m.parser.main(args);
-		System.out.println("done");
-		m.printXML();
+		for(String file:args) {
+			m.parser.parse(file);
+			System.out.println("done");
+			m.printXML();
+		}
 	}
 }

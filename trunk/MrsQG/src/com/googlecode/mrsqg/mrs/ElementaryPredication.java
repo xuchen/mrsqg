@@ -18,26 +18,72 @@ public class ElementaryPredication {
 //	          surface   CDATA #IMPLIED
 //	      base      CDATA #IMPLIED >
 
-	public int cfrom = -1;
-	public int cto = -1;
-	public String surface = null;
-	public String base = null;
-	public String pred = null;
-	public String spred = null;
-	public String label = null;
-	public String label_vid = null;
-	public ArrayList<FvPair> fvpair = null;
-	public FvPair currentFvPair = null;
+	private int cfrom = -1;
+	private int cto = -1;
+	private String surface = null;
+	private String base = null;
+	private String pred = null;
+	private String spred = null;
+	private String label = null;
+	private String label_vid = null;
+	private ArrayList<FvPair> fvpair = null;
+	private FvPair currentFvPair = null;
+	
+	public int getFrom() {return cfrom;}
+	public int getTo() {return cto;}
+	public String getSurface() {return surface;}
+	public String getBase() {return base;}
+	public String getPred() {return pred;}
+	public String getSpred() {return spred;}
+	public String getLabel() {return label;}
+	public String getLabelVid() {return label_vid;}
+	public ArrayList<FvPair> getFvpair() {return fvpair;}
+	
+	/**
+	* Copy constructor.
+	*/
+	public ElementaryPredication(ElementaryPredication old) {
+		if (old == null) return;
+		this.cfrom = old.getFrom();
+		this.cto = old.getTo();
+		this.surface = old.getSurface();
+		this.base= old.getBase();
+		this.pred = old.getPred();
+		this.spred = old.getSpred();
+		this.label = old.getLabel();
+		this.label_vid = old.getLabelVid();
+		this.fvpair = new ArrayList<FvPair>();
+		for(FvPair p:old.getFvpair()) {
+			this.fvpair.add(new FvPair(p));
+		}
+	}
 
-	// I hate to do it this way, but it's not that easy to 
+	// I hate to do it this way, but it's not that intuitive to 
 	// read LISP XML output in Java...
 	private class FvPair {
 //		<!ELEMENT fvpair (rargname, (var|constant))>
 //		<!ELEMENT rargname (#PCDATA)>
 //		<!ELEMENT constant (#PCDATA)>
-		public String rargname = null;
-		public String constant = null;
-		public Var var = null;
+		private String rargname = null;
+		private String constant = null;
+		private Var var = null;
+		
+		public String getRargname() {return rargname;}
+		public String getConstant() {return constant;}
+		public Var getVar() {return var;}
+		
+		/**
+		* Copy constructor.
+		*/
+		public FvPair(FvPair old) {
+			if (old == null) return;
+			this.rargname = old.getRargname();
+			this.constant = old.getConstant();
+			this.var = new Var(old.getVar());
+		}
+		
+		public FvPair() {
+		}
 		
 		public void serializeXML (ContentHandler hd) {
 			AttributesImpl atts = new AttributesImpl();

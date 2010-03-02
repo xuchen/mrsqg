@@ -22,8 +22,7 @@ import com.googlecode.mrsqg.util.StringUtils;
 
 
 /**
- * This class transforms the MRS of a declarative sentence 
- * into that of a interrogative sentence. 
+ * This class preprocesses a declarative sentence.
  * 
  * @author Xuchen Yao
  * @version 2010-02-26
@@ -42,6 +41,11 @@ public class Preprocessor {
 	//private boolean[] firstCapitalize;
 	/** <code>Dictionaries</code> for term extraction. */
 	private static ArrayList<Dictionary> dicts = new ArrayList<Dictionary>();
+	
+	String[] getOriginalSentences() {return this.originalSentences;}
+	String[][] getTokens() {return this.tokens;}
+	String[] getSentences() {return this.sentences;}
+	Term[][] getTerms () {return this.terms;}
 	
 	public boolean preprocess (String sents) {
 		log.debug("Preprocessing");
