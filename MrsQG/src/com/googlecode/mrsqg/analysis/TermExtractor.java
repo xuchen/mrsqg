@@ -176,7 +176,12 @@ public class TermExtractor {
 		
 		// construct multi-token terms
 		for (int length = MAX_TERM_LENGTH; length > 1; length--)
-			for (int id = 0; id < tokens.length - length + 1; id++) {
+			// in LKB/ERG parsing, every sentence must be ended with a punctuation mark.
+			// However, in "John likes Mary." "Mary." would be recognized as a NEperson
+			// since the Stanford NER doesn't care punctuation. So the last punctuation
+			// mark is not selected as a term candidate here to avoid "Mary.".
+			for (int id = 0; id < tokens.length - length; id++) {
+			//for (int id = 0; id < tokens.length - length + 1; id++) {
 				// one of the tokens is already assigned to a term?
 				boolean skip = false;
 				for (int offset = 0; offset < length; offset++)
@@ -255,7 +260,8 @@ public class TermExtractor {
 			
 			// get named entity types and construct term
 			String[] neTypes = getNeTypes(tokens[id], nes);
-			Term t = new Term(tokens[id], pos[id], neTypes);
+			Term t = new Term(tokens[id], pos[id], neTypes, id, id+1);
+			t.setPosFSC(pos);
 			termsL.add(t);
 		}
 		

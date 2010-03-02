@@ -273,9 +273,9 @@ public class Term implements Serializable {
 			String[] posL = posSet.toArray(new String[posSet.size()]);
 			// Ascending order: NN, NNP, NNPS, NNS
 			Arrays.sort(posL);
-			this.pos_fsc = posL[posL.length];
+			this.pos_fsc = posL[posL.length-1];
 			System.err.println("Warning: different POS in term. Check your code to" +
-					"make sure this is right"+posSet);
+					"make sure this is right: "+posSet);
 			return;
 		}
 	}
