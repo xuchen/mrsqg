@@ -203,7 +203,8 @@ public class TermExtractor {
 				String[] neTypes = getNeTypes(StringUtils.concatWithSpaces(OpenNLP.tokenize(text)), nes);
 				if (neTypes.length > 0) {
 					// construct term
-					Term t = new Term(text, Term.COMPOUND, neTypes);
+					Term t = new Term(text, Term.COMPOUND, neTypes, id, id+length);
+					t.setPosFSC(pos);
 					termsL.add(t);
 					// mark tokens as assigned
 					for (int offset = 0; offset < length; offset++)
@@ -244,7 +245,8 @@ public class TermExtractor {
 			//for instance, "red kangaroo" is NEorganization by Stanford NEtagger
 			//"kangaroo" is NEanimal by list tagger
 			//thus comment out the following line to have more NEs.
-			//if (assigned[id]) continue;
+			// X. Yao. Mar 2, 2010. Uncomment to gain less NEs for FSC output.
+			if (assigned[id]) continue;
 			
 			// token is a duplicate?
 			if (!termSet.add(StringUtils.normalize(tokens[id]))) continue;
