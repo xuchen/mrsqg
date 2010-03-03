@@ -39,6 +39,23 @@ public class Var {
 	public String getLabel() {return label;}
 	public String getPath() {return path;}
 	public TreeMap<String, String> getExtrapair() {return extrapair;}
+	
+	@Override public String toString() {
+		// x6 [ x PERS: 3 NUM: SG IND: + ]
+		StringBuilder res = new StringBuilder();
+		res.append(label);
+		if (extrapair.size()!=0) {
+			String value;
+			res.append(" [ "+sort+" ");
+			for (String path: extrapair.keySet()) {
+				value = extrapair.get(path);
+				res.append(path+": "+value+" ");
+			}
+			res.append("]");
+		}
+		
+		return res.toString();
+	}
 
 	/**
 	* Copy constructor.

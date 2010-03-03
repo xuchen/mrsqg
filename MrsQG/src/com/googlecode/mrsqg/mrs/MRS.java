@@ -33,7 +33,7 @@ public class MRS {
 	private String ltop = "";
 	// 1
 	private String label_vid = "";
-	// 2
+	// e2
 	private String index = "";
 	// 2
 	private String index_vid = "";
@@ -48,6 +48,27 @@ public class MRS {
 	public ArrayList <ElementaryPredication> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
 
+	
+	@Override public String toString() {
+		StringBuilder res = new StringBuilder();
+		// LTOP: h1
+		res.append("LTOP: "+ltop+"\n");
+		// INDEX: e2 [ e SF: PROP-OR-QUES TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+		res.append("INDEX: "+index+"\n");
+		res.append("RELS: <\n");
+		for (ElementaryPredication ep: eps) {
+			res.append(ep);
+			res.append("\n");
+		}
+		res.append(">\n");
+		res.append("HCONS: < ");
+		for (HCONS h: hcons) {
+			res.append(h+" ");
+		}
+		res.append(">\n");
+		return res.toString();
+	}
+	
 	public MRS() {
 		hcons = new ArrayList<HCONS>();
 		eps = new ArrayList<ElementaryPredication>();
@@ -108,6 +129,12 @@ public class MRS {
 		public Var getLoVar() {return lo_var;}
 		public String getLoLabel() {return lo_label;}
 		
+		@Override public String toString() {
+			StringBuilder res = new StringBuilder();
+			// h5 qeq h7
+			res.append(hi+" "+rel+" "+lo);
+			return res.toString();
+		}
 		/**
 		* Copy constructor.
 		*/
@@ -249,7 +276,7 @@ public class MRS {
 				
 				// top element, indicating the INDEX of MRS
 				if (parent.equals("mrs")) {
-					index = vid;
+					index = "e"+vid;
 					index_vid = vid;
 				} else if (parent.equals("fvpair")) {
 					// label for <fvpair>
@@ -407,6 +434,7 @@ public class MRS {
 			m.parser.parse(file);
 			System.out.println("done");
 			m.printXML();
+			System.out.println(m);
 		}
 	}
 }
