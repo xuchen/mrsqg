@@ -1,6 +1,7 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.TreeMap;
 
 import org.xml.sax.Attributes;
@@ -90,6 +91,19 @@ public class Var {
 	
 	public void updateValue (String value) {
 		extrapair.put(path, value);
+	}
+	
+	public void keepExtrapair(String[] extra) {
+		ArrayList<String> extraL = new ArrayList<String>();
+		for (int i=0; i<extra.length; i++) {
+			extraL.add(extra[i]);
+		}
+		String[] ik = extrapair.keySet().toArray(new String[extrapair.keySet().size()]);
+
+		for (String k:ik) {
+			if (!extraL.contains(k))
+				extrapair.remove(k);
+		}
 	}
 	
 	public void serializeXML (ContentHandler hd) {

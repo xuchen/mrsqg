@@ -4,7 +4,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Stack;
 
 import org.xml.sax.Attributes;
@@ -96,106 +95,10 @@ public class MRS {
 		for (HCONS h:old.getHcons()) {
 			this.hcons.add(new HCONS(h));
 		}
+		this.buildCoref();
 	}
 
 	
-	private class HCONS {
-//		;;; <!ELEMENT hcons (hi, lo)>
-//		;;; <!ATTLIST hcons 
-//		;;;          hreln (qeq|lheq|outscopes) #REQUIRED >
-//		;;;
-//		;;; <!ELEMENT hi (var)>
-//		;;; <!ELEMENT lo (label|var)>
-
-		
-		/*
-		 * !!! WARNING !!!
-		 * Any new field added to this class must also be added to the copy constructor. 
-		 */
-		
-		private String rel = null;
-		private String hi = null;
-		private String lo = null;
-		private Var hi_var = null;
-		
-		// could be either var or label
-		private Var lo_var = null;
-		private String lo_label = null;
-		
-		public String getRel() {return rel;}
-		public String getHi() {return hi;}
-		public String getLo() {return lo;}
-		public Var getHiVar() {return hi_var;}
-		public Var getLoVar() {return lo_var;}
-		public String getLoLabel() {return lo_label;}
-		
-		@Override public String toString() {
-			StringBuilder res = new StringBuilder();
-			// h5 qeq h7
-			res.append(hi+" "+rel+" "+lo);
-			return res.toString();
-		}
-		/**
-		* Copy constructor.
-		*/
-		public HCONS(HCONS old) {
-			if (old == null) return;
-			this.rel = old.getRel();
-			this.hi = old.getHi();
-			this.lo = old.getLo();
-			this.hi_var = new Var(old.getHiVar());
-			this.lo_var = new Var(old.getLoVar());
-			this.lo_label = old.getLoLabel();
-		}
-		
-		public HCONS(String rel) {
-			this.rel = rel;
-		}
-		
-		public boolean checkValid() {
-			if (rel != null && hi != null && lo != null) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-		
-		public void serializeXML (ContentHandler hd) {
-			//<hcons hreln='qeq'><hi><var vid='4' sort='h'></var></hi><lo><var vid='7' sort='h'></var></lo></hcons>
-			AttributesImpl atts = new AttributesImpl();
-			atts.addAttribute("", "", "hreln", "CDATA", rel);
-			try {
-				// <hcons>
-				hd.startElement("", "", "hcons", atts);
-				// <hi>
-				atts.clear();
-				hd.startElement("", "", "hi", atts);
-				hi_var.serializeXML(hd);
-				hd.endElement("", "", "hi");
-				// <lo>
-				atts.clear();
-				hd.startElement("", "", "lo", atts);
-				if (lo_var != null) {
-					lo_var.serializeXML(hd);
-				} else if (lo_label != null) {
-					// <label>
-					atts.clear();
-					atts.addAttribute("", "", "vid", "CDATA", lo_label);
-					hd.startElement("", "", "label", atts);
-					hd.endElement("", "", "label");
-				} else {
-					
-					System.err.println("Error, <lo> must have either <lo> or <label>");
-				}
-				hd.endElement("", "", "lo");
-				
-				hd.endElement("", "", "hcons");
-			} catch (SAXException e) {
-				e.printStackTrace();
-			}
-			
-		}
-	}
 
 	private class MrsParser extends DefaultHandler {
 		
@@ -262,8 +165,8 @@ public class MRS {
 					currentEP.processStartElement(qName, atts);
 				} else if (parent.equals("lo")) {
 					HCONS h = hcons.get(hcons.size()-1);
-					h.lo_label = atts.getValue("vid");
-					h.lo = h.lo_label;
+					h.setLoLabel(atts.getValue("vid"));
+					h.setLo(atts.getValue("vid"));
 					System.err.println("Warning: <label> inisde <lo>. " +
 							"not in sample. check the code!");
 				} else {
@@ -290,15 +193,15 @@ public class MRS {
 					// get the last one in the list
 					HCONS h = hcons.get(hcons.size()-1);
 					// should be sth. like "h11"
-					h.hi = sort+vid;
-					h.hi_var = new Var(atts);
+					h.setHi(sort+vid);
+					h.setHiVar(new Var(atts));
 				} else if (parent.equals("lo")) {
 					String sort = atts.getValue("sort");
 					// get the last one in the list
 					HCONS h = hcons.get(hcons.size()-1);
 					// should be sth. like "h11"
-					h.lo = sort+vid;
-					h.lo_var = new Var(atts);
+					h.setLo(sort+vid);
+					h.setLoVar(new Var(atts));
 				} else {
 					System.err.println("file format error: unknown" +
 							"element var");
