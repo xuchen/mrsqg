@@ -1,7 +1,6 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
-import java.util.TreeMap;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -17,7 +16,12 @@ public class ElementaryPredication {
 //	          cto   CDATA #IMPLIED 
 //	          surface   CDATA #IMPLIED
 //	      base      CDATA #IMPLIED >
-
+	
+	/*
+	 * !!! WARNING !!!
+	 * Any new field added to this class must also be added to the copy constructor. 
+	 */
+	
 	private int cfrom = -1;
 	private int cto = -1;
 	private String surface = null;
@@ -29,8 +33,8 @@ public class ElementaryPredication {
 	private ArrayList<FvPair> fvpair = null;
 	private FvPair currentFvPair = null;
 	
-	public int getFrom() {return cfrom;}
-	public int getTo() {return cto;}
+	public int getCfrom() {return cfrom;}
+	public int getCto() {return cto;}
 	public String getSurface() {return surface;}
 	public String getBase() {return base;}
 	public String getPred() {return pred;}
@@ -44,8 +48,8 @@ public class ElementaryPredication {
 	*/
 	public ElementaryPredication(ElementaryPredication old) {
 		if (old == null) return;
-		this.cfrom = old.getFrom();
-		this.cto = old.getTo();
+		this.cfrom = old.getCfrom();
+		this.cto = old.getCto();
 		this.surface = old.getSurface();
 		this.base= old.getBase();
 		this.pred = old.getPred();
@@ -64,6 +68,12 @@ public class ElementaryPredication {
 //		<!ELEMENT fvpair (rargname, (var|constant))>
 //		<!ELEMENT rargname (#PCDATA)>
 //		<!ELEMENT constant (#PCDATA)>
+		
+		/*
+		 * !!! WARNING !!!
+		 * Any new field added to this class must also be added to the copy constructor. 
+		 */
+		
 		private String rargname = null;
 		private String constant = null;
 		private Var var = null;

@@ -18,6 +18,12 @@ public class Var {
 //	;;; <!ATTLIST var
 //	;;;          vid  CDATA #REQUIRED 
 //	;;;          sort (x|e|h|u|l) #IMPLIED >	
+	
+	/*
+	 * !!! WARNING !!!
+	 * Any new field added to this class must also be added to the copy constructor. 
+	 */
+	
 	private String vid = null;
 	private String sort = null;
 	// label = sort+vid

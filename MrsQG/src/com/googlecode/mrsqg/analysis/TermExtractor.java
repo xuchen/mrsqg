@@ -161,6 +161,13 @@ public class TermExtractor {
 			Dictionary[] dicts) {
 		// extract tokens
 		String[] tokens = OpenNLP.tokenize(sentence);
+		// the start position (in characters) of each token 
+		int[] tokenStart = new int[tokens.length];
+		for (int i=0, offset=0; i<tokens.length; i++) {
+			tokenStart[i] = offset;
+			// 1 for a space
+			offset += (tokens[i].length()+1);
+		}
 		// tag part of speech
 		String[] pos = OpenNLP.tagPos(tokens);
 		// tag phrase chunks
@@ -176,6 +183,7 @@ public class TermExtractor {
 		
 		// construct multi-token terms
 		for (int length = MAX_TERM_LENGTH; length > 1; length--)
+			// X. YAO, 2010-3-3.
 			// in LKB/ERG parsing, every sentence must be ended with a punctuation mark.
 			// However, in "John likes Mary." "Mary." would be recognized as a NEperson
 			// since the Stanford NER doesn't care punctuation. So the last punctuation
@@ -208,7 +216,7 @@ public class TermExtractor {
 				String[] neTypes = getNeTypes(StringUtils.concatWithSpaces(OpenNLP.tokenize(text)), nes);
 				if (neTypes.length > 0) {
 					// construct term
-					Term t = new Term(text, Term.COMPOUND, neTypes, id, id+length);
+					Term t = new Term(text, Term.COMPOUND, neTypes, id, id+length, tokenStart);
 					t.setPosFSC(pos);
 					termsL.add(t);
 					// mark tokens as assigned
@@ -260,7 +268,7 @@ public class TermExtractor {
 			
 			// get named entity types and construct term
 			String[] neTypes = getNeTypes(tokens[id], nes);
-			Term t = new Term(tokens[id], pos[id], neTypes, id, id+1);
+			Term t = new Term(tokens[id], pos[id], neTypes, id, id+1, tokenStart);
 			t.setPosFSC(pos);
 			termsL.add(t);
 		}
