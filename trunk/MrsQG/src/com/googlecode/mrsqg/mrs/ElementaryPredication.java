@@ -2,10 +2,13 @@ package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
+
+import com.googlecode.mrsqg.MrsTransformer;
 
 
 
@@ -21,6 +24,8 @@ public class ElementaryPredication {
 	 * !!! WARNING !!!
 	 * Any new field added to this class must also be added to the copy constructor. 
 	 */
+	
+	private static Logger log = Logger.getLogger(ElementaryPredication.class);
 	
 	private int cfrom = -1;
 	private int cto = -1;
@@ -42,6 +47,37 @@ public class ElementaryPredication {
 	public String getLabel() {return label;}
 	public String getLabelVid() {return label_vid;}
 	public ArrayList<FvPair> getFvpair() {return fvpair;}
+	
+	@Override public String toString() {
+//		<!ELEMENT ep ((pred|realpred), label, fvpair*)>
+//		<!ATTLIST ep
+//		          cfrom CDATA #IMPLIED
+//		          cto   CDATA #IMPLIED 
+//		          surface   CDATA #IMPLIED
+//		      base      CDATA #IMPLIED >
+		StringBuilder res = new StringBuilder();
+		/*
+		    [ proper_q_rel<0:7>
+            LBL: h3
+            ARG0: x6 [ x PERS: 3 NUM: SG IND: + ]
+            RSTR: h5
+            BODY: h4 ]
+		 */
+		if (pred!= null) res.append("[ "+pred);
+		if (spred!= null) res.append("[ "+spred);
+		if (cfrom!=-1 && cto!=-1) {
+			res.append("<"+Integer.toString(cfrom)+":"+Integer.toString(cto)+">");
+		}
+		if (surface != null) log.debug("complete the code in toString()!");
+		if (base != null) log.debug("complete the code in toString()!");
+		res.append("\n");
+		res.append("  LBL: "+label+"\n");
+		for (FvPair p:fvpair) {
+			res.append("  "+p+"\n");
+		}
+		res.append("]");
+		return res.toString();
+	}
 	
 	/**
 	* Copy constructor.
@@ -81,6 +117,18 @@ public class ElementaryPredication {
 		public String getRargname() {return rargname;}
 		public String getConstant() {return constant;}
 		public Var getVar() {return var;}
+		
+		@Override public String toString() {
+			// RSTR: h5
+			// ARG0: x6 [ x PERS: 3 NUM: SG IND: + ]
+			StringBuilder res = new StringBuilder();
+			res.append(rargname+": ");
+			if (var!=null) res.append(var);
+			// CARG: "Al Gore"
+			if (constant!=null) res.append("\""+constant+"\"");
+			
+			return res.toString();
+		}
 		
 		/**
 		* Copy constructor.
