@@ -39,6 +39,8 @@ public class Var {
 	public String getLabel() {return label;}
 	public String getPath() {return path;}
 	public TreeMap<String, String> getExtrapair() {return extrapair;}
+	public void setSort(String s) {sort = s; label=sort+vid;}
+	public void setVid(String s) {vid = s; label=sort+vid;}
 	
 	@Override public String toString() {
 		// x6 [ x PERS: 3 NUM: SG IND: + ]
