@@ -38,10 +38,18 @@ public class Term implements Serializable {
 	/** The textual representation of the term. */
 	private String text;
 	
-	/** position in a sentence, such as "Al Gore" has
+	/** 
+	 * X. YAO. 2010-3-3.
+	 * position in a sentence, such as "Al Gore" has
 	 * from = 0, to = 2 in sentence "Al Gore was born in Washington DC."*/
 	private int from;
 	private int to;
+	/** 
+	 * X. YAO. 2010-3-3.
+	 * position (in characters) in a sentence, such as "Al Gore" has
+	 * cfrom = 0, cto = 7 in sentence "Al Gore was born in Washington DC."*/
+	private int cfrom;
+	private int cto;
 	/** The lemma of the term. */
 	private String lemma;
 	/**
@@ -67,6 +75,8 @@ public class Term implements Serializable {
 	public String getText() {return text;}
 	public int getFrom() {return from;}
 	public int getTo() {return to;}
+	public int getCfrom() {return cfrom;}
+	public int getCto() {return cto;}
 	public String getLemma() {return lemma;}
 	public String getPos() {return pos;}
 	public String getPosFSC() {return pos_fsc;}
@@ -106,11 +116,22 @@ public class Term implements Serializable {
 		this.neTypes = neTypes;
 	}
 	
-	public Term(String text, String pos, String[] neTypes, int from, int to) {
+	public Term(String text, String pos, String[] neTypes, int from, int to, int[] tokenStart) {
 		this(text, pos);
 		this.neTypes = neTypes;
 		this.from = from;
 		this.to = to;
+		this.cfrom = tokenStart[from];
+		this.cto = this.cfrom+text.length();
+
+		if (to==tokenStart.length-1) {
+			// this term spans the last word
+			// in accordance with MRX, add the final space and the punctuation mark.
+			// e.g. in the MRS output of "John likes Mary ." "Mary" is from 
+			// 11 to 17, spanning the last space and full stop. Thus cto should plus 2
+
+			this.cto+=2;
+		}
 	}
 	
 	public Term(String text, String pos, String[] neTypes, String lemma) {

@@ -23,6 +23,11 @@ import com.googlecode.mrsqg.Preprocessor;
 
 public class MRS {
 	
+	/*
+	 * !!! WARNING !!!
+	 * Any new field added to this class must also be added to the copy constructor. 
+	 */
+	
 	private static Logger log = Logger.getLogger(MRS.class);
 	// h1
 	private String ltop = "";
@@ -58,7 +63,7 @@ public class MRS {
 	*/
 	public MRS(MRS old) {
 		if (old == null) return;
-		this.ltop = old.getLabelVid();
+		this.ltop = old.getLTOP();
 		this.label_vid = old.getLabelVid();
 		this.index = old.getIndex();
 		this.index_vid = old.getIndexVid();
@@ -81,6 +86,11 @@ public class MRS {
 //		;;; <!ELEMENT hi (var)>
 //		;;; <!ELEMENT lo (label|var)>
 
+		
+		/*
+		 * !!! WARNING !!!
+		 * Any new field added to this class must also be added to the copy constructor. 
+		 */
 		
 		private String rel = null;
 		private String hi = null;
@@ -323,17 +333,20 @@ public class MRS {
 
 	}
 	
-	public ArrayList<ElementaryPredication> getEPS (int from, int to) {
+	/**
+	 * Return all ElementaryPredication starting from cfrom and ending to cto.
+	 */
+	public ArrayList<ElementaryPredication> getEPS (int cfrom, int cto) {
 		ArrayList<ElementaryPredication> epsList= new ArrayList<ElementaryPredication>();
 		
 		for (ElementaryPredication ep:this.eps) {
-			if (ep.getFrom()==from && ep.getTo()==to) {
+			if (ep.getCfrom()==cfrom && ep.getCto()==cto) {
 				epsList.add(ep);
 			}
 		}
 		
 		if (epsList.size() == 0) {
-			log.error(String.format("EPS(%d-%d) not found.", from, to));
+			log.error(String.format("EPS(c%d-c%d) not found.", cfrom, cto));
 		}
 		
 		return epsList;

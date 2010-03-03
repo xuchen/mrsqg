@@ -53,7 +53,7 @@ public class MrsTransformer {
 			}
 			MRS q_mrs = new MRS(ori_mrs);
 			if (neType.contains("NEperson")) {
-				eps = this.ori_mrs.getEPS(term.getFrom(), term.getTo());
+				eps = this.ori_mrs.getEPS(term.getCfrom(), term.getCto());
 			}
 		}
 	}
