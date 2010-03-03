@@ -1,6 +1,8 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
@@ -47,6 +49,60 @@ public class ElementaryPredication {
 	public String getLabel() {return label;}
 	public String getLabelVid() {return label_vid;}
 	public ArrayList<FvPair> getFvpair() {return fvpair;}
+	
+	public void setPred(String s) {pred=s;}
+	public void setSpred(String s) {spred=s;}
+	
+	/**
+	 * Return the label of a selected Var field.
+	 * 
+	 * @param s can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
+	 * @return a label, or null if not found
+	 */
+	public String getVarLabel(String s) {
+		String label = null;
+		s = s.toUpperCase();
+		for (FvPair p:fvpair) {
+			if (p.getRargname().equals(s)) {
+				label = p.getVar().getLabel();
+				break;
+			}
+		}
+		return label;
+	}
+	
+	/**
+	 * Return a FvPair with a specific label.
+	 * 
+	 * @param s can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
+	 */
+	public void delFvpair(String s) {
+		s = s.toUpperCase();
+		for (FvPair p:fvpair) {
+			if (p.getRargname().equals(s)) {
+				fvpair.remove(p);
+				break;
+			}
+		}
+	}
+	
+	/**
+	 * Keep some extrapair in fvpair and remove all others.
+	 * 
+	 * @param fv can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
+	 * @param extra extrapair to be kept, such as {"NUM", "PERS"}
+	 */
+	public void keepExtrapairInFvpair(String fv, String[] extra) {
+		fv = fv.toUpperCase();
+		
+
+		for (FvPair p:fvpair) {
+			if (p.getRargname().equals(fv)) {
+				p.getVar().keepExtrapair(extra);
+				break;
+			}
+		}
+	}
 	
 	/**
 	 * return the Var list in fvpair.

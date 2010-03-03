@@ -45,7 +45,8 @@ public class FvPair {
 		if (old == null) return;
 		this.rargname = old.getRargname();
 		this.constant = old.getConstant();
-		this.var = new Var(old.getVar());
+		if (old.getVar()!=null)
+			this.var = new Var(old.getVar());
 	}
 	
 	public FvPair() {

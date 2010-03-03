@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.analysis.Term;
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.HCONS;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -51,9 +52,68 @@ public class MrsTransformer {
 			if (neType.length()==0) {
 				log.error("NE types shouldn't be none: "+term);
 			}
-			MRS q_mrs = new MRS(ori_mrs);
+			
 			if (neType.contains("NEperson")) {
-				eps = this.ori_mrs.getEPS(term.getCfrom(), term.getCto());
+				MRS q_mrs = new MRS(ori_mrs);
+				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
+				if (eps.size() != 2) {
+					log.error("the size of eps isn't 2: "+eps);
+					return;
+				}
+				// one is hi, the other is lo in a qeq relation
+				String hi, lo, rstr;
+				ElementaryPredication hiEP, loEP;
+				hiEP = loEP = eps.get(0);
+				hi = lo = eps.get(0).getLabel();
+				rstr = eps.get(1).getVarLabel("RSTR");
+				if (rstr == null) {
+					loEP = eps.get(1);
+					lo = loEP.getLabel();
+					hi = hiEP.getVarLabel("RSTR");
+				} else {
+					hiEP = eps.get(1);
+					hi = rstr;
+					try {
+						assert lo == rstr;
+					} catch (AssertionError e) {
+						log.error("In eps:\n"+eps+"\none should refer" +
+								"the other in RSTR field");
+						return;
+					}
+				}
+				// check whether hi and lo match HCONS
+				boolean match = false;
+				for (HCONS h: q_mrs.getHcons()) {
+					if (h.getHi().equals(hi)) {
+						try {
+							assert h.getLo().equals(lo);
+							assert h.getRel().equals("qeq");
+							match = true;
+							break;
+						} catch (AssertionError e) {
+							log.error("hi "+hi+" and lo "+lo+" don't match" +
+									" with HCONS: "+h);
+							return;
+						}
+					}
+				}
+				if (!match) {
+					log.error("hi "+hi+" and lo "+lo+" don't match" +
+							" with HCONS: "+q_mrs.getHcons());
+					return;
+				}
+				
+				// change hiEP to which_q_rel
+				hiEP.setPred("which_q_rel");
+				
+				// change loEP to person_rel
+				loEP.setPred("person_rel");
+				loEP.delFvpair("CARG");
+				String[] extra = {"NUM", "PERS"};
+				loEP.keepExtrapairInFvpair("ARG0", extra);
+				
+				this.gen_mrs.add(q_mrs);
+
 			}
 		}
 	}
