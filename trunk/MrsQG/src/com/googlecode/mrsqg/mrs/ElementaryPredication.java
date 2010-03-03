@@ -48,6 +48,19 @@ public class ElementaryPredication {
 	public String getLabelVid() {return label_vid;}
 	public ArrayList<FvPair> getFvpair() {return fvpair;}
 	
+	/**
+	 * return the Var list in fvpair.
+	 */
+	public ArrayList<Var> getVarList() {
+		ArrayList<Var> varL = new ArrayList<Var>();
+		Var v;
+		for (FvPair p: fvpair) {
+			v = p.getVar();
+			if (v != null) varL.add(v);
+		}
+		return varL;
+	}
+	
 	@Override public String toString() {
 //		<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //		<!ATTLIST ep
@@ -98,74 +111,6 @@ public class ElementaryPredication {
 		}
 	}
 
-	// I hate to do it this way, but it's not that intuitive to 
-	// read LISP XML output in Java...
-	private class FvPair {
-//		<!ELEMENT fvpair (rargname, (var|constant))>
-//		<!ELEMENT rargname (#PCDATA)>
-//		<!ELEMENT constant (#PCDATA)>
-		
-		/*
-		 * !!! WARNING !!!
-		 * Any new field added to this class must also be added to the copy constructor. 
-		 */
-		
-		private String rargname = null;
-		private String constant = null;
-		private Var var = null;
-		
-		public String getRargname() {return rargname;}
-		public String getConstant() {return constant;}
-		public Var getVar() {return var;}
-		
-		@Override public String toString() {
-			// RSTR: h5
-			// ARG0: x6 [ x PERS: 3 NUM: SG IND: + ]
-			StringBuilder res = new StringBuilder();
-			res.append(rargname+": ");
-			if (var!=null) res.append(var);
-			// CARG: "Al Gore"
-			if (constant!=null) res.append("\""+constant+"\"");
-			
-			return res.toString();
-		}
-		
-		/**
-		* Copy constructor.
-		*/
-		public FvPair(FvPair old) {
-			if (old == null) return;
-			this.rargname = old.getRargname();
-			this.constant = old.getConstant();
-			this.var = new Var(old.getVar());
-		}
-		
-		public FvPair() {
-		}
-		
-		public void serializeXML (ContentHandler hd) {
-			AttributesImpl atts = new AttributesImpl();
-			try {
-				// <rargname>ARG0</rargname>
-				atts.clear();
-				hd.startElement("", "", "rargname", atts);
-				hd.characters(rargname.toCharArray(), 0, rargname.length());
-				hd.endElement("", "", "rargname");
-				
-				if (var!=null) {
-					var.serializeXML(hd);
-				} else if (constant != null) {
-					// <constant>John</constant>
-					atts.clear();
-					hd.startElement("", "", "constant", atts);
-					hd.characters(constant.toCharArray(), 0, constant.length());
-					hd.endElement("", "", "constant");
-				}
-			} catch (SAXException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 
 	public ElementaryPredication() {
 		fvpair = new ArrayList<FvPair>();
@@ -197,9 +142,9 @@ public class ElementaryPredication {
 			currentFvPair = new FvPair();
 			fvpair.add(currentFvPair);
 		} else if (qName.equals("var")) {
-			currentFvPair.var = new Var(atts);
+			currentFvPair.setVar(new Var(atts));
 		} else if (qName.equals("extrapair")) {
-			currentFvPair.var.newExtraPair();
+			currentFvPair.getVar().newExtraPair();
 		}
 	}
 	
@@ -213,13 +158,13 @@ public class ElementaryPredication {
 			// this part once met
 			System.err.println("<realpred>: Manually check the code and complete it!");
 		} else if (qName.equals("rargname")) {
-			currentFvPair.rargname = str;
+			currentFvPair.setRargname(str);
 		} else if (qName.equals("constant")) {
-			currentFvPair.constant = str;
+			currentFvPair.setConstant(str);
 		} else if (qName.equals("path")) {
-			currentFvPair.var.updatePath(str);			
+			currentFvPair.getVar().updatePath(str);			
 		} else if (qName.equals("value")) {
-			currentFvPair.var.updateValue(str);			
+			currentFvPair.getVar().updateValue(str);			
 		}
 	}
 	

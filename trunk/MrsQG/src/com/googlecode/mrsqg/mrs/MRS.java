@@ -3,6 +3,8 @@ package com.googlecode.mrsqg.mrs;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Stack;
 
 import org.xml.sax.Attributes;
@@ -17,8 +19,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-
-import com.googlecode.mrsqg.Preprocessor;
 
 
 public class MRS {
@@ -76,7 +76,7 @@ public class MRS {
 	
 	public MRS(String file) {
 		this();
-		parser.parse(file);
+		parse(file);
 	}
 	
 	/**
@@ -427,11 +427,46 @@ public class MRS {
 		
 	}
 	
+	/**
+	 * This method builds cross references for an MRS representation.
+	 * After reading/parsing an MRX, such arguments (such as "x9) are 
+	 * referenced individually. This method make them refer to the same one.
+	 */
+	public void buildCoref() {
+		HashMap<String, Var> varM = new HashMap<String, Var>();
+		String label;
+		Var v;
+		for (ElementaryPredication ep: eps) {
+			for (FvPair p:ep.getFvpair()) {
+				v = p.getVar();
+				// only deal with argument
+				if (v!=null && v.getSort().equals("x")) {
+					label = v.getLabel();
+					if (varM.get(label) == null) {
+						varM.put(label, v);
+					} else {
+						p.setVar(varM.get(label));
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * This method parses a MRS document in XML, then calls {@link #buildCoref}. 
+	 * 
+	 * @param file an MRS XML fil
+	 */
+	public void parse(String file) {
+		this.parser.parse(file);
+		buildCoref();
+	}
+	
 	public static void main(String args[]) 
 	throws Exception {
 		MRS m = new MRS();
 		for(String file:args) {
-			m.parser.parse(file);
+			m.parse(file);
 			System.out.println("done");
 			m.printXML();
 			System.out.println(m);
