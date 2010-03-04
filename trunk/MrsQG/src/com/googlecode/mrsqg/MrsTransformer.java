@@ -57,62 +57,84 @@ public class MrsTransformer {
 			if (neType.contains("NEperson")) {
 				MRS q_mrs = new MRS(ori_mrs);
 				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
-				if (eps.size() != 2) {
-					log.error("the size of eps isn't 2: "+eps);
-					return;
-				}
-				// one is hi, the other is lo in a qeq relation
 				String hi, lo, rstr;
 				ElementaryPredication hiEP, loEP;
-				hiEP = loEP = eps.get(0);
-				hi = lo = eps.get(0).getLabel();
-				rstr = eps.get(1).getVarLabel("RSTR");
-				if (rstr == null) {
-					loEP = eps.get(1);
-					lo = loEP.getLabel();
-					hi = hiEP.getVarLabel("RSTR");
-				} else {
-					hiEP = eps.get(1);
-					hi = rstr;
-					try {
-						assert lo == rstr;
-					} catch (AssertionError e) {
-						log.error("In eps:\n"+eps+"\none should refer" +
-								"the other in RSTR field");
-						return;
-					}
-				}
-				// check whether hi and lo match HCONS
-				boolean match = false;
-				for (HCONS h: q_mrs.getHcons()) {
-					if (h.getHi().equals(hi)) {
+				if (eps.size() == 1) {
+					loEP = eps.get(0);
+					// change loEP to person_rel
+					loEP.setPred("PERSON_REL");
+					loEP.delFvpair("CARG");
+					String[] extra = {"NUM", "PERS"};
+					loEP.keepExtrapairInFvpair("ARG0", extra);
+					
+					// add a new WHICH_Q_REL hiEP linked to this loEP
+					// Warning: after deep copy, ARG0 of hiEP and loEP are not
+					// linked together, but it doesn't matter here in simple generation
+					hiEP = new ElementaryPredication(loEP);
+					hiEP.setPred("WHICH_Q_REL");
+					// Temporarily assign 100 for testing
+					hiEP.setLabelVid("100");
+					hi="h100";
+					rstr="h101";
+					hiEP.addSimpleFvpair("RSTR", "101", "h");
+					hiEP.addSimpleFvpair("BODY", "102", "h");
+					q_mrs.addEPtoEPS(hiEP);
+					q_mrs.addToHCONSsimple("qeq", "101", "h", loEP.getLabelVid(), "h");
+				} else if (eps.size() == 2) {
+					// one is hi, the other is lo in a qeq relation
+
+					hiEP = loEP = eps.get(0);
+					hi = lo = eps.get(0).getLabel();
+					rstr = eps.get(1).getVarLabel("RSTR");
+					if (rstr == null) {
+						loEP = eps.get(1);
+						lo = loEP.getLabel();
+						hi = hiEP.getVarLabel("RSTR");
+					} else {
+						hiEP = eps.get(1);
+						hi = rstr;
 						try {
-							assert h.getLo().equals(lo);
-							assert h.getRel().equals("qeq");
-							match = true;
-							break;
+							assert lo == rstr;
 						} catch (AssertionError e) {
-							log.error("hi "+hi+" and lo "+lo+" don't match" +
-									" with HCONS: "+h);
+							log.error("In eps:\n"+eps+"\none should refer" +
+									"the other in RSTR field");
 							return;
 						}
 					}
+					// check whether hi and lo match HCONS
+					boolean match = false;
+					for (HCONS h: q_mrs.getHcons()) {
+						if (h.getHi().equals(hi)) {
+							try {
+								assert h.getLo().equals(lo);
+								assert h.getRel().equals("qeq");
+								match = true;
+								break;
+							} catch (AssertionError e) {
+								log.error("hi "+hi+" and lo "+lo+" don't match" +
+										" with HCONS: "+h);
+								return;
+							}
+						}
+					}
+					if (!match) {
+						log.error("hi "+hi+" and lo "+lo+" don't match" +
+								" with HCONS: "+q_mrs.getHcons());
+						return;
+					}
+					
+					// change hiEP to which_q_rel
+					hiEP.setPred("WHICH_Q_REL");
+					
+					// change loEP to person_rel
+					loEP.setPred("PERSON_REL");
+					loEP.delFvpair("CARG");
+					String[] extra = {"NUM", "PERS"};
+					loEP.keepExtrapairInFvpair("ARG0", extra);
+				} else {
+					log.error("the size of eps isn't 1 or 2: "+eps);
+					continue;
 				}
-				if (!match) {
-					log.error("hi "+hi+" and lo "+lo+" don't match" +
-							" with HCONS: "+q_mrs.getHcons());
-					return;
-				}
-				
-				// change hiEP to which_q_rel
-				hiEP.setPred("WHICH_Q_REL");
-				
-				// change loEP to person_rel
-				loEP.setPred("PERSON_REL");
-				loEP.delFvpair("CARG");
-				String[] extra = {"NUM", "PERS"};
-				loEP.keepExtrapairInFvpair("ARG0", extra);
-				
 				// change SF to "QUES"
 				// e2
 				String index = q_mrs.getIndex();
@@ -124,7 +146,7 @@ public class MrsTransformer {
 				}
 				v.getVar().setExtrapairValue("SF", "QUES");
 				
-				
+				q_mrs.changeFromUnkToNamed();
 				this.gen_mrs.add(q_mrs);
 				q_mrs.printXML();
 				System.out.println(q_mrs);

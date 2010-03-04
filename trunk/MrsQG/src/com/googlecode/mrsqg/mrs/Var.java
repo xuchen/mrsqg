@@ -75,6 +75,13 @@ public class Var {
 		this.extrapair = (LinkedHashMap<String, String>)old.getExtrapair().clone();
 	}
 	
+	public Var(String vid, String sort) {
+		this.vid = vid;
+		this.sort = sort;
+		this.label = sort+vid;
+		this.extrapair = new LinkedHashMap<String, String>();
+	}
+	
 	public Var(Attributes atts) {
 		vid = atts.getValue("vid");
 		sort = atts.getValue("sort");

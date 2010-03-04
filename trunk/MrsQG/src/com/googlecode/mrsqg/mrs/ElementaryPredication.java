@@ -48,6 +48,7 @@ public class ElementaryPredication {
 	
 	public void setPred(String s) {pred=s;}
 	public void setSpred(String s) {spred=s;}
+	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
 	
 	/**
 	 * Return the label of a selected Var field.
@@ -80,6 +81,18 @@ public class ElementaryPredication {
 				break;
 			}
 		}
+	}
+	
+	/**
+	 * add a simple FvPair (such as "RSTR: h9") to this EP
+	 * 
+	 * @param rargname "RSTR"
+	 * @param vid "9"
+	 * @param sort "h"
+	 */
+	public void addSimpleFvpair(String rargname, String vid, String sort) {
+		FvPair p = new FvPair(rargname, vid, sort);
+		this.fvpair.add(p);
 	}
 	
 	/**
