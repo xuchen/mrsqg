@@ -52,6 +52,17 @@ public class FvPair {
 	public FvPair() {
 	}
 	
+	/**
+	 * a simple constructor, constructs an FvPair such as "RSTR: h9"
+	 * @param rargname "RSTR"
+	 * @param vid "9"
+	 * @param sort "h"
+	 */
+	public FvPair(String rargname, String vid, String sort) {
+		this.rargname = rargname;
+		this.var = new Var(vid, sort);
+	}
+	
 	public void serializeXML (ContentHandler hd) {
 		AttributesImpl atts = new AttributesImpl();
 		try {

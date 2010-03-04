@@ -304,6 +304,38 @@ public class MRS {
 		
 	}
 	
+	public void addEPtoEPS (ElementaryPredication ep) {
+		if (ep!=null) this.eps.add(ep);
+	}
+	
+	/**
+	 * Add a simple HCONS to hcons, such as "h1 qeq h2"
+	 * @param hreln "qeq"
+	 * @param hi_vid "1"
+	 * @param hi_sort "h"
+	 * @param lo_vid "2"
+	 * @param lo_sort "h"
+	 */
+	public void addToHCONSsimple (String hreln, String hi_vid, String hi_sort,
+			String lo_vid, String lo_sort) {
+		this.hcons.add(new HCONS(hreln, hi_vid, hi_sort, lo_vid, lo_sort));
+	}
+	
+	/**
+	 * When FSC is input to cheap, NEs are labeld as NAMED_UNK_REL,
+	 * which generates the following error in LKB generation:
+	 * Warning: invalid predicates: |named_unk_rel("Washington DC")|
+	 * Changing named_unk_rel to NAMED_REL solves this (hopefully).
+	 */
+	public void changeFromUnkToNamed () {
+		for (ElementaryPredication ep:this.eps) {
+			if (ep.getPred()!=null && ep.getPred().equalsIgnoreCase("NAMED_UNK_REL")) {
+				ep.setPred("NAMED_REL");
+			}
+		}
+	}
+	
+	
 	public void printXML() {
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
 		// LKB doesn't support properly indented xml files. thus set indentation off.

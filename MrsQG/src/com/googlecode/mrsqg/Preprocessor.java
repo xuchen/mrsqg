@@ -72,6 +72,10 @@ public class Preprocessor {
 				original = originalSentences[i];
 				this.terms[i] = TermExtractor.getTerms(original, "", this.nes[i],
 						Preprocessor.getDictionaries());
+				log.debug("Sentence "+i+" terms:");
+				for (int j=0; j<this.terms[i].length; j++) {
+					log.debug(this.terms[i][j]+"  ");
+				}
 			}
 		}
 		
