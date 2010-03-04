@@ -54,12 +54,19 @@ public class MrsTransformer {
 				log.error("NE types shouldn't be none: "+term);
 			}
 			
-			if (neType.contains("NEperson")) {
+			if (neType.contains("NEperson")||neType.contains("NElocation")) {
 				MRS q_mrs = new MRS(ori_mrs);
 				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
 				String hi, lo, rstr;
 				ElementaryPredication hiEP, loEP;
 				if (eps.size() == 1) {
+					/*
+					 * It seems in a well-formed MRS, eps.size() is always 2.
+					 * when eps.size() is 1, just use another MRS input.
+					 */
+					log.debug("the size of eps is 1: "+eps);
+					continue;
+					/*
 					loEP = eps.get(0);
 					// change loEP to person_rel
 					loEP.setPred("PERSON_REL");
@@ -80,6 +87,7 @@ public class MrsTransformer {
 					hiEP.addSimpleFvpair("BODY", "102", "h");
 					q_mrs.addEPtoEPS(hiEP);
 					q_mrs.addToHCONSsimple("qeq", "101", "h", loEP.getLabelVid(), "h");
+					*/
 				} else if (eps.size() == 2) {
 					// one is hi, the other is lo in a qeq relation
 
@@ -127,7 +135,10 @@ public class MrsTransformer {
 					hiEP.setPred("WHICH_Q_REL");
 					
 					// change loEP to person_rel
-					loEP.setPred("PERSON_REL");
+					if (neType.contains("NEperson"))
+						loEP.setPred("PERSON_REL");
+					else if (neType.contains("NElocation"))
+						loEP.setPred("PLACE_N_REL");
 					loEP.delFvpair("CARG");
 					String[] extra = {"NUM", "PERS"};
 					loEP.keepExtrapairInFvpair("ARG0", extra);
