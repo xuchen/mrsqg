@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.analysis.Term;
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.FvPair;
 import com.googlecode.mrsqg.mrs.HCONS;
 import com.googlecode.mrsqg.mrs.MRS;
 
@@ -104,15 +105,29 @@ public class MrsTransformer {
 				}
 				
 				// change hiEP to which_q_rel
-				hiEP.setPred("which_q_rel");
+				hiEP.setPred("WHICH_Q_REL");
 				
 				// change loEP to person_rel
-				loEP.setPred("person_rel");
+				loEP.setPred("PERSON_REL");
 				loEP.delFvpair("CARG");
 				String[] extra = {"NUM", "PERS"};
 				loEP.keepExtrapairInFvpair("ARG0", extra);
 				
+				// change SF to "QUES"
+				// e2
+				String index = q_mrs.getIndex();
+				FvPair v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
+				if (v==null) {
+					log.error("FvPair ARG0: "+index+" not found! " +
+							"can't set SF to QUES!");
+					break;
+				}
+				v.getVar().setExtrapairValue("SF", "QUES");
+				
+				
 				this.gen_mrs.add(q_mrs);
+				q_mrs.printXML();
+				System.out.println(q_mrs);
 
 			}
 		}

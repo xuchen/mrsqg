@@ -1,17 +1,13 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.TreeMap;
+
 
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
-import com.googlecode.mrsqg.MrsTransformer;
-
 
 
 public class ElementaryPredication {
