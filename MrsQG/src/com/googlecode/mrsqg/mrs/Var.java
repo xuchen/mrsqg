@@ -2,7 +2,7 @@ package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.TreeMap;
+import java.util.LinkedHashMap;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -32,14 +32,15 @@ public class Var {
 //	;;; <!ELEMENT extrapair (path,value)>
 //	;;; <!ELEMENT path (#PCDATA)>
 //	;;; <!ELEMENT value (#PCDATA)>
-	private TreeMap<String, String> extrapair = null;
+	// use LinkedHashMap to get insertion order of keys
+	private LinkedHashMap<String, String> extrapair = null;
 	private String path;
 	
 	public String getVid() {return vid;}
 	public String getSort() {return sort;}
 	public String getLabel() {return label;}
 	public String getPath() {return path;}
-	public TreeMap<String, String> getExtrapair() {return extrapair;}
+	public LinkedHashMap<String, String> getExtrapair() {return extrapair;}
 	public void setSort(String s) {sort = s; label=sort+vid;}
 	public void setVid(String s) {vid = s; label=sort+vid;}
 	
@@ -69,16 +70,16 @@ public class Var {
 		this.sort = old.getSort();
 		this.label = old.getLabel();
 		this.path = old.getPath();
-		// values and keys of this TreeMap are of class String.
+		// values and keys of this LinkedHashMap are of class String.
 		// so shallow copy equals deep copy in this case.
-		this.extrapair = (TreeMap<String, String>)old.getExtrapair().clone();
+		this.extrapair = (LinkedHashMap<String, String>)old.getExtrapair().clone();
 	}
 	
 	public Var(Attributes atts) {
 		vid = atts.getValue("vid");
 		sort = atts.getValue("sort");
 		label = sort+vid;
-		extrapair = new TreeMap<String, String>();
+		extrapair = new LinkedHashMap<String, String>();
 	}
 	
 	public void newExtraPair () {
@@ -93,6 +94,11 @@ public class Var {
 		extrapair.put(path, value);
 	}
 	
+	/**
+	 * Keep some extrapair in var and remove all others.
+	 * 
+	 * @param extra extrapair to be kept, such as {"NUM", "PERS"}
+	 */
 	public void keepExtrapair(String[] extra) {
 		ArrayList<String> extraL = new ArrayList<String>();
 		for (int i=0; i<extra.length; i++) {
@@ -103,6 +109,22 @@ public class Var {
 		for (String k:ik) {
 			if (!extraL.contains(k))
 				extrapair.remove(k);
+		}
+	}
+	
+	/**
+	 * Set the value of extrapair. E.g. path="SF", value="QUES"
+	 * set the value of the "SF" extrapair to "QUES".
+	 * 
+	 * @param path path of this extrapair
+	 * @param value value of this extrapair
+	 */
+	public void setExtrapairValue(String path, String value) {
+		for (String key:extrapair.keySet()) {
+			if (key.equals(path)) {
+				extrapair.put(path, value);
+				break;
+			}
 		}
 	}
 	

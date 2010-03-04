@@ -50,6 +50,7 @@ public class MRS {
 	
 	@Override public String toString() {
 		StringBuilder res = new StringBuilder();
+		res.append("\n");
 		// LTOP: h1
 		res.append("LTOP: "+ltop+"\n");
 		// INDEX: e2 [ e SF: PROP-OR-QUES TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
@@ -282,10 +283,33 @@ public class MRS {
 		return epsList;
 	}
 	
+	/**
+	 * find out an FvPair whose Rargname matches name and whose Var's label matches label
+	 *  
+	 * @param Rargname, such as "ARG0"
+	 * @param label label of Var, such as "e2"
+	 * @return a matching FvPair
+	 */
+	public FvPair getFvpairByRargnameAndIndex (String name, String label) {
+		
+		for (ElementaryPredication ep:this.eps) {
+			for (FvPair f: ep.getFvpair()) {
+				if (f.getRargname().equals(name) && f.getVar().getLabel().equals(label)) {
+					return f;
+				}
+			}
+		}
+		
+		return null;
+		
+	}
+	
 	public void printXML() {
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
-		of.setIndent(1);
-		of.setIndenting(true);
+		// LKB doesn't support properly indented xml files. thus set indentation off.
+		of.setIndenting(false);
+		//of.setIndent(1);
+		//of.setDoctype(null, "mrs.dtd");
 //		FileOutputStream fos = null;
 //		try {
 //			fos = new FileOutputStream("");

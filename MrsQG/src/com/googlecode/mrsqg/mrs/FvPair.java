@@ -55,8 +55,9 @@ public class FvPair {
 	public void serializeXML (ContentHandler hd) {
 		AttributesImpl atts = new AttributesImpl();
 		try {
-			// <rargname>ARG0</rargname>
 			atts.clear();
+			hd.startElement("", "", "fvpair", atts);
+			// <rargname>ARG0</rargname>
 			hd.startElement("", "", "rargname", atts);
 			hd.characters(rargname.toCharArray(), 0, rargname.length());
 			hd.endElement("", "", "rargname");
@@ -70,6 +71,7 @@ public class FvPair {
 				hd.characters(constant.toCharArray(), 0, constant.length());
 				hd.endElement("", "", "constant");
 			}
+			hd.endElement("", "", "fvpair");
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
