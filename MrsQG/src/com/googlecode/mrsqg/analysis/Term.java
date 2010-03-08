@@ -8,6 +8,8 @@ import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
 import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
 import com.googlecode.mrsqg.util.StringUtils;
@@ -29,6 +31,9 @@ import net.didion.jwnl.data.POS;
  * X. Yao: Add more class members to support FSC output
  */
 public class Term implements Serializable {
+	
+	private static Logger log = Logger.getLogger(Term.class);
+	
 	/** Version number used during deserialization. */
 	private static final long serialVersionUID = 20070501;
 	
@@ -295,8 +300,7 @@ public class Term implements Serializable {
 			// Ascending order: NN, NNP, NNPS, NNS
 			Arrays.sort(posL);
 			this.pos_fsc = posL[posL.length-1];
-			System.err.println("Warning: different POS in term. Check your code to" +
-					"make sure this is right: "+posSet);
+			log.warn("Warning: different POS in term. Using the last one. "+posSet);
 			return;
 		}
 	}

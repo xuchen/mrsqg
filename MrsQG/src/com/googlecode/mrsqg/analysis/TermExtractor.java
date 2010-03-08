@@ -201,8 +201,10 @@ public class TermExtractor {
 				
 				// get phrase spanning the tokens
 				String text = tokens[id];
+				String untokText;
 				for (int offset = 1; offset < length; offset++)
 					text += " " + tokens[id + offset];
+				untokText = text;
 				text = OpenNLP.untokenize(text, sentence);
 				
 				// phrase is a duplicate?
@@ -216,7 +218,7 @@ public class TermExtractor {
 				String[] neTypes = getNeTypes(StringUtils.concatWithSpaces(OpenNLP.tokenize(text)), nes);
 				if (neTypes.length > 0) {
 					// construct term
-					Term t = new Term(text, Term.COMPOUND, neTypes, id, id+length, tokenStart);
+					Term t = new Term(untokText, Term.COMPOUND, neTypes, id, id+length, tokenStart);
 					t.setPosFSC(pos);
 					termsL.add(t);
 					// mark tokens as assigned
