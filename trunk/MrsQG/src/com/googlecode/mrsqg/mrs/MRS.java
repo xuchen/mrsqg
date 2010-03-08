@@ -284,6 +284,38 @@ public class MRS {
 	}
 	
 	/**
+	 * Get the EP before cfrom and cto. This method is mainly used to
+	 * find out the preposition before a time/location term.
+	 * For instance, "in Germany", one EP is  _IN_P_REL ("in"),
+	 * the other is PROPER_Q_REL ("Germany"), feeding cfrom and cto with 
+	 * those of PROPER_Q_REL returns the _IN_P_TEMP_REL EP.
+	 * 
+	 */
+	public ElementaryPredication getEPbefore (int cfrom, int cto) {
+		ElementaryPredication ret = null;
+		ElementaryPredication next = null;
+		
+		// In a well-formed MRS, all EPs are lined up according to 
+		// their position in the sentence
+		for (ElementaryPredication ep:this.eps) {
+			if (ep.getCfrom()==cfrom && ep.getCto()==cto) {
+				next = ep;
+				break;
+			}
+			ret = ep;
+		}
+		
+		// extra safety
+		if (ret!=null && next!= null && ret.getCto() >= next.getCfrom()) {
+			log.error("ep1 should be before ep2 in EPS list.");
+			log.error("ep1: "+ret);
+			log.error("ep2: "+next);
+			ret = null;
+		}
+		
+		return ret;
+	}
+	/**
 	 * find out an FvPair whose Rargname matches name and whose Var's label matches label
 	 *  
 	 * @param Rargname, such as "ARG0"

@@ -34,6 +34,7 @@ public class Preprocessor {
 	private int countOfSents = 0;
 	private String[] originalSentences;
 	private String[][] tokens;
+	private String[][] pos;
 	private String[] sentences;
 	private String[][][] nes;
 	//private ArrayList<String>[] to;
@@ -56,11 +57,13 @@ public class Preprocessor {
 		
 		String original;
 		this.tokens = new String[countOfSents][];
+		this.pos = new String[countOfSents][];
 		this.sentences = new String[countOfSents];
 		for (int i = 0; i < countOfSents; i++) {
 			original = originalSentences[i];
 			log.debug("Sentence "+i+" :"+original);
 			tokens[i] = NETagger.tokenize(original);
+			pos[i] = OpenNLP.tagPos(tokens[i]);
 			sentences[i] = StringUtils.concatWithSpaces(this.tokens[i]);
 		}
 		
@@ -80,6 +83,21 @@ public class Preprocessor {
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * return the preposition before a term t in sentence number sentNum, if any
+	 * @param t the term, such as "Germany"
+	 * @param sentNum the sentence number
+	 * @return the preposition, such as "in"
+	 */
+	public String getPrepositionBeforeTerm (Term t, int sentNum) {
+		String p = null;
+		String pPos = pos[sentNum][t.getFrom()-1];
+		if (pPos.equalsIgnoreCase("IN")) {
+			p = tokens[sentNum][t.getFrom()-1];
+		}
+		return p;
 	}
 	
 	/**

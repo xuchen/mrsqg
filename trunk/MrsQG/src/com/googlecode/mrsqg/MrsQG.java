@@ -79,7 +79,6 @@ public class MrsQG {
 				t.transform();
 			} else {
 				p = new Preprocessor();
-				// possibly fail because of dict is not loaded
 				p.preprocess(input);
 				p.outputFSCbyTerms();
 			}

@@ -48,14 +48,33 @@ public class MrsTransformer {
 		String neType;
 		ArrayList<ElementaryPredication> eps;
 		
+		// generate yes/no question
+		// change SF to "QUES"
+		// e2
+		MRS q_mrs = new MRS(ori_mrs);
+		String index = q_mrs.getIndex();
+		FvPair v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
+		if (v==null) {
+			log.error("FvPair ARG0: "+index+" not found! " +
+					"can't set SF to QUES!");
+		}
+		v.getVar().setExtrapairValue("SF", "QUES");
+		
+		q_mrs.changeFromUnkToNamed();
+		this.gen_mrs.add(q_mrs);
+		System.out.println("yes/no question:");
+		q_mrs.printXML();
+		System.out.println(q_mrs);
+		
 		for (Term term:terms) {
 			neType = Arrays.toString(term.getNeTypes());
 			if (neType.length()==0) {
 				log.error("NE types shouldn't be none: "+term);
 			}
 			
-			if (neType.contains("NEperson")||neType.contains("NElocation")) {
-				MRS q_mrs = new MRS(ori_mrs);
+			if (neType.contains("NEperson")||neType.contains("NElocation")
+					||neType.contains("NEdate")) {
+				q_mrs = new MRS(ori_mrs);
 				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
 				String hi, lo, rstr;
 				ElementaryPredication hiEP, loEP;
@@ -135,10 +154,32 @@ public class MrsTransformer {
 					hiEP.setPred("WHICH_Q_REL");
 					
 					// change loEP to person_rel
-					if (neType.contains("NEperson"))
+					if (neType.contains("NEperson")) {
 						loEP.setPred("PERSON_REL");
+						System.out.println("who question:");
+					}
 					else if (neType.contains("NElocation"))
+					{
 						loEP.setPred("PLACE_N_REL");
+						System.out.println("where question:");
+					}
+					else if (neType.contains("NEdate")) {
+						loEP.setPred("TIME_N_REL");
+						System.out.println("when question:");
+					}
+					if (neType.contains("NElocation") || neType.contains("NEdate"))
+					{
+						ElementaryPredication ppEP = q_mrs.getEPbefore(term.getCfrom(), term.getCto());
+						String pp = this.pre.getPrepositionBeforeTerm(term, 0);
+						// change the preposition (if any) before the term
+						if (pp!=null && ppEP.getPred()!=null && 
+								ppEP.getPred().substring(0, pp.length()+1).toLowerCase().contains(pp.toLowerCase())) {
+							// the Pred of an "in" preposition EP is something like: _in_p_
+							// so the first 3 chars _in must contain "in"
+							ppEP.setPred("LOC_NONSP_REL");
+						}
+
+					}
 					loEP.delFvpair("CARG");
 					String[] extra = {"NUM", "PERS"};
 					loEP.keepExtrapairInFvpair("ARG0", extra);
@@ -148,12 +189,12 @@ public class MrsTransformer {
 				}
 				// change SF to "QUES"
 				// e2
-				String index = q_mrs.getIndex();
-				FvPair v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
+				index = q_mrs.getIndex();
+				v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
 				if (v==null) {
 					log.error("FvPair ARG0: "+index+" not found! " +
 							"can't set SF to QUES!");
-					break;
+					continue;
 				}
 				v.getVar().setExtrapairValue("SF", "QUES");
 				
