@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
-public class ExecCommand {
+public class LKB {
 	private Semaphore outputSem;
 	private String output;
 	private Semaphore errorSem;
@@ -17,8 +17,7 @@ public class ExecCommand {
 	private Process p;
 	
 	public static void main(String args[]) {
-		ExecCommand e = new ExecCommand("cheap  -default-les=all -cm -packing -mrs -results=1 " +
-				"/home/xcyao/delphin/erg/english.grm");
+		LKB e = new LKB("lkb");
 		
 	}
 
@@ -64,6 +63,9 @@ public class ExecCommand {
 				while ((buff = isr.readLine()) != null) {
 					readBuffer.append(buff);
 					System.out.println("Output in readline: "+buff);
+					// Jail Break! 
+					// The other side doesn't close so readLine() will never return null. 
+					if (buff.contains("NIL")) break;
 				}
 				output = readBuffer.toString();
 				System.out.println("Output in MainThread: "+output);
@@ -108,7 +110,7 @@ public class ExecCommand {
 		}
 	}
 
-	public ExecCommand(String command, String input) {
+	public LKB(String command, String input) {
 		try {
 			p = Runtime.getRuntime().exec(makeArray(command));
 			new InputWriter(input).start();
@@ -130,7 +132,7 @@ public class ExecCommand {
 			return new String("");
 		}
 	}
-	public ExecCommand(String command) {
+	public LKB(String command) {
 		try {
 			// Xuchen Yao
 			// the command actually runs as a "server"
@@ -155,7 +157,7 @@ public class ExecCommand {
 				err.start();
 				// Xuchen Yao
 				// Uncomment the following makes the system not work
-				String buff = getError();
+				String buff = getOutput();
 				System.out.println("Erro in Main: "+error);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -235,7 +237,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
-public class ExecCommand {
+public class Cheap {
 	private Semaphore outputSem;
 	private String output;
 	private Semaphore errorSem;
@@ -243,7 +245,7 @@ public class ExecCommand {
 	private Process p;
 	
 	public static void main(String args[]) {
-		ExecCommand e = new ExecCommand("cat");
+		Cheap e = new Cheap("cat");
 		
 	}
 
@@ -318,7 +320,7 @@ public class ExecCommand {
 		}
 	}
 
-	public ExecCommand(String command, String input) {
+	public Cheap(String command, String input) {
 		try {
 			p = Runtime.getRuntime().exec(makeArray(command));
 			new InputWriter(input).start();
@@ -340,7 +342,7 @@ public class ExecCommand {
 			return new String("");
 		}
 	}
-	public ExecCommand(String command) {
+	public Cheap(String command) {
 		while (true) {
 			System.out.println("Input: ");
 			String input = readLine().trim();
