@@ -2,9 +2,12 @@ package com.googlecode.mrsqg.mrs;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -124,6 +127,22 @@ public class MRS {
 				
 
 				FileReader r = new FileReader(file);
+				xr.parse(new InputSource(r));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+	
+		}
+		
+		public void parseString(String str) {
+			try {
+				XMLReader xr = XMLReaderFactory.createXMLReader();
+				MrsParser handler = new MrsParser();
+				xr.setContentHandler(handler);
+				xr.setErrorHandler(handler);
+				
+
+				StringReader r = new StringReader(str);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -451,6 +470,37 @@ public class MRS {
 	public void parse(String file) {
 		this.parser.parse(file);
 		buildCoref();
+	}
+	
+	/**
+	 * This method parses a MRS document in a string, then calls {@link #buildCoref}. 
+	 * 
+	 * @param str a string containing an MRS structure
+	 */
+	public void parseString(String str) {
+		this.parser.parseString(str);
+		buildCoref();
+	}
+	
+	/**
+	 * 
+	 * Use RegEx to match all <mrs/> in a multiline string
+	 * 
+	 * @param multiline cheap output spreading multilines 
+	 * @return an array list containing all <mrs/> elements
+	 */
+	public static ArrayList<String> getMrxStringsFromCheap (String multiline) {
+		ArrayList<String> list = new ArrayList<String>();
+		
+		Pattern p = Pattern.compile("<mrs>(.*?)<\\/mrs>", 
+				Pattern.MULTILINE|Pattern.DOTALL);
+		Matcher m = p.matcher(multiline);
+		while (m.find()) {
+			String mrs = m.group();
+			list.add(mrs);
+		}
+		
+		return list;
 	}
 	
 	public static void main(String args[]) 
