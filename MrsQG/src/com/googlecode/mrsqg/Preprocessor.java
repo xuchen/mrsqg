@@ -3,6 +3,7 @@ package com.googlecode.mrsqg;
 
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
@@ -255,7 +256,7 @@ public class Preprocessor {
 	 * Output preprocessed sentence to FSC format by terms
 	 * 
 	 */
-	public void outputFSCbyTerms () {
+	public void outputFSCbyTerms (OutputStream os) {
 		
 		if (countOfSents == 0) {
 			log.info("No input sentence.");
@@ -269,7 +270,7 @@ public class Preprocessor {
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
 		of.setIndent(1);
 		of.setIndenting(true);
-		XMLSerializer serializer = new XMLSerializer(System.out,of);
+		XMLSerializer serializer = new XMLSerializer(os,of);
 		// SAX2.0 ContentHandler.
 		ContentHandler hd;
 		try {

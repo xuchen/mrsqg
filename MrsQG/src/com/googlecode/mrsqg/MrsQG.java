@@ -5,9 +5,15 @@ import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 import com.googlecode.mrsqg.nlp.indices.Prepositions;
 import com.googlecode.mrsqg.nlp.indices.WordFrequencies;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Properties;
+
 import org.apache.log4j.PropertyConfigurator;
 
+import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LingPipe;
 import com.googlecode.mrsqg.nlp.NETagger;
 import com.googlecode.mrsqg.nlp.OpenNLP;
@@ -27,6 +33,16 @@ public class MrsQG {
 	/**	the DateFormat object used in getTimespamt
 	 */
 	private static SimpleDateFormat timestampFormatter; 
+	
+	/**
+	 * configurations for MrsQG
+	 */
+	public final String propertyFile = "conf/mrsqg.properties";
+	
+	/**
+	 * a parser used for producing MRS in xml
+	 */
+	private Cheap parser = null;
 	
 	/**
 	 * @return	a timestamp String for logging
@@ -64,11 +80,13 @@ public class MrsQG {
 	 */
 	public void commandLine() {
 		Preprocessor p = null;
+		
 		while (true) {
 			System.out.println("Input: ");
 			String input = readLine().trim();
 			if (input.length() == 0) continue;
 			if (input.equalsIgnoreCase("exit")) {
+				if (parser!=null) parser.exit();
 				log.info("MrsQG ended at "+getTimestamp());
 				System.exit(0);
 			}
@@ -77,10 +95,26 @@ public class MrsQG {
 				String fileLine = input.substring(5).trim();
 				MrsTransformer t = new MrsTransformer(fileLine, p);
 				t.transform();
+			} else if (input.startsWith("pipe: ")) {
+				// do everything in an automatic pipeline
+				input = input.substring(6).trim();
+				
+				// pre-processing, get the output FSC XML in a string fsc
+				p = new Preprocessor();
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				p.preprocess(input);
+				p.outputFSCbyTerms(os);
+				String fsc = os.toString();
+				
+				System.out.println(fsc);
+				// parsing fsc with cheap
+				parser.parse(fsc);
+				System.out.println(parser.getParsedMRSlist());
+				
 			} else {
 				p = new Preprocessor();
 				p.preprocess(input);
-				p.outputFSCbyTerms();
+				p.outputFSCbyTerms(System.out);
 			}
 		}
 	}
@@ -111,6 +145,25 @@ public class MrsQG {
 		PropertyConfigurator.configure("conf/log4j.properties");
 		log = org.apache.log4j.Logger.getLogger(MrsQG.class);
 		log.info("MrsQG started at "+getTimestamp());
+		
+		// read configuration
+		Properties prop = new Properties();
+		try { 
+			prop.load(new FileInputStream(propertyFile)); 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		// init the cheap parser
+		if (prop.getProperty("runCheapPipeline").equalsIgnoreCase("yes")) {
+			System.out.println("Creating parser...");
+			// Set Cheap to take FSC as input 
+			parser = new Cheap(true);
+			
+			if (! parser.isSuccess()) {
+				log.error("cheap is not started properly.");
+			}
+		}
 		
 		// create WordNet dictionary
 		System.out.println("Creating WordNet dictionary...");

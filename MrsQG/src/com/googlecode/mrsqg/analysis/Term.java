@@ -300,7 +300,7 @@ public class Term implements Serializable {
 			// Ascending order: NN, NNP, NNPS, NNS
 			Arrays.sort(posL);
 			this.pos_fsc = posL[posL.length-1];
-			log.warn("Warning: different POS in term. Using the last one. "+posSet);
+			log.warn("Warning: different POS in term. Using the last one. "+Arrays.toString(posL));
 			return;
 		}
 	}
