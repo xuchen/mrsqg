@@ -1,24 +1,166 @@
 package com.googlecode.mrsqg.nlp;
 
-
-
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.Properties;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
+import com.googlecode.mrsqg.mrs.MRS;
+
 
 public class LKB {
+	
+	private static Logger log = Logger.getLogger(LKB.class);
+	public final String propertyFile = "conf/lkb.properties";
 	private Semaphore outputSem;
 	private String output;
 	private Semaphore errorSem;
 	private String error;
 	private Process p;
+	/** whether LKB is loaded successfully */
+	private boolean success = false;
+	
+	/**
+	 * LKB constructor 
+	 */
+	public LKB() {
+		String genCmd = "(index-for-generator)";
+		Properties prop = new Properties();
+		try { 
+			prop.load(new FileInputStream(propertyFile)); 
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		String scriptFile = prop.getProperty("script");
+		File f = new File(scriptFile);
+		if (!f.exists()) {
+			log.fatal("File "+scriptFile+" should exist!");
+			return;
+		}
+		String scriptCmd = "(read-script-file-aux \""+scriptFile+"\")";
+		
+		String lkb = prop.getProperty("lkb");
+		f = new File(lkb);
+		if (!f.exists()) {
+			log.fatal("LKB "+scriptFile+" should exist!");
+			return;
+		}
+		
+		try {
+			log.info("LKB is starting up, please wait...");
+			p = Runtime.getRuntime().exec(lkb);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		// load script and generate index for the generator
+		sendInput(scriptCmd+genCmd);
+		
+		// output LKB loading message
+		success = true;
+		// 3 commands were sent: 
+		// one for LKB itself,
+		// one for scriptCmd,
+		// one for genCmd.
+		// Thus 3 threads are needed to retrieve LKB output
+		log.info(getResult());
+		log.info(getResult());
+		log.info(getResult());
+		log.info("Initializing LKB done. Quite a while, huh?;-)\n");
+	}
+	
+	/**
+	 * Whether the parser is started successfully
+	 * @return a boolean status
+	 */
+	public boolean isSuccess () { return success;}
+	
+	/**
+	 * Send an input string to LKB
+	 */
+	public void sendInput (String input) {
+		InputWriter in = new InputWriter(input);
+		in.start();
+	}
+	
+	/**
+	 * Get result from stdout
+	 * @return the parsing result
+	 */
+	public String getResult () {
+		if (!success) {
+			log.fatal("LKB is not working properly!");
+			return null;
+		}
+
+		OutputReader out = new OutputReader();
+		out.start();
+
+		String result = getOutput();
+		return result;
+	}
+	
+	/**
+	 * Get result from stderr. It seems LKB doesn't output anything 
+	 * to stderr. So using this function will block the whole program.
+	 * @return the parsing result
+	 */
+	public String getErrResult () {
+		if (!success) {
+			log.fatal("LKB is not working properly!");
+			return null;
+		}
+
+		ErrorReader err = new ErrorReader();
+		err.start();
+
+		String result = getError();
+		return result;
+	}
+
+	/**
+	 * exit LKB
+	 */
+	public void exit () {
+		if (!success) {
+			log.fatal("LKB is not working properly!");
+			return;
+		}
+		
+		// force exit
+		sendInput("(excl:exit 0 :no-unwind t)\n");
+	}
 	
 	public static void main(String args[]) {
-		LKB e = new LKB("lkb");
+		PropertyConfigurator.configure("conf/log4j.properties");
+		LKB lkb = new LKB();
 		
+		if (! lkb.isSuccess()) {
+			log.fatal("LKB is not started properly.");
+			return;
+		}
+		
+		while (true) {
+			System.out.println("Input: ");
+			String input = readLine().trim();
+			if (input.length() == 0) continue;
+			if (input.equalsIgnoreCase("exit")) {
+				lkb.exit();
+				System.exit(0);
+			}
+			lkb.sendInput(input);
+			System.out.println(lkb.getResult());
+		}
 	}
 
 	private class InputWriter extends Thread {
@@ -36,7 +178,13 @@ public class LKB {
 	}
 
 	private class OutputReader extends Thread {
+        private static final int colon = (int)':';
+        private static final  int rightp = (int)')';
+        private static final  int space = (int)' ';
+        private Pattern prompt;
+        
 		public OutputReader() {
+			prompt = Pattern.compile(".*LKB\\(\\d+\\): $", Pattern.MULTILINE|Pattern.DOTALL);
 			try {
 				outputSem = new Semaphore(1);
 				outputSem.acquire();
@@ -46,29 +194,40 @@ public class LKB {
 		}
 
 		public void run() {
+			// previous previous history
+			int pph=-1;
+			// previous history
+			int ph=-1;
 			try {
 				StringBuffer readBuffer = new StringBuffer();
 				BufferedReader isr = new BufferedReader(new InputStreamReader(p
 						.getInputStream()));
 				String buff = new String();
-				/*
-				int c;
-				while ((c=isr.read())!=-1){
-					buff = String.valueOf(c);
-					readBuffer.append(buff);
-					System.out.println("Output in readline: "+buff);
-					if (c==10) break;
-				}
-				*/
-				while ((buff = isr.readLine()) != null) {
-					readBuffer.append(buff);
-					System.out.println("Output in readline: "+buff);
-					// Jail Break! 
-					// The other side doesn't close so readLine() will never return null. 
-					if (buff.contains("NIL")) break;
-				}
+				
+                int c;
+
+                while ((c=isr.read())!=-1){
+
+                	//buff = String.valueOf(c);
+                	buff = Character.toString((char)c);
+                	readBuffer.append(buff);
+                	//System.out.println("Output in readline: "+buff);
+                	if (c==space&&ph==colon&&pph==rightp) {
+                		// Jail break!
+                		// When LKB ends its output, it prompts: 
+                		// LKB(1): (with a space in the end) 
+                		// for efficiency reasons, we only compare int values first,
+                		// then do a regex match
+                		Matcher m = prompt.matcher(readBuffer.toString());
+                		if (m.matches()) 
+                			break;
+                	}
+                	pph=ph;
+                	ph=c;
+                }
+
 				output = readBuffer.toString();
-				System.out.println("Output in MainThread: "+output);
+				//System.out.println("OutputReader Thread: "+output);
 				outputSem.release();
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -95,34 +254,17 @@ public class LKB {
 				while ((buff = isr.readLine()) != null) {
 					readBuffer.append(buff+"\n");
 					System.out.println("Error in readline: "+buff);
-					// Jail Break! 
-					// The other side doesn't close so readLine() will never return null. 
-					if (buff.contains("HCONS")) break;
 				}
 				error = readBuffer.toString();
-				System.out.println("Error in MainThread: "+error);
+				System.out.println("ErrorReader Thread: "+error);
 				errorSem.release();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-//			if (error.length() > 0)
-//				System.out.println("Output: "+error);
 		}
 	}
 
-	public LKB(String command, String input) {
-		try {
-			p = Runtime.getRuntime().exec(makeArray(command));
-			new InputWriter(input).start();
-			new OutputReader().start();
-			new ErrorReader().start();
-			p.waitFor();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
+
 	protected static String readLine() {
 		try {
 			return new java.io.BufferedReader(new
@@ -132,239 +274,8 @@ public class LKB {
 			return new String("");
 		}
 	}
-	public LKB(String command) {
-		try {
-			// Xuchen Yao
-			// the command actually runs as a "server"
-			p = Runtime.getRuntime().exec(command);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		while (true) {
-			System.out.println("Input: ");
-			String input = readLine().trim();
-			if (input.length() == 0) continue;
-			if (input.equalsIgnoreCase("exit")) {
-				System.exit(0);
-			}
-			try {
-				InputWriter in = new InputWriter(input);
-				in.start();
-				OutputReader out = new OutputReader();
-				out.start();
-				ErrorReader err = new ErrorReader();
-				err.start();
-				// Xuchen Yao
-				// Uncomment the following makes the system not work
-				String buff = getOutput();
-				System.out.println("Erro in Main: "+error);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public String getOutput() {
-		try {
-			outputSem.acquire();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		String value = output;
-		outputSem.release();
-		return value;
-	}
-
-	public String getError() {
-		try {
-			errorSem.acquire();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		String value = error;
-		errorSem.release();
-		return value;
-	}
-
-	private String[] makeArray(String command) {
-		ArrayList<String> commandArray = new ArrayList<String>();
-		String buff = "";
-		boolean lookForEnd = false;
-		for (int i = 0; i < command.length(); i++) {
-			if (lookForEnd) {
-				if (command.charAt(i) == '\"') {
-					if (buff.length() > 0)
-						commandArray.add(buff);
-					buff = "";
-					lookForEnd = false;
-				} else {
-					buff += command.charAt(i);
-				}
-			} else {
-				if (command.charAt(i) == '\"') {
-					lookForEnd = true;
-				} else if (command.charAt(i) == ' ') {
-					if (buff.length() > 0)
-						commandArray.add(buff);
-					buff = "";
-				} else {
-					buff += command.charAt(i);
-				}
-			}
-		}
-		if (buff.length() > 0)
-			commandArray.add(buff);
-
-		String[] array = new String[commandArray.size()];
-		for (int i = 0; i < commandArray.size(); i++) {
-			array[i] = commandArray.get(i);
-		}
-
-		return array;
-	}
-}
-
-/*
-package com.googlecode.mrsqg.nlp;
-
-
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
-
-public class Cheap {
-	private Semaphore outputSem;
-	private String output;
-	private Semaphore errorSem;
-	private String error;
-	private Process p;
 	
-	public static void main(String args[]) {
-		Cheap e = new Cheap("cat");
-		
-	}
 
-	private class InputWriter extends Thread {
-		private String input;
-
-		public InputWriter(String input) {
-			this.input = input;
-		}
-
-		public void run() {
-			PrintWriter pw = new PrintWriter(p.getOutputStream());
-			pw.println(input);
-			pw.flush();
-		}
-	}
-
-	private class OutputReader extends Thread {
-		public OutputReader() {
-			try {
-				outputSem = new Semaphore(1);
-				outputSem.acquire();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		public void run() {
-			try {
-				StringBuffer readBuffer = new StringBuffer();
-				BufferedReader isr = new BufferedReader(new InputStreamReader(p
-						.getInputStream()));
-				String buff = new String();
-				while ((buff = isr.readLine()) != null) {
-					readBuffer.append(buff);
-					//System.out.println("Output: "+buff);
-				}
-				output = readBuffer.toString();
-				outputSem.release();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private class ErrorReader extends Thread {
-		public ErrorReader() {
-			try {
-				errorSem = new Semaphore(1);
-				errorSem.acquire();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		public void run() {
-			try {
-				StringBuffer readBuffer = new StringBuffer();
-				BufferedReader isr = new BufferedReader(new InputStreamReader(p
-						.getErrorStream()));
-				String buff = new String();
-				while ((buff = isr.readLine()) != null) {
-					readBuffer.append(buff);
-				}
-				error = readBuffer.toString();
-				errorSem.release();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			if (error.length() > 0)
-				System.out.println("Output: "+error);
-		}
-	}
-
-	public Cheap(String command, String input) {
-		try {
-			p = Runtime.getRuntime().exec(makeArray(command));
-			new InputWriter(input).start();
-			new OutputReader().start();
-			new ErrorReader().start();
-			p.waitFor();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-	protected static String readLine() {
-		try {
-			return new java.io.BufferedReader(new
-				java.io.InputStreamReader(System.in)).readLine();
-		}
-		catch(java.io.IOException e) {
-			return new String("");
-		}
-	}
-	public Cheap(String command) {
-		while (true) {
-			System.out.println("Input: ");
-			String input = readLine().trim();
-			if (input.length() == 0) continue;
-			if (input.equalsIgnoreCase("exit")) {
-				System.exit(0);
-			}
-			try {
-				p = Runtime.getRuntime().exec(command);
-				new InputWriter(input).start();
-				new OutputReader().start();
-				new ErrorReader().start();
-				//String buff = getOutput();
-				//System.out.println("Output: "+buff);
-				//p.waitFor();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
 
 	public String getOutput() {
 		try {
@@ -388,42 +299,4 @@ public class Cheap {
 		return value;
 	}
 
-	private String[] makeArray(String command) {
-		ArrayList<String> commandArray = new ArrayList<String>();
-		String buff = "";
-		boolean lookForEnd = false;
-		for (int i = 0; i < command.length(); i++) {
-			if (lookForEnd) {
-				if (command.charAt(i) == '\"') {
-					if (buff.length() > 0)
-						commandArray.add(buff);
-					buff = "";
-					lookForEnd = false;
-				} else {
-					buff += command.charAt(i);
-				}
-			} else {
-				if (command.charAt(i) == '\"') {
-					lookForEnd = true;
-				} else if (command.charAt(i) == ' ') {
-					if (buff.length() > 0)
-						commandArray.add(buff);
-					buff = "";
-				} else {
-					buff += command.charAt(i);
-				}
-			}
-		}
-		if (buff.length() > 0)
-			commandArray.add(buff);
-
-		String[] array = new String[commandArray.size()];
-		for (int i = 0; i < commandArray.size(); i++) {
-			array[i] = commandArray.get(i);
-		}
-
-		return array;
-	}
 }
-
-*/
