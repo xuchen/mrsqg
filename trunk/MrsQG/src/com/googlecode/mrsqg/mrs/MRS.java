@@ -152,12 +152,12 @@ public class MRS {
 		
 		public void startDocument ()
 	    {
-			System.out.println("Start document");
+			//System.out.println("Start document");
 	    }
 		
 		public void endDocument ()
 	    {
-			System.out.println("End document");
+			//System.out.println("End document");
 	    }
 	
 		public void startElement (String uri, String name,
