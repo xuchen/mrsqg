@@ -31,10 +31,13 @@ public class LKB {
 	
 	/**
 	 * LKB constructor 
+	 * @param quicktest true to only load LKB for testing purposes, 
+	 * false to also load ERG and generate index (which takes a while).
 	 */
-	public LKB() {
+	public LKB(boolean quicktest) {
 		String genCmd = "(index-for-generator)";
 		Properties prop = new Properties();
+		boolean display;
 		try { 
 			prop.load(new FileInputStream(propertyFile)); 
 		} catch (IOException e) {
@@ -55,16 +58,34 @@ public class LKB {
 			return;
 		}
 		
+		if (prop.getProperty("display").equalsIgnoreCase("yes")) {
+			display = true;
+		} else if (prop.getProperty("display").equalsIgnoreCase("no")) {
+			display = false;
+		} else {
+			log.error("the display option in conf/lkb.properties is not " +
+					"set properly: "+prop.getProperty("display")+". " +
+							"Assuming it's yes");
+			display = true;
+		}
+		
+		if (!display) {
+			lkb="DISPLAY=;"+lkb;
+		}
+		
 		try {
-			log.info("LKB is starting up, please wait...");
-			p = Runtime.getRuntime().exec(lkb);
+			log.info("LKB is starting up, please wait, wait, wait...");
+			String[] cmd = {"/bin/sh","-c",lkb};
+			p = Runtime.getRuntime().exec(cmd);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
 		}
 		
 		// load script and generate index for the generator
-		sendInput(scriptCmd+genCmd);
+		if (!quicktest) {
+			sendInput(scriptCmd+genCmd);
+		}
 		
 		// output LKB loading message
 		success = true;
@@ -74,8 +95,10 @@ public class LKB {
 		// one for genCmd.
 		// Thus 3 threads are needed to retrieve LKB output
 		log.info(getResult());
-		log.info(getResult());
-		log.info(getResult());
+		if (!quicktest) {
+			log.info(getResult());
+			log.info(getResult());
+		}
 		log.info("Initializing LKB done. Quite a while, huh?;-)\n");
 	}
 	
@@ -143,7 +166,7 @@ public class LKB {
 	
 	public static void main(String args[]) {
 		PropertyConfigurator.configure("conf/log4j.properties");
-		LKB lkb = new LKB();
+		LKB lkb = new LKB(true);
 		
 		if (! lkb.isSuccess()) {
 			log.fatal("LKB is not started properly.");
@@ -203,6 +226,7 @@ public class LKB {
 				BufferedReader isr = new BufferedReader(new InputStreamReader(p
 						.getInputStream()));
 				String buff = new String();
+				String jailbreak=null;
 				
                 int c;
 
@@ -218,7 +242,8 @@ public class LKB {
                 		// LKB(1): (with a space in the end) 
                 		// for efficiency reasons, we only compare int values first,
                 		// then do a regex match
-                		Matcher m = prompt.matcher(readBuffer.toString());
+                		jailbreak = readBuffer.toString();
+                		Matcher m = prompt.matcher(jailbreak);
                 		if (m.matches()) 
                 			break;
                 	}
@@ -226,7 +251,7 @@ public class LKB {
                 	ph=c;
                 }
 
-				output = readBuffer.toString();
+				output = jailbreak;
 				//System.out.println("OutputReader Thread: "+output);
 				outputSem.release();
 			} catch (IOException e) {
@@ -253,7 +278,9 @@ public class LKB {
 				String buff = new String();
 				while ((buff = isr.readLine()) != null) {
 					readBuffer.append(buff+"\n");
-					System.out.println("Error in readline: "+buff);
+					log.info("Error in stderr of LKB: "+buff);
+					log.info("System probably has hanged. " +
+							"Add jail-breaking code to escape!");
 				}
 				error = readBuffer.toString();
 				System.out.println("ErrorReader Thread: "+error);
