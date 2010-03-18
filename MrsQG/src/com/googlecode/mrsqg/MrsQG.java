@@ -1,19 +1,23 @@
 package com.googlecode.mrsqg;
 
+import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 import com.googlecode.mrsqg.nlp.indices.Prepositions;
 import com.googlecode.mrsqg.nlp.indices.WordFrequencies;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
 
 import com.googlecode.mrsqg.nlp.Cheap;
+import com.googlecode.mrsqg.nlp.LKB;
 import com.googlecode.mrsqg.nlp.LingPipe;
 import com.googlecode.mrsqg.nlp.NETagger;
 import com.googlecode.mrsqg.nlp.OpenNLP;
@@ -43,6 +47,11 @@ public class MrsQG {
 	 * a parser used for producing MRS in xml
 	 */
 	private Cheap parser = null;
+	
+	/**
+	 * LKB used for generation from MRS in xml
+	 */
+	private LKB lkb = null;
 	
 	/**
 	 * @return	a timestamp String for logging
@@ -93,7 +102,8 @@ public class MrsQG {
 			
 			if (input.startsWith("mrx: ")||input.startsWith("MRX: ")) {
 				String fileLine = input.substring(5).trim();
-				MrsTransformer t = new MrsTransformer(fileLine, p);
+				File file = new File(fileLine);
+				MrsTransformer t = new MrsTransformer(file, p);
 				t.transform();
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
@@ -109,7 +119,37 @@ public class MrsQG {
 				System.out.println(fsc);
 				// parsing fsc with cheap
 				parser.parse(fsc);
-				System.out.println(parser.getParsedMRSlist());
+				ArrayList<MRS> mrxList = parser.getParsedMRSlist();
+				String mrx;
+				MrsTransformer t;
+				if (mrxList != null) {
+					for (MRS m:mrxList) {
+						os = new ByteArrayOutputStream();
+						m.toXML(os);
+						mrx = os.toString();
+						
+						// generate from original sentence
+						lkb.sendMrxToGen(mrx);
+						log.info("\nGenerated sentences:");
+						log.info(lkb.getGenSentences());
+						
+						// transform
+						t = new MrsTransformer(mrx, p);
+						ArrayList<MRS> trMrsList = t.transform();
+						
+						// generate question
+						for (MRS mrs:trMrsList) {
+							os = new ByteArrayOutputStream();
+							mrs.toXML(os);
+							mrx = os.toString();
+							
+							// generate from original sentence
+							lkb.sendMrxToGen(mrx);
+							log.info("\nGenerated Questions:");
+							log.info(lkb.getGenSentences());
+						}
+					}
+				}
 				
 			} else {
 				p = new Preprocessor();
@@ -162,6 +202,17 @@ public class MrsQG {
 			
 			if (! parser.isSuccess()) {
 				log.error("cheap is not started properly.");
+			}
+		}
+		
+		// init the LKB generator
+		if (prop.getProperty("runLkbPipeline").equalsIgnoreCase("yes")) {
+			System.out.println("Creating LKB...");
+			// Set Cheap to take FSC as input 
+			lkb = new LKB(false);
+			
+			if (! lkb.isSuccess()) {
+				log.error("LKB is not started properly.");
 			}
 		}
 		

@@ -14,8 +14,6 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import com.googlecode.mrsqg.mrs.MRS;
-
 
 public class LKB {
 	
@@ -74,7 +72,7 @@ public class LKB {
 		}
 		
 		try {
-			log.info("LKB is starting up, please wait, wait, wait...");
+			log.info("LKB is starting up, please wait, wait, wait until you see \"Input: \"...\n");
 			String[] cmd = {"/bin/sh","-c",lkb};
 			p = Runtime.getRuntime().exec(cmd);
 		} catch (IOException e) {
@@ -94,10 +92,10 @@ public class LKB {
 		// one for scriptCmd,
 		// one for genCmd.
 		// Thus 3 threads are needed to retrieve LKB output
-		log.info(getResult());
+		log.info(getRawOutput());
 		if (!quicktest) {
-			log.info(getResult());
-			log.info(getResult());
+			log.info(getRawOutput());
+			log.info(getRawOutput());
 		}
 		log.info("Initializing LKB done. Quite a while, huh?;-)\n");
 	}
@@ -120,7 +118,7 @@ public class LKB {
 	 * Get result from stdout
 	 * @return the parsing result
 	 */
-	public String getResult () {
+	public String getRawOutput () {
 		if (!success) {
 			log.fatal("LKB is not working properly!");
 			return null;
@@ -131,6 +129,93 @@ public class LKB {
 
 		String result = getOutput();
 		return result;
+	}
+	
+	/**
+	 * Parse a raw LKB output and return all generated sentences
+	 * @param raw a raw LKB output
+	 * @return an ArrayList of generated sentences in raw
+	 */
+	public static ArrayList<String> parseGen (String raw) {
+
+		// sample raw generation output:
+/*
+ 		raw = "(\"Who was killed in Gary , Indiana on August 29 , 1958?\"\n" +
+				" \"Who was killed on August 29 , 1958 in Gary , Indiana?\")\n" +
+				"114832\n7517\n1080\n7843\n1049\n444\n726\n";
+				
+("Who was killed in Gary , Indiana on August 29 , 1958?"
+ "Who was killed on August 29 , 1958 in Gary , Indiana?")
+114832
+7517
+1080
+7843
+1049
+444
+726
+*/
+		ArrayList<String> genList = new ArrayList<String>();
+		
+		Pattern gen = Pattern.compile("\\(\"(.*)\"\\)\n(^\\d+$\n){7}", 
+				Pattern.MULTILINE|Pattern.DOTALL);
+
+		Matcher m = gen.matcher(raw);
+		String genStr;
+		
+		if (m.find()) {
+			genStr = m.group(1);
+		} else {
+			Pattern nil = Pattern.compile("NIL\n(^\\d+$\n){7}", 
+					Pattern.MULTILINE|Pattern.DOTALL);
+			m = nil.matcher(raw);
+			if (m.find()) {
+				log.warn("No generation from LKB");
+				log.warn("LKB output:\n"+raw);
+				return null;
+			} else {
+				log.warn("No matching, debug your code!");
+				log.warn("LKB output:\n"+raw);
+				return null;
+			}
+		}
+		
+		String[] list = genStr.split("\"\n? \"");
+		
+		if(list==null) {
+			log.warn("No split matching, debug your code!");
+			log.warn("generation String:\n"+genStr);
+			return null;
+		}
+		for (String s:list) {
+			genList.add(s);
+		}
+		
+		//System.out.println(genList);
+		return genList;
+	}
+	
+	/**
+	 * Get generated sentences after calling sendMrxToGen
+	 * @return an ArrayList of generated sentences in raw
+	 */
+	public ArrayList<String> getGenSentences () {
+		String raw = getRawOutput();
+		if (raw==null) return null;
+		return parseGen(raw);
+	}
+	
+	/**
+	 * Send an MRX string to the LKB generator
+	 * @param mrx A string containing an MRS in XML format
+	 */
+	public void sendMrxToGen (String mrx) {
+		// a quote " in an LKB string needs to be escaped 
+		String mrxCmd = mrx.replaceAll("\n","").replaceAll("\"", "\\\\\"");
+		
+		mrxCmd = "(lkb::generate-from-mrs (mrs::read-single-mrs-xml-from-string " +
+				"\""+mrxCmd+"\"))";
+		
+		sendInput(mrxCmd);
 	}
 	
 	/**
@@ -165,8 +250,10 @@ public class LKB {
 	}
 	
 	public static void main(String args[]) {
+				
 		PropertyConfigurator.configure("conf/log4j.properties");
-		LKB lkb = new LKB(true);
+
+		LKB lkb = new LKB(false);
 		
 		if (! lkb.isSuccess()) {
 			log.fatal("LKB is not started properly.");
@@ -181,8 +268,10 @@ public class LKB {
 				lkb.exit();
 				System.exit(0);
 			}
-			lkb.sendInput(input);
-			System.out.println(lkb.getResult());
+//			lkb.sendInput(input);
+//			System.out.println(lkb.getRawOutput());
+			lkb.sendMrxToGen(input);
+			System.out.println(lkb.getGenSentences());
 		}
 	}
 

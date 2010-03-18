@@ -1,5 +1,6 @@
 package com.googlecode.mrsqg;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -35,15 +36,22 @@ public class MrsTransformer {
 	 */
 	private ArrayList<MRS> gen_mrs;
 	
-	public MrsTransformer (String file, Preprocessor p) {
+	public MrsTransformer (File file, Preprocessor p) {
 		this.ori_mrs = new MRS(file);
 		this.pre = p;
 		this.gen_mrs = new ArrayList<MRS>();
 	}
 	
-	public void transform () {
+	public MrsTransformer (String mrx, Preprocessor p) {
+		this.ori_mrs = new MRS(mrx);
+		this.pre = p;
+		this.gen_mrs = new ArrayList<MRS>();
+	}
+	
+	public ArrayList<MRS> transform () {
+		//ArrayList<MRS> trMrsList = new ArrayList<MRS>();
 		Term[] terms = pre.getTerms()[0];
-		if (terms == null) return;
+		if (terms == null) return null;
 		
 		String neType;
 		ArrayList<ElementaryPredication> eps;
@@ -63,7 +71,7 @@ public class MrsTransformer {
 		q_mrs.changeFromUnkToNamed();
 		this.gen_mrs.add(q_mrs);
 		System.out.println("yes/no question:");
-		q_mrs.printXML();
+		q_mrs.toXML(System.out);
 		System.out.println(q_mrs);
 		
 		for (Term term:terms) {
@@ -125,7 +133,7 @@ public class MrsTransformer {
 						} catch (AssertionError e) {
 							log.error("In eps:\n"+eps+"\none should refer" +
 									"the other in RSTR field");
-							return;
+							return null;
 						}
 					}
 					// check whether hi and lo match HCONS
@@ -140,14 +148,14 @@ public class MrsTransformer {
 							} catch (AssertionError e) {
 								log.error("hi "+hi+" and lo "+lo+" don't match" +
 										" with HCONS: "+h);
-								return;
+								return null;
 							}
 						}
 					}
 					if (!match) {
 						log.error("hi "+hi+" and lo "+lo+" don't match" +
 								" with HCONS: "+q_mrs.getHcons());
-						return;
+						return null;
 					}
 					
 					// change hiEP to which_q_rel
@@ -200,11 +208,12 @@ public class MrsTransformer {
 				
 				q_mrs.changeFromUnkToNamed();
 				this.gen_mrs.add(q_mrs);
-				q_mrs.printXML();
+				q_mrs.toXML(System.out);
 				System.out.println(q_mrs);
 
 			}
 		}
+		return this.gen_mrs;
 	}
 
 	public static void main(String[] args) {
