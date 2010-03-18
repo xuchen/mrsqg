@@ -1,7 +1,9 @@
 package com.googlecode.mrsqg.mrs;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -77,9 +79,14 @@ public class MRS {
 		eps = new ArrayList<ElementaryPredication>();
 	}
 	
-	public MRS(String file) {
+	public MRS(File file) {
 		this();
 		parse(file);
+	}
+	
+	public MRS(String mrx) {
+		this();
+		parseString(mrx);
 	}
 	
 	/**
@@ -118,7 +125,7 @@ public class MRS {
 			this.chars = new StringBuilder();
 		}
 		
-		public void parse(String file) {
+		public void parse(File file) {
 			try {
 				XMLReader xr = XMLReaderFactory.createXMLReader();
 				MrsParser handler = new MrsParser();
@@ -387,7 +394,7 @@ public class MRS {
 	}
 	
 	
-	public void printXML() {
+	public void toXML(OutputStream os) {
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
 		// LKB doesn't support properly indented xml files. thus set indentation off.
 		of.setIndenting(false);
@@ -399,7 +406,7 @@ public class MRS {
 //		} catch (FileNotFoundException e) {
 //			e.printStackTrace();
 //		}
-		XMLSerializer serializer = new XMLSerializer(System.out,of);
+		XMLSerializer serializer = new XMLSerializer(os,of);
 		// SAX2.0 ContentHandler.
 		ContentHandler hd;
 		try {
@@ -467,7 +474,7 @@ public class MRS {
 	 * 
 	 * @param file an MRS XML fil
 	 */
-	public void parse(String file) {
+	public void parse(File file) {
 		this.parser.parse(file);
 		buildCoref();
 	}
@@ -507,9 +514,10 @@ public class MRS {
 	throws Exception {
 		MRS m = new MRS();
 		for(String file:args) {
-			m.parse(file);
+			File f = new File(file);
+			m.parse(f);
 			System.out.println("done");
-			m.printXML();
+			m.toXML(System.out);
 			System.out.println(m);
 		}
 	}
