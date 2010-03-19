@@ -173,7 +173,7 @@ public class LKB {
 				log.warn("LKB output:\n"+raw);
 				return null;
 			} else {
-				log.warn("No matching, debug your code!");
+				log.warn("No matching, probably due to LKB generation failure!");
 				log.warn("LKB output:\n"+raw);
 				return null;
 			}
@@ -196,6 +196,8 @@ public class LKB {
 	
 	/**
 	 * Get generated sentences after calling sendMrxToGen
+	 * Warning: this function can only be called once!
+	 * calling more than once WILL BLOCK THE PROGRAM!
 	 * @return an ArrayList of generated sentences in raw
 	 */
 	public ArrayList<String> getGenSentences () {

@@ -48,10 +48,9 @@ public class MrsTransformer {
 		this.gen_mrs = new ArrayList<MRS>();
 	}
 	
-	public ArrayList<MRS> transform () {
+	public ArrayList<MRS> transform (boolean print) {
 		//ArrayList<MRS> trMrsList = new ArrayList<MRS>();
 		Term[] terms = pre.getTerms()[0];
-		if (terms == null) return null;
 		
 		String neType;
 		ArrayList<ElementaryPredication> eps;
@@ -69,10 +68,15 @@ public class MrsTransformer {
 		v.getVar().setExtrapairValue("SF", "QUES");
 		
 		q_mrs.changeFromUnkToNamed();
+		q_mrs.setSentForce("Y/N");
 		this.gen_mrs.add(q_mrs);
-		System.out.println("yes/no question:");
-		q_mrs.toXML(System.out);
-		System.out.println(q_mrs);
+		if (print) {
+			log.info("yes/no question MRX:");
+			log.info(q_mrs.toMRXstring());
+			log.info(q_mrs);
+		}
+		
+		if (terms == null) return this.gen_mrs;
 		
 		for (Term term:terms) {
 			neType = Arrays.toString(term.getNeTypes());
@@ -133,7 +137,7 @@ public class MrsTransformer {
 						} catch (AssertionError e) {
 							log.error("In eps:\n"+eps+"\none should refer" +
 									"the other in RSTR field");
-							return null;
+							continue;
 						}
 					}
 					// check whether hi and lo match HCONS
@@ -148,14 +152,14 @@ public class MrsTransformer {
 							} catch (AssertionError e) {
 								log.error("hi "+hi+" and lo "+lo+" don't match" +
 										" with HCONS: "+h);
-								return null;
+								continue;
 							}
 						}
 					}
 					if (!match) {
 						log.error("hi "+hi+" and lo "+lo+" don't match" +
 								" with HCONS: "+q_mrs.getHcons());
-						return null;
+						continue;
 					}
 					
 					// change hiEP to which_q_rel
@@ -164,16 +168,25 @@ public class MrsTransformer {
 					// change loEP to person_rel
 					if (neType.contains("NEperson")) {
 						loEP.setPred("PERSON_REL");
-						System.out.println("who question:");
+						q_mrs.setSentForce("WHO");
+						if (print) {
+							log.info("who question MRX:");
+						}
 					}
 					else if (neType.contains("NElocation"))
 					{
 						loEP.setPred("PLACE_N_REL");
-						System.out.println("where question:");
+						q_mrs.setSentForce("WHERE");
+						if (print) {
+							log.info("where question MRX:");
+						}
 					}
 					else if (neType.contains("NEdate")) {
 						loEP.setPred("TIME_N_REL");
-						System.out.println("when question:");
+						q_mrs.setSentForce("WHEN");
+						if (print) {
+							log.info("when question MRX:");
+						}
 					}
 					if (neType.contains("NElocation") || neType.contains("NEdate"))
 					{
@@ -208,8 +221,10 @@ public class MrsTransformer {
 				
 				q_mrs.changeFromUnkToNamed();
 				this.gen_mrs.add(q_mrs);
-				q_mrs.toXML(System.out);
-				System.out.println(q_mrs);
+				if (print) {
+					log.info(q_mrs.toMRXstring());
+					log.info(q_mrs);
+				}
 
 			}
 		}
