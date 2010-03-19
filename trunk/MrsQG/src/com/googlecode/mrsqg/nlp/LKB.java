@@ -153,10 +153,25 @@ public class LKB {
 1049
 444
 726
+
+or:
+("Al Gore does live in Washington DC."
+ "Al Gore does live in Washington DC." ...)
+ 114832
+7517
+1080
+7843
+1049
+444
+726
+
+After proper formatting in sendMrsToGen(), it looks like:
+("Where does Al Gore live in?", "Where does Al Gore live in?", "In where does Al Gore live?")
+NIL
 */
 		ArrayList<String> genList = new ArrayList<String>();
 		
-		Pattern gen = Pattern.compile("\\(\"(.*)\"\\)\n(^\\d+$\n){7}", 
+		Pattern gen = Pattern.compile("\\(\"(.*)\"\\)\nNIL", 
 				Pattern.MULTILINE|Pattern.DOTALL);
 
 		Matcher m = gen.matcher(raw);
@@ -165,7 +180,10 @@ public class LKB {
 		if (m.find()) {
 			genStr = m.group(1);
 		} else {
-			Pattern nil = Pattern.compile("NIL\n(^\\d+$\n){7}", 
+			// for null, it generates:
+			//()
+			//NIL
+			Pattern nil = Pattern.compile("\\(\\)\nNIL", 
 					Pattern.MULTILINE|Pattern.DOTALL);
 			m = nil.matcher(raw);
 			if (m.find()) {
@@ -179,7 +197,7 @@ public class LKB {
 			}
 		}
 		
-		String[] list = genStr.split("\"\n? \"");
+		String[] list = genStr.split("\", \"");
 		
 		if(list==null) {
 			log.warn("No split matching, debug your code!");
@@ -214,8 +232,10 @@ public class LKB {
 		// a quote " in an LKB string needs to be escaped 
 		String mrxCmd = mrx.replaceAll("\n","").replaceAll("\"", "\\\\\"");
 		
-		mrxCmd = "(lkb::generate-from-mrs (mrs::read-single-mrs-xml-from-string " +
-				"\""+mrxCmd+"\"))";
+		// (format t "(~{\"~a\"~^, ~})" list)
+		// oh yeah, this is pain......
+		mrxCmd = "(format t \"(~{\\\"~a\\\"~\\^, ~})\" (lkb::generate-from-mrs (mrs::read-single-mrs-xml-from-string " +
+				"\""+mrxCmd+"\")))";
 		
 		sendInput(mrxCmd);
 	}
@@ -248,14 +268,14 @@ public class LKB {
 		}
 		
 		// force exit
-		sendInput("(excl:exit 0 :no-unwind t)\n");
+		sendInput("(excl:exit 0 :no-unwind t :quiet t)\n");
 	}
 	
 	public static void main(String args[]) {
 				
 		PropertyConfigurator.configure("conf/log4j.properties");
-
-		LKB lkb = new LKB(false);
+		boolean quicktest = false;
+		LKB lkb = new LKB(quicktest);
 		
 		if (! lkb.isSuccess()) {
 			log.fatal("LKB is not started properly.");
@@ -270,10 +290,13 @@ public class LKB {
 				lkb.exit();
 				System.exit(0);
 			}
-//			lkb.sendInput(input);
-//			System.out.println(lkb.getRawOutput());
-			lkb.sendMrxToGen(input);
-			System.out.println(lkb.getGenSentences());
+			if (quicktest) {
+				lkb.sendInput(input);
+				System.out.println(lkb.getRawOutput());
+			} else {
+				lkb.sendMrxToGen(input);
+				System.out.println(lkb.getGenSentences());
+			}
 		}
 	}
 

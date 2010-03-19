@@ -96,6 +96,7 @@ public class MrsQG {
 			if (input.length() == 0) continue;
 			if (input.equalsIgnoreCase("exit")) {
 				if (parser!=null) parser.exit();
+				if (lkb != null) lkb.exit();
 				log.info("MrsQG ended at "+getTimestamp());
 				System.exit(0);
 			}
@@ -139,6 +140,9 @@ public class MrsQG {
 						lkb.sendMrxToGen(mrx);
 						log.info("\nGenerate from original sentence:\n");
 						log.info(lkb.getGenSentences());
+						log.info("\nFrom the following MRS:\n");
+						log.info(mrx);
+						log.info(m);
 						
 						// transform
 						t = new MrsTransformer(mrx, p);

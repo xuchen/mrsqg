@@ -525,6 +525,10 @@ public class MRS {
 			list.add(mrs);
 		}
 		
+		if (list.size()==0) {
+			log.error("Cheap output:");
+			log.error("No parsed MRS from Cheap:\n"+multiline);
+		}
 		return list;
 	}
 	
