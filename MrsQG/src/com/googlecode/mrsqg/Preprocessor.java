@@ -2,6 +2,7 @@ package com.googlecode.mrsqg;
 
 
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -436,6 +437,22 @@ public class Preprocessor {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * This functions first calls preprocess() and then output
+	 * FSC XML by terms. 
+	 * @param input a raw sentence
+	 * @return a string representing FSC in XML 
+	 */
+	public String getFSCbyTerms(String input) {
+		
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		preprocess(input);
+		outputFSCbyTerms(os);
+		String fsc = os.toString();
+		
+		return fsc;
 	}
 	
 	public static void addDictionary(Dictionary dict) {

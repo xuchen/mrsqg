@@ -1,5 +1,6 @@
 package com.googlecode.mrsqg.mrs;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -41,6 +42,9 @@ public class MRS {
 	private String index = "";
 	// 2
 	private String index_vid = "";
+	// the type of sentence, e.g. PROP, WHEN, WHERE, etc
+	private String sent_force = "PROP";
+	
 	private ArrayList <ElementaryPredication> eps;
 	private ArrayList<HCONS> hcons;
 	private MrsParser parser = new MrsParser();
@@ -49,13 +53,17 @@ public class MRS {
 	public String getLabelVid() {return label_vid;}
 	public String getIndex() {return index;}
 	public String getIndexVid() {return index_vid;} 
+	public String getSentForce() {return sent_force;}
 	public ArrayList <ElementaryPredication> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
+	
+	public void setSentForce (String sentForce) {sent_force = sentForce;};
 
 	
 	@Override public String toString() {
 		StringBuilder res = new StringBuilder();
 		res.append("\n");
+		res.append("SentForce: "+sent_force+"\n");
 		// LTOP: h1
 		res.append("LTOP: "+ltop+"\n");
 		// INDEX: e2 [ e SF: PROP-OR-QUES TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
@@ -98,6 +106,7 @@ public class MRS {
 		this.label_vid = old.getLabelVid();
 		this.index = old.getIndex();
 		this.index_vid = old.getIndexVid();
+		this.sent_force = old.getSentForce();
 		this.eps = new ArrayList<ElementaryPredication>();
 		for (ElementaryPredication ep:old.getEps()) {
 			this.eps.add(new ElementaryPredication(ep));
@@ -132,7 +141,6 @@ public class MRS {
 				xr.setContentHandler(handler);
 				xr.setErrorHandler(handler);
 				
-
 				FileReader r = new FileReader(file);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
@@ -176,7 +184,7 @@ public class MRS {
 			if (qName.equals("mrs")) {
 				// if stack is not empty, then error
 				if (stack.empty() == false) {
-					System.err.println("Error, non-empty stack: " +
+					log.error("Error, non-empty stack: " +
 							"<mrs> shouldn't have parent element");
 				}
 			} else if (qName.equals("label")) {
@@ -194,10 +202,10 @@ public class MRS {
 					HCONS h = hcons.get(hcons.size()-1);
 					h.setLoLabel(atts.getValue("vid"));
 					h.setLo(atts.getValue("vid"));
-					System.err.println("Warning: <label> inisde <lo>. " +
+					log.error("Warning: <label> inisde <lo>. " +
 							"not in sample. check the code!");
 				} else {
-					System.err.println("file format error: unknown" +
+					log.error("file format error: unknown" +
 							"element label");
 				}
 			} else if (qName.equals("var")) {
@@ -213,7 +221,7 @@ public class MRS {
 					if (inEP) {
 						currentEP.processStartElement(qName, atts);
 					} else {
-						System.err.println("error: <fvpair> outside <ep>");
+						log.error("error: <fvpair> outside <ep>");
 					}
 				} else if (parent.equals("hi")) {
 					String sort = atts.getValue("sort");
@@ -230,7 +238,7 @@ public class MRS {
 					h.setLo(sort+vid);
 					h.setLoVar(new Var(atts));
 				} else {
-					System.err.println("file format error: unknown" +
+					log.error("file format error: unknown" +
 							"element var");
 				}
 			} else if (qName.equals("hcons")) {
@@ -245,7 +253,7 @@ public class MRS {
 				if (hreln.equals("lheq") || hreln.equals("outscopes")) {
 					// no such situation in sample files, need to complete
 					// this part once met
-					System.err.println("Manually check the code and complete it!");
+					log.error("Manually check the code and complete it!");
 				}
 				HCONS hcon = new HCONS(hreln);
 				hcons.add(hcon);
@@ -259,7 +267,7 @@ public class MRS {
 				currentEP.processStartElement(qName, atts);
 			} else if (qName.equals("hi") || qName.equals("lo")) {
 			} else {
-				System.err.println("Unknown element "+qName);
+				log.error("Unknown element "+qName);
 			}
 			chars = new StringBuilder();
 			stack.push(qName);
@@ -272,7 +280,7 @@ public class MRS {
 			} else if (qName.equals("hcons")) {
 				HCONS h = hcons.get(hcons.size()-1);
 				if (h.checkValid() == false) {
-					System.err.println("HCONS read error!");
+					log.error("HCONS read error!");
 				}
 			} else if (qName.equals("ep")) {
 				inEP = false;
@@ -380,7 +388,7 @@ public class MRS {
 	}
 	
 	/**
-	 * When FSC is input to cheap, NEs are labeld as NAMED_UNK_REL,
+	 * When FSC is input to cheap, NEs are labeled as NAMED_UNK_REL,
 	 * which generates the following error in LKB generation:
 	 * Warning: invalid predicates: |named_unk_rel("Washington DC")|
 	 * Changing named_unk_rel to NAMED_REL solves this (hopefully).
@@ -393,6 +401,16 @@ public class MRS {
 		}
 	}
 	
+	/**
+	 * get a string containing an MRX
+	 * @return a one-line string with an <mrs> element
+	 */
+	public String toMRXstring() {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		toXML(os);
+		String mrx = os.toString();
+		return mrx;
+	}
 	
 	public void toXML(OutputStream os) {
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);

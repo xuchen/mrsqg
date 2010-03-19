@@ -101,53 +101,68 @@ public class MrsQG {
 			}
 			
 			if (input.startsWith("mrx: ")||input.startsWith("MRX: ")) {
-				String fileLine = input.substring(5).trim();
+				String fileLine = input.substring(4).trim();
 				File file = new File(fileLine);
 				MrsTransformer t = new MrsTransformer(file, p);
-				t.transform();
+				t.transform(true);
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
-				input = input.substring(6).trim();
+				input = input.substring(5).trim();
 				
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				p.preprocess(input);
-				p.outputFSCbyTerms(os);
-				String fsc = os.toString();
+				String fsc = p.getFSCbyTerms(input);
+				log.info("\nFSC XML from preprocessing:\n");
+				log.info(fsc);
 				
-				System.out.println(fsc);
 				// parsing fsc with cheap
 				parser.parse(fsc);
+				// the number of MRS in the list depends on 
+				// the option "-results=" in cheap.
+				// Usually it's 3.
 				ArrayList<MRS> mrxList = parser.getParsedMRSlist();
+				
+				// TODO: add MRS selection here
+				
 				String mrx;
 				MrsTransformer t;
 				if (mrxList != null) {
+					int i=0;
 					for (MRS m:mrxList) {
-						os = new ByteArrayOutputStream();
-						m.toXML(os);
-						mrx = os.toString();
+						int countType = 0;
+						int countNum = 0;
+						i++;
+						m.changeFromUnkToNamed();
+						mrx = m.toMRXstring();
 						
 						// generate from original sentence
 						lkb.sendMrxToGen(mrx);
-						log.info("\nGenerated sentences:");
+						log.info("\nGenerate from original sentence:\n");
 						log.info(lkb.getGenSentences());
 						
 						// transform
 						t = new MrsTransformer(mrx, p);
-						ArrayList<MRS> trMrsList = t.transform();
+						ArrayList<MRS> trMrsList = t.transform(false);
 						
 						// generate question
-						for (MRS mrs:trMrsList) {
-							os = new ByteArrayOutputStream();
-							mrs.toXML(os);
-							mrx = os.toString();
+						for (MRS qmrs:trMrsList) {
+							mrx = qmrs.toMRXstring();
 							
 							// generate from original sentence
 							lkb.sendMrxToGen(mrx);
 							log.info("\nGenerated Questions:");
-							log.info(lkb.getGenSentences());
+							ArrayList<String> genSentList = lkb.getGenSentences();
+							if (genSentList != null) {
+								countType++;
+								countNum += genSentList.size();
+								log.info(genSentList);
+							}
+							log.info("\nFrom the following MRS:\n");
+							log.info(mrx);
+							log.info(qmrs);
 						}
+						log.info(String.format("Cheap MRS %d generates " +
+								"%d questions of %d types.", i, countNum, countType));
 					}
 				}
 				
@@ -293,6 +308,23 @@ public class MrsQG {
 			System.err.println("Could not create Stanford NE tagger.");
 				
 		System.out.println("  ...done");
+		System.out.println("Now turn off your email client, instant messenger, put a " +
+				"\"Do Not Disturb\" sign outside your door,\n\tsend your secretary home " +
+				", order a takeout and start working.;-)");
+		printUsage();
 	}
 	
+	public static void printUsage() {
+		System.out.println("\nUsage:");
+		System.out.println("\t1. Input the following line:");
+		System.out.println("\t\tpipe: a declrative sentence ending with a full stop.");
+		System.out.println("\t\tMrsQG generates a question through pipelines of PET and LKB.");
+		System.out.println("\t2. Input a declrative sentence at prompt, MrsQG generates the pre-processed FSC in XML.");
+		System.out.println("\t\tThen you can copy/paste this FSC into cheap to parse.");
+		System.out.println("\t3. Input the following line:");
+		System.out.println("\t\tmrx: an declrative MRS XML (MRX) file.");
+		System.out.println("\t\tMrsQG reads this MRX and transforms it into interrogative MRX.");
+		System.out.println("\t\tThen you can copy/paste the transformed MRX to LKB for generation.");
+		System.out.println();
+	}
 }
