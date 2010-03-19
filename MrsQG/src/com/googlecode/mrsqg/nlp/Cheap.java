@@ -145,7 +145,7 @@ public class Cheap {
 	 */
 	public ArrayList<MRS> getParsedMRSlist () {
 		ArrayList<String> mrxList = getParsedMrxString();
-		if (mrxList == null) return null;
+		if (mrxList == null || mrxList.size()==0) return null;
 		ArrayList<MRS> list = new ArrayList<MRS> ();
 		for (String s:mrxList) {
 			MRS m = new MRS();
@@ -310,6 +310,7 @@ public class Cheap {
 		String value = error;
 		errorSem.release();
 		if (value.contains("no lexicon entries for:")) {
+			log.error("Cheap output:");
 			log.error(value);
 			return null;
 		}
