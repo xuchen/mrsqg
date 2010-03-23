@@ -225,6 +225,68 @@ NIL
 	}
 	
 	/**
+	 * In case of a generation failure, send the (print-gen-summary)
+	 * cmd to LKB to get all the excerpts of *gen-chart*
+	 * @return an ArrayList containing all the edges of *gen-chart*
+	 */
+	public ArrayList<String> getFailedGenSentences () {
+		sendInput("(print-gen-summary)");
+		String raw = getRawOutput();
+		return parseFailedGen(raw);
+	}
+	
+	/**
+	 * From the cmd (print-gen-summary) LKB produces output like this:
+LKB(5): (print-gen-summary)
+------
+(Al Gore)
+(AL GORE,)
+(AL GORE.)
+(AL GORE?)
+(do)
+
+NIL
+LKB(6): 
+
+	 * This function accepts a raw string like above and return the list
+	 * of all strings inside ().
+	 * @param raw a raw String from the cmd (print-gen-summary)
+	 * @return a parsed ArrayList
+	 */
+	public static ArrayList<String>  parseFailedGen(String raw) {
+		ArrayList<String> genList = new ArrayList<String>();
+		
+		// match the whole string
+		Pattern genAll = Pattern.compile("-+.*NIL", 
+				Pattern.MULTILINE|Pattern.DOTALL);
+		
+		Matcher mAll = genAll.matcher(raw);
+		String genStr;
+		
+		if (mAll.find()) {
+			Pattern gen = Pattern.compile("\\((.*?)\\)\n");
+			Matcher m = gen.matcher(raw);
+			while (m.find()) {
+				genStr = m.group(1);
+				genList.add(genStr);
+			}
+			if (genList.size()==0) {
+				log.warn("No matching, no chart in *gen-chart* ?");
+				log.warn("LKB output:\n"+raw);
+				return null;
+			}
+		} else {
+			log.warn("No matching, (print-gen-summary) failed to run?");
+			log.warn("LKB output:\n"+raw);
+			return null;
+		}
+		
+
+
+		return genList;
+	}
+	
+	/**
 	 * Send an MRX string to the LKB generator
 	 * @param mrx A string containing an MRS in XML format
 	 */
@@ -296,6 +358,7 @@ NIL
 			} else {
 				lkb.sendMrxToGen(input);
 				System.out.println(lkb.getGenSentences());
+				//System.out.println(lkb.getFailedGenSentences());
 			}
 		}
 	}

@@ -160,6 +160,13 @@ public class MrsQG {
 								countType++;
 								countNum += genSentList.size();
 								log.info(genSentList);
+							} else {
+								// generation failure
+								genSentList = lkb.getFailedGenSentences();
+								if (genSentList != null) {
+									log.warn("Generation failure. *gen-chart* summary:");
+									log.warn(genSentList);
+								}
 							}
 							log.info("\nFrom the following MRS:\n");
 							log.info(mrx);
