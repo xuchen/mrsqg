@@ -1,6 +1,10 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.TreeMap;
 
 
 import org.apache.log4j.Logger;
@@ -51,10 +55,53 @@ public class ElementaryPredication {
 	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
 	
 	/**
+	 * return all "ARG*" values in this EP.
+	 * for instance, an EP looks like:
+	 * [ _like_v_1_rel<5:10>
+  	 * LBL: h8
+  	 * ARG0: e9
+  	 * ARG1: x6
+     * ARG2: x10
+	 * ]
+	 * then it returns a list containing "e9", "x6" and "x10"
+	 * 
+	 * @return a sorted ArrayList containing all "ARG*" values
+	 */
+	public ArrayList<String> getAllARGvalue() {
+		// TreeMap guarantees that the map will be in ascending key order
+		// so the returned values are sorted by their keys
+		TreeMap<String, String> map = new TreeMap<String, String>(); 
+		ArrayList<String> list = new ArrayList<String>();
+		for (FvPair fp:fvpair) {
+			if (fp.getRargname().startsWith("ARG")) {
+				map.put(fp.getRargname(), fp.getVar().getLabel());
+			}
+		}
+		for (String v:(String[])map.values().toArray(new String[0])) {
+			list.add(v);
+		}
+		return list;
+	}
+	
+	/**
+	 * return the ARG0 value of this EP, if any
+	 * @return the ARG0 value, or null if none
+	 */
+	public String getArg0() {
+		String arg0 = null;
+		for (FvPair fp:fvpair) {
+			if (fp.getRargname().equals("ARG0")) {
+				arg0 = fp.getVar().getLabel();
+				break;
+			}
+		}
+		return arg0;
+	}
+	/**
 	 * Return the label of a selected Var field.
 	 * 
 	 * @param s can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
-	 * @return a label, or null if not found
+	 * @return a label, such as "x3", or null if not found
 	 */
 	public String getVarLabel(String s) {
 		String label = null;
@@ -69,7 +116,7 @@ public class ElementaryPredication {
 	}
 	
 	/**
-	 * Return a FvPair with a specific label.
+	 * Delete a FvPair with a specific label.
 	 * 
 	 * @param s can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
 	 */

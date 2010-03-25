@@ -1,12 +1,12 @@
 package com.googlecode.mrsqg;
 
 import com.googlecode.mrsqg.mrs.MRS;
+import com.googlecode.mrsqg.mrs.decomposition.CoordDecomposer;
 import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 import com.googlecode.mrsqg.nlp.indices.Prepositions;
 import com.googlecode.mrsqg.nlp.indices.WordFrequencies;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -89,6 +89,7 @@ public class MrsQG {
 	 */
 	public void commandLine() {
 		Preprocessor p = null;
+		CoordDecomposer decomposer = new CoordDecomposer();
 		
 		while (true) {
 			System.out.println("Input: ");
@@ -117,6 +118,7 @@ public class MrsQG {
 				log.info(fsc);
 				
 				// parsing fsc with cheap
+				if (parser == null) continue;
 				parser.parse(fsc);
 				// the number of MRS in the list depends on 
 				// the option "-results=" in cheap.
@@ -125,9 +127,16 @@ public class MrsQG {
 				
 				// TODO: add MRS selection here
 				
+				// decomposition
+				ArrayList<MRS> decomposedMrxList = decomposer.decompose(mrxList);
+				
+				// temp
+				mrxList = decomposedMrxList;
+				
+				// generation
 				String mrx;
 				MrsTransformer t;
-				if (mrxList != null) {
+				if (mrxList != null && lkb != null) {
 					int i=0;
 					for (MRS m:mrxList) {
 						int countType = 0;
