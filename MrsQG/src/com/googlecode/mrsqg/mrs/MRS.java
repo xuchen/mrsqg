@@ -56,8 +56,12 @@ public class MRS {
 	public String getSentForce() {return sent_force;}
 	public ArrayList <ElementaryPredication> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
-	
 	public void setSentForce (String sentForce) {sent_force = sentForce;};
+	public void setIndex (String index) {
+		this.index = index;
+		// index usually looks like "e2".
+		this.index_vid = index.substring(1);
+	}
 
 	
 	@Override public String toString() {
@@ -318,6 +322,60 @@ public class MRS {
 	}
 	
 	/**
+	 * return the ElementaryPredication element with a label.
+	 * for instance, return the EP with a label "x2"
+	 * @param label the label of the EP, such as "x2"
+	 * @return an EP with the matching label
+	 */
+	public ElementaryPredication getEPbyLabel (String label) {
+		ElementaryPredication retEP = null;
+		for (ElementaryPredication ep:eps) {
+			if (ep.getLabel().equals(label)) {
+				retEP = ep;
+				break;
+			}
+		}
+		
+		return retEP;
+	}
+	
+	/**
+	 * get a list of the labels of all EPs
+	 * @return an ArrayList containing all the labels of EPS
+	 */
+	public ArrayList<String> getEPSlabelList () {
+		ArrayList<String> list = new ArrayList<String>();
+		for(ElementaryPredication ep:eps) {
+			list.add(ep.getLabel());
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * get a list of the handles of all EPs
+	 * In an EP like:
+	 * [ _like_v_1_rel<5:10>
+  	 * LBL: h8
+  	 * ARG0: e9
+  	 * ARG1: x6
+     * ARG2: x10
+	 * ]
+	 * h8 is label. e9, x6, x10 are handles
+	 * @return an ArrayList containing all the handles of EPS
+	 */
+	public ArrayList<String> getEPShandleList () {
+		ArrayList<String> list = new ArrayList<String>();
+		for(ElementaryPredication ep:eps) {
+			for (FvPair fp:ep.getFvpair()) {
+				list.add(fp.getHandle());
+			}
+		}
+		
+		return list;
+	}
+	
+	/**
 	 * Get the EP before cfrom and cto. This method is mainly used to
 	 * find out the preposition before a time/location term.
 	 * For instance, "in Germany", one EP is  _IN_P_REL ("in"),
@@ -388,6 +446,27 @@ public class MRS {
 	}
 	
 	/**
+	 * Given a hiLabel, check the corresponding loLabel in the list.
+	 * For instance, the list contains a "h1 qeq h2" relation, then
+	 * given a hiLabel "h1", the function returns the loLabel "h2"
+	 * @param hiLabel a hiLabel
+	 * @param list a list possibly containing the hiLabel
+	 * @return a corresponding loLabel in the list, or null if not found
+	 */
+	public static String getLoLabelFromHconsList (String hiLabel, ArrayList<HCONS> list) {
+		String loLabel = null;
+		if (hiLabel != null) {
+			for (HCONS h:list) {
+				if(h.getHi().equals(hiLabel)) {
+					loLabel = h.getLo();
+					break;
+				}
+			}
+		}
+		return loLabel;
+	}
+	
+	/**
 	 * When FSC is input to cheap, NEs are labeled as NAMED_UNK_REL,
 	 * which generates the following error in LKB generation:
 	 * Warning: invalid predicates: |named_unk_rel("Washington DC")|
@@ -399,6 +478,92 @@ public class MRS {
 				ep.setPred("NAMED_REL");
 			}
 		}
+	}
+	
+	/**
+	 * extract a new MRS from mrs, containing only EPs that are associated with label.
+	 * currently, the label should only of a predicate's label. for instance, an EP looks like:
+	 * [ _like_v_1_rel<5:10>
+  	 * LBL: h8
+  	 * ARG0: e9
+  	 * ARG1: x6
+     * ARG2: x10
+	 * ]
+	 * then all EPs with x6 and x10 as ARG0 are extracted. Those EPs make a new MRS.
+	 * @param label the label of the predicate
+	 * @param mrs the original mrs to be extracted from 
+	 * @return a new MRS with only EPs concerning label 
+	 */
+	public static MRS extractByLabel (String label, MRS mrs) {
+		MRS extracted = new MRS(mrs);
+		// targetEP is the one with a label as the label in the parameter 
+		ElementaryPredication targetEP = extracted.getEPbyLabel(label);
+		// targetEPS is a list of all EPs that have connections with targetEP
+ 
+		if (targetEP == null) {
+			log.error("Can't find the EP with a label" + label +" in MRS:\n" + mrs);
+			return null;
+		}
+		
+		ArrayList<String> argList = targetEP.getAllARGvalue();
+		if (argList.size() <= 1) {
+			log.warn("the EP "+targetEP+" contains less than 2 ARG." +
+					" Decomposition will probably fail.");
+		}
+		
+		// suppose targetEP is the main predicate of the sentence,
+		// then the main event would be ARG0 of targetEP.
+		String event = argList.get(0);
+		if (event.startsWith("e")) {
+			extracted.setIndex(event);
+		} else {
+			log.error("ARG0 of EP isn't an event: "+targetEP);
+		}
+		
+		// Remove all EPs whose ARG0 is not associated with ARG* of targetEP
+		// TODO: this is only the simplest case. A good algorithm should do it
+		// recursively: other relevant EPs might be attached to EPs which are 
+		// not targetEP
+		ArrayList<ElementaryPredication> copy = new ArrayList<ElementaryPredication>(extracted.getEps());
+		for (ElementaryPredication ep:copy) {
+			if (!argList.contains(ep.getArg0())) {
+				if (!extracted.removeEP(ep)) {
+					log.error("Error: EP " +ep+ " can't be removed from MRS:\n" + extracted);
+				}
+			}
+		}
+		
+		// clean up HCONS list
+		ArrayList<String> labelList = extracted.getEPSlabelList();
+		ArrayList<String> handleList = extracted.getEPShandleList();
+		ArrayList<HCONS> hcopy = new ArrayList<HCONS>(extracted.getHcons()); 
+		for (HCONS h:hcopy) {
+			if (!handleList.contains(h.getHi()) || !labelList.contains(h.getLo())) {
+				if (!extracted.removeHCONS(h)) {
+					log.error("Error: HCONS "+h+" can't be removed from MRS:\n" + extracted);
+				}
+			}
+		}
+		
+		return extracted;
+	}
+	
+	/**
+	 * remove ep from the EPS list
+	 * @param ep the ep to be removed
+	 * @return success status
+	 */
+	public boolean removeEP (ElementaryPredication ep) {
+		return eps.remove(ep);
+	}
+	
+	/**
+	 * remove h from the hcons list
+	 * @param h the HCONS to be removed
+	 * @return success status
+	 */
+	public boolean removeHCONS (HCONS h) {
+		return hcons.remove(h);
 	}
 	
 	/**
