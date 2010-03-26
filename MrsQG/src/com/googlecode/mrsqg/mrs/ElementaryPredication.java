@@ -3,6 +3,7 @@ package com.googlecode.mrsqg.mrs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.TreeMap;
 
@@ -65,8 +66,20 @@ public class ElementaryPredication {
 	 * ]
 	 * then it returns a list containing "e9", "x6" and "x10"
 	 * 
-	 * @return a sorted ArrayList containing all "ARG*" values
+	 * @return a HashSet containing all "ARG*" values
 	 */
+	public HashSet<String> getAllARGvalue() {
+
+		HashSet<String> set = new HashSet<String>();
+		for (FvPair fp:fvpair) {
+			if (fp.getRargname().startsWith("ARG")) {
+				set.add(fp.getVar().getLabel());
+			}
+		}
+
+		return set;
+	}
+	/*
 	public ArrayList<String> getAllARGvalue() {
 		// TreeMap guarantees that the map will be in ascending key order
 		// so the returned values are sorted by their keys
@@ -82,6 +95,7 @@ public class ElementaryPredication {
 		}
 		return list;
 	}
+	*/
 	
 	/**
 	 * return the ARG0 value of this EP, if any
