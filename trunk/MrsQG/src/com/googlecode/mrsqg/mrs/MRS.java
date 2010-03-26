@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -505,15 +506,16 @@ public class MRS {
 			return null;
 		}
 		
-		ArrayList<String> argList = targetEP.getAllARGvalue();
-		if (argList.size() <= 1) {
+		HashSet<String> argSet = targetEP.getAllARGvalue();
+		HashSet<String> referredLabelSet = extracted.getAllReferredLabelByEP(targetEP);
+		if (argSet.size() <= 1) {
 			log.warn("the EP "+targetEP+" contains less than 2 ARG." +
 					" Decomposition will probably fail.");
 		}
 		
 		// suppose targetEP is the main predicate of the sentence,
 		// then the main event would be ARG0 of targetEP.
-		String event = argList.get(0);
+		String event = targetEP.getArg0();
 		if (event.startsWith("e")) {
 			extracted.setIndex(event);
 		} else {
@@ -523,10 +525,11 @@ public class MRS {
 		// Remove all EPs whose ARG0 is not associated with ARG* of targetEP
 		// TODO: this is only the simplest case. A good algorithm should do it
 		// recursively: other relevant EPs might be attached to EPs which are 
-		// not targetEP
+		// not targetEP (Currently also consider the labels of relevant 
+		// EPs who have ARG0 in the argSet of targetEP -- so it's not that simple case).
 		ArrayList<ElementaryPredication> copy = new ArrayList<ElementaryPredication>(extracted.getEps());
 		for (ElementaryPredication ep:copy) {
-			if (!argList.contains(ep.getArg0())) {
+			if (!argSet.contains(ep.getArg0()) && !referredLabelSet.contains(ep.getLabel())) {
 				if (!extracted.removeEP(ep)) {
 					log.error("Error: EP " +ep+ " can't be removed from MRS:\n" + extracted);
 				}
@@ -548,6 +551,29 @@ public class MRS {
 		return extracted;
 	}
 	
+	/**
+	 * An EP refers to other EPs by the ARG* values. This method retrieves the labels
+	 * of all EPs which are referred by the ARG* values of ep.
+	 * @param ep An EP which has ARG* entries 
+	 * @return a HashSet of labels referred by the ARG* of this ep
+	 */
+	public HashSet<String> getAllReferredLabelByEP (ElementaryPredication ep) {
+		HashSet<String> labelSet = new HashSet<String>();
+		
+		labelSet.add(ep.getLabel());
+		HashSet<String> argList = ep.getAllARGvalue();
+		
+		for (ElementaryPredication e:getEps()) {
+			for (String label:argList) {
+				if (e.getArg0().equals(label)) {
+					labelSet.add(e.getLabel());
+					break;
+				}
+			}
+		}
+		
+		return labelSet;
+	}
 	/**
 	 * remove ep from the EPS list
 	 * @param ep the ep to be removed
