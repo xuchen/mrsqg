@@ -424,9 +424,26 @@ public class MRS {
 				}
 			}
 		}
-		
 		return null;
-		
+	}
+	
+	/**
+	 * find out an EP whose Rargname matches name and whose Var's label matches label
+	 *  
+	 * @param Rargname, such as "ARG0"
+	 * @param label label of Var, such as "e2"
+	 * @return a matching EP
+	 */
+	public ElementaryPredication getEPbyRargnameAndIndex (String name, String label) {
+		if (label==null) return null;
+		for (ElementaryPredication ep:this.eps) {
+			for (FvPair f: ep.getFvpair()) {
+				if (f.getRargname().equals(name) && f.getVar().getLabel().equals(label)) {
+					return ep;
+				}
+			}
+		}
+		return null;
 	}
 	
 	public void addEPtoEPS (ElementaryPredication ep) {
@@ -451,7 +468,7 @@ public class MRS {
 	 * For instance, the list contains a "h1 qeq h2" relation, then
 	 * given a hiLabel "h1", the function returns the loLabel "h2"
 	 * @param hiLabel a hiLabel
-	 * @param list a list possibly containing the hiLabel
+	 * @param list a list possibly containing the loLabel
 	 * @return a corresponding loLabel in the list, or null if not found
 	 */
 	public static String getLoLabelFromHconsList (String hiLabel, ArrayList<HCONS> list) {
@@ -465,6 +482,27 @@ public class MRS {
 			}
 		}
 		return loLabel;
+	}
+	
+	/**
+	 * Given a loLabel, check the corresponding HiLabel in the list.
+	 * For instance, the list contains a "h1 qeq h2" relation, then
+	 * given a loLabel "h2", the function returns the hiLabel "h1"
+	 * @param loLabel a loLabel
+	 * @param list a list possibly containing the hiLabel
+	 * @return a corresponding hiLabel in the list, or null if not found
+	 */
+	public static String getHiLabelFromHconsList (String loLabel, ArrayList<HCONS> list) {
+		String hiLabel = null;
+		if (loLabel != null) {
+			for (HCONS h:list) {
+				if(h.getLo().equals(loLabel)) {
+					hiLabel = h.getHi();
+					break;
+				}
+			}
+		}
+		return hiLabel;
 	}
 	
 	/**

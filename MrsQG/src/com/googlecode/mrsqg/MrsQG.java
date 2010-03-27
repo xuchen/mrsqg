@@ -131,7 +131,8 @@ public class MrsQG {
 				ArrayList<MRS> decomposedMrxList = decomposer.decompose(mrxList);
 				
 				// temp
-				mrxList = decomposedMrxList;
+				if (decomposedMrxList.size() != 0)
+					mrxList = decomposedMrxList;
 				
 				// generation
 				String mrx;
