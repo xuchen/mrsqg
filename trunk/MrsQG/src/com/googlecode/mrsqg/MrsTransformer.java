@@ -52,7 +52,6 @@ public class MrsTransformer {
 		//ArrayList<MRS> trMrsList = new ArrayList<MRS>();
 		Term[] terms = pre.getTerms()[0];
 		
-		String neType;
 		ArrayList<ElementaryPredication> eps;
 		
 		// generate yes/no question
@@ -79,46 +78,32 @@ public class MrsTransformer {
 		if (terms == null) return this.gen_mrs;
 		
 		for (Term term:terms) {
-			neType = Arrays.toString(term.getNeTypes());
-			if (neType.length()==0) {
-				log.error("NE types shouldn't be none: "+term);
-			}
-			
-			if (neType.contains("NEperson")||neType.contains("NElocation")
-					||neType.contains("NEdate")) {
+			for (String neType:term.getNeTypes()) {
+				//neType = Arrays.toString(term.getNeTypes());
+				if (neType.length()==0) {
+					log.error("NE types shouldn't be none: "+term);
+				}
+				
+				//if (neType.contains("NEperson")||neType.contains("NElocation")||neType.contains("NEdate"))
 				q_mrs = new MRS(ori_mrs);
 				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
 				String hi, lo, rstr;
 				ElementaryPredication hiEP, loEP;
 				if (eps.size() == 1) {
-					/*
-					 * It seems in a well-formed MRS, eps.size() is always 2.
-					 * when eps.size() is 1, just use another MRS input.
-					 */
-					log.debug("the size of eps is 1: "+eps);
-					continue;
-					/*
 					loEP = eps.get(0);
-					// change loEP to person_rel
-					loEP.setPred("PERSON_REL");
-					loEP.delFvpair("CARG");
-					String[] extra = {"NUM", "PERS"};
-					loEP.keepExtrapairInFvpair("ARG0", extra);
-					
-					// add a new WHICH_Q_REL hiEP linked to this loEP
-					// Warning: after deep copy, ARG0 of hiEP and loEP are not
-					// linked together, but it doesn't matter here in simple generation
-					hiEP = new ElementaryPredication(loEP);
-					hiEP.setPred("WHICH_Q_REL");
-					// Temporarily assign 100 for testing
-					hiEP.setLabelVid("100");
-					hi="h100";
-					rstr="h101";
-					hiEP.addSimpleFvpair("RSTR", "101", "h");
-					hiEP.addSimpleFvpair("BODY", "102", "h");
-					q_mrs.addEPtoEPS(hiEP);
-					q_mrs.addToHCONSsimple("qeq", "101", "h", loEP.getLabelVid(), "h");
-					*/
+					lo = loEP.getLabel();
+					// hiEP should be found through a qeq relation
+					hi = MRS.getHiLabelFromHconsList(lo, q_mrs.getHcons());
+					hiEP = q_mrs.getEPbyRargnameAndIndex("RSTR", hi);
+					if (hi==null||hiEP==null) {
+						/*
+						 * It seems in a well-formed MRS, eps.size() is always 2.
+						 * when eps.size() is 1, just use another MRS input.
+						 */
+						log.warn("the size of eps is 1: "+eps);
+						log.warn("Can't find a qeq relation for "+lo+" in "+q_mrs.getHcons());
+						continue;
+					}
 				} else if (eps.size() == 2) {
 					// one is hi, the other is lo in a qeq relation
 
@@ -136,7 +121,7 @@ public class MrsTransformer {
 							assert lo == rstr;
 						} catch (AssertionError e) {
 							log.error("In eps:\n"+eps+"\none should refer" +
-									"the other in RSTR field");
+							"the other in RSTR field");
 							continue;
 						}
 					}
@@ -161,64 +146,68 @@ public class MrsTransformer {
 								" with HCONS: "+q_mrs.getHcons());
 						continue;
 					}
-					
-					// change hiEP to which_q_rel
-					hiEP.setPred("WHICH_Q_REL");
-					
-					// change loEP to person_rel
-					if (neType.contains("NEperson")) {
-						loEP.setPred("PERSON_REL");
-						q_mrs.setSentForce("WHO");
-						if (print) {
-							log.info("who question MRX:");
-						}
-					}
-					else if (neType.contains("NElocation"))
-					{
-						loEP.setPred("PLACE_N_REL");
-						q_mrs.setSentForce("WHERE");
-						if (print) {
-							log.info("where question MRX:");
-						}
-					}
-					else if (neType.contains("NEdate")) {
-						loEP.setPred("TIME_N_REL");
-						q_mrs.setSentForce("WHEN");
-						if (print) {
-							log.info("when question MRX:");
-						}
-					}
-					if (neType.contains("NElocation") || neType.contains("NEdate"))
-					{
-						ElementaryPredication ppEP = q_mrs.getEPbefore(term.getCfrom(), term.getCto());
-						String pp = this.pre.getPrepositionBeforeTerm(term, 0);
-						// change the preposition (if any) before the term
-						if (pp!=null && ppEP.getPred()!=null && 
-								ppEP.getPred().substring(0, pp.length()+1).toLowerCase().contains(pp.toLowerCase())) {
-							// the Pred of an "in" preposition EP is something like: _in_p_
-							// so the first 3 chars _in must contain "in"
-							ppEP.setPred("LOC_NONSP_REL");
-						}
-
-					}
-					loEP.delFvpair("CARG");
-					String[] extra = {"NUM", "PERS"};
-					loEP.keepExtrapairInFvpair("ARG0", extra);
 				} else {
 					log.error("the size of eps isn't 1 or 2: "+eps);
 					continue;
 				}
+
+				// change hiEP to which_q_rel
+				hiEP.setPred("WHICH_Q_REL");
+
+				// change loEP to person_rel
+				if (neType.equals("NEperson")) {
+					loEP.setPred("PERSON_REL");
+					q_mrs.setSentForce("WHO");
+					if (print) {
+						log.info("who question MRX:");
+					}
+				} else if (neType.equals("NElocation")) {
+					loEP.setPred("PLACE_N_REL");
+					q_mrs.setSentForce("WHERE");
+					if (print) {
+						log.info("where question MRX:");
+					}
+				} else if (neType.equals("NEdate")) {
+					loEP.setPred("TIME_N_REL");
+					q_mrs.setSentForce("WHEN");
+					if (print) {
+						log.info("when question MRX:");
+					}
+				} else {
+					loEP.setPred("THING_REL");
+					q_mrs.setSentForce("WHAT");
+					if (print) {
+						log.info("what question MRX:");
+					}
+				}
+				if (neType.equals("NElocation") || neType.equals("NEdate"))
+				{
+					ElementaryPredication ppEP = q_mrs.getEPbefore(term.getCfrom(), term.getCto());
+					String pp = this.pre.getPrepositionBeforeTerm(term, 0);
+					// change the preposition (if any) before the term
+					if (pp!=null && ppEP.getPred()!=null && 
+							ppEP.getPred().substring(0, pp.length()+1).toLowerCase().contains(pp.toLowerCase())) {
+						// the Pred of an "in" preposition EP is something like: _in_p_
+						// so the first 3 chars _in must contain "in"
+						ppEP.setPred("LOC_NONSP_REL");
+					}
+
+				}
+				loEP.delFvpair("CARG");
+				String[] extra = {"NUM", "PERS"};
+				loEP.keepExtrapairInFvpair("ARG0", extra);
+
 				// change SF to "QUES"
 				// e2
 				index = q_mrs.getIndex();
 				v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
 				if (v==null) {
 					log.error("FvPair ARG0: "+index+" not found! " +
-							"can't set SF to QUES!");
+					"can't set SF to QUES!");
 					continue;
 				}
 				v.getVar().setExtrapairValue("SF", "QUES");
-				
+
 				q_mrs.changeFromUnkToNamed();
 				this.gen_mrs.add(q_mrs);
 				if (print) {

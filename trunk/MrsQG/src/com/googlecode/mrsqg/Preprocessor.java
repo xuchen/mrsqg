@@ -51,11 +51,11 @@ public class Preprocessor {
 	Term[][] getTerms () {return this.terms;}
 	
 	public boolean preprocess (String sents) {
-		log.debug("Preprocessing");
+		log.info("Preprocessing");
 		
 		String[] originalSentences = OpenNLP.sentDetect(sents);
 		this.countOfSents = originalSentences.length;
-		log.debug("Count of original one: "+countOfSents);
+		log.info("Count of original one: "+countOfSents);
 		
 		String original;
 		this.tokens = new String[countOfSents][];
@@ -63,7 +63,7 @@ public class Preprocessor {
 		this.sentences = new String[countOfSents];
 		for (int i = 0; i < countOfSents; i++) {
 			original = originalSentences[i];
-			log.debug("Sentence "+i+" :"+original);
+			log.info("Sentence "+i+" :"+original);
 			tokens[i] = NETagger.tokenize(original);
 			pos[i] = OpenNLP.tagPos(tokens[i]);
 			sentences[i] = StringUtils.concatWithSpaces(this.tokens[i]);
@@ -77,9 +77,9 @@ public class Preprocessor {
 				original = originalSentences[i];
 				this.terms[i] = TermExtractor.getTerms(original, "", this.nes[i],
 						Preprocessor.getDictionaries());
-				log.debug("Sentence "+i+" terms:");
+				log.info("Sentence "+i+" terms:");
 				for (int j=0; j<this.terms[i].length; j++) {
-					log.debug(this.terms[i][j]+"  ");
+					log.info(this.terms[i][j]+"  ");
 				}
 			}
 		}
@@ -95,7 +95,9 @@ public class Preprocessor {
 	 */
 	public String getPrepositionBeforeTerm (Term t, int sentNum) {
 		String p = null;
-		String pPos = pos[sentNum][t.getFrom()-1];
+		int start = t.getFrom()-1;
+		if (start < 0) start = 0;
+		String pPos = pos[sentNum][start];
 		if (pPos.equalsIgnoreCase("IN")) {
 			p = tokens[sentNum][t.getFrom()-1];
 		}

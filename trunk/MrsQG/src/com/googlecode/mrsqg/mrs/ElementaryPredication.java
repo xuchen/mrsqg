@@ -1,12 +1,7 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.TreeMap;
-
 
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
