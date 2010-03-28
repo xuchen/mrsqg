@@ -68,6 +68,7 @@ public class MrsTransformer {
 		
 		q_mrs.changeFromUnkToNamed();
 		q_mrs.setSentForce("Y/N");
+		q_mrs.setAllSF2QUES();
 		this.gen_mrs.add(q_mrs);
 		if (print) {
 			log.info("yes/no question MRX:");
@@ -198,15 +199,16 @@ public class MrsTransformer {
 				loEP.keepExtrapairInFvpair("ARG0", extra);
 
 				// change SF to "QUES"
+				q_mrs.setAllSF2QUES();
 				// e2
-				index = q_mrs.getIndex();
-				v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
-				if (v==null) {
-					log.error("FvPair ARG0: "+index+" not found! " +
-					"can't set SF to QUES!");
-					continue;
-				}
-				v.getVar().setExtrapairValue("SF", "QUES");
+//				index = q_mrs.getIndex();
+//				v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
+//				if (v==null) {
+//					log.error("FvPair ARG0: "+index+" not found! " +
+//					"can't set SF to QUES!");
+//					continue;
+//				}
+//				v.getVar().setExtrapairValue("SF", "QUES");
 
 				q_mrs.changeFromUnkToNamed();
 				this.gen_mrs.add(q_mrs);

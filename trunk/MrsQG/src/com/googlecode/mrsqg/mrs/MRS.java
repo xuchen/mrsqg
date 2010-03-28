@@ -9,6 +9,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -515,6 +516,40 @@ public class MRS {
 		for (ElementaryPredication ep:this.eps) {
 			if (ep.getPred()!=null && ep.getPred().equalsIgnoreCase("NAMED_UNK_REL")) {
 				ep.setPred("NAMED_REL");
+			}
+		}
+	}
+	
+	/**
+	 * Get all the extra pairs in this MRS. Extra pairs are sth. like: [TENSE: PRES] 
+	 * encoded in XML: <extrapair><path>TENSE</path><value>PRES</value></extrapair>
+	 * @return an ArrayList of all extra pairs
+	 */
+	public ArrayList<LinkedHashMap<String, String>> getExtrapair () {
+		ArrayList<LinkedHashMap<String, String>> list = new ArrayList<LinkedHashMap<String, String>>();
+		Var v;
+		LinkedHashMap<String, String> p;
+		for (ElementaryPredication ep:this.eps) {
+			for (FvPair f: ep.getFvpair()) {
+				if((v=f.getVar())!= null) {
+					if ((p=v.getExtrapair())!=null) {
+						list.add(p);
+					}
+				}
+			}
+		}
+
+		return list;
+	}
+	
+	/**
+	 * Set the sentence force of all events variables to "QUES". Theoretically only
+	 * the events of predicates should be set, but practically all of them are set.
+	 */
+	public void setAllSF2QUES () {
+		for (LinkedHashMap<String, String> p:getExtrapair()) {
+			if (p.get("SF")!=null) {
+				p.put("SF", "QUES");
 			}
 		}
 	}
