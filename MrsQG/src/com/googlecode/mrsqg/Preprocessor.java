@@ -64,7 +64,8 @@ public class Preprocessor {
 		for (int i = 0; i < countOfSents; i++) {
 			original = originalSentences[i];
 			log.info("Sentence "+i+" :"+original);
-			tokens[i] = NETagger.tokenize(original);
+			//tokens[i] = NETagger.tokenize(original);
+			tokens[i] = OpenNLP.tokenize(original);
 			pos[i] = OpenNLP.tagPos(tokens[i]);
 			sentences[i] = StringUtils.concatWithSpaces(this.tokens[i]);
 		}

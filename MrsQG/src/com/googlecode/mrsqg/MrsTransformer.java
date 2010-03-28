@@ -163,10 +163,12 @@ public class MrsTransformer {
 						log.info("who question MRX:");
 					}
 				} else if (neType.equals("NElocation")) {
-					loEP.setPred("PLACE_N_REL");
-					q_mrs.setSentForce("WHERE");
+//					loEP.setPred("PLACE_N_REL");
+//					q_mrs.setSentForce("WHERE");
+					loEP.setPred("THING_REL");
+					q_mrs.setSentForce("WHAT");
 					if (print) {
-						log.info("where question MRX:");
+						log.info("what question MRX:");
 					}
 				} else if (neType.equals("NEdate")) {
 					loEP.setPred("TIME_N_REL");
@@ -191,6 +193,11 @@ public class MrsTransformer {
 						// the Pred of an "in" preposition EP is something like: _in_p_
 						// so the first 3 chars _in must contain "in"
 						ppEP.setPred("LOC_NONSP_REL");
+						loEP.setPred("PLACE_N_REL");
+						q_mrs.setSentForce("WHERE");
+						if (print) {
+							log.info("what question MRX:");
+						}
 					}
 
 				}
