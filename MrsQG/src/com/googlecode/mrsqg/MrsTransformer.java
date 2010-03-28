@@ -155,7 +155,7 @@ public class MrsTransformer {
 				hiEP.setPred("WHICH_Q_REL");
 
 				// change loEP to person_rel
-				if (neType.equals("NEperson")) {
+				if (neType.equals("NEperson")||neType.equals("NEfirstName")) {
 					loEP.setPred("PERSON_REL");
 					q_mrs.setSentForce("WHO");
 					if (print) {

@@ -1,15 +1,24 @@
-/**
- * 
- */
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
+ * Coordination decomposer. For coordinating conjunctions 
+ * (for, and, nor, but, or, yet, so) in English, 
+ * it finds "and"/"but"/"or" and decompose the sentence into (two)
+ * different simpler ones. For instance:
+ * "John likes Mary a little but hates Anna very much." ->
+ * "John likes Mary a little. John hates Anna very much."
+ * "John likes Anna a little and Peter hates Anna very much."
+ * "John likes Anna a little. Peter hates Anna very much."
+ * 
  * @author Xuchen Yao
  *
  */
@@ -21,6 +30,8 @@ public class CoordDecomposer implements MrsDecomposer {
 	 * @see com.googlecode.mrsqg.mrs.decomposition.MrsDecomposer#decompose(java.util.ArrayList)
 	 */
 	public ArrayList<MRS> decompose(ArrayList<MRS> inList) {
+		String[] coordEP = new String[]{"_AND_C_REL", "_OR_C_REL", "_BUT_C_REL"};
+		List<String> coordEPlist = Arrays.asList(coordEP);
 		
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 		// TODO: recursive case (multiple coordinations)
@@ -28,7 +39,7 @@ public class CoordDecomposer implements MrsDecomposer {
 			for (ElementaryPredication ep:mrs.getEps()) {
 				String pred = ep.getPred();
 				if (pred==null) pred = ep.getSpred();
-				if (pred.equalsIgnoreCase("_AND_C_REL") ) {
+				if (coordEPlist.contains(pred)) {
 					String lHndl = ep.getVarLabel("L-HNDL");
 					String rHndl = ep.getVarLabel("R-HNDL");
 					if (lHndl != null && rHndl != null) {

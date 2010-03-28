@@ -128,11 +128,11 @@ public class MrsQG {
 				// TODO: add MRS selection here
 				
 				// decomposition
-				ArrayList<MRS> decomposedMrxList = decomposer.decompose(mrxList);
-				
-				// temp
-				if (decomposedMrxList.size() != 0)
-					mrxList = decomposedMrxList;
+//				ArrayList<MRS> decomposedMrxList = decomposer.decompose(mrxList);
+//				
+//				// add decomposed list to the front the original list
+//				if (decomposedMrxList.size() != 0)
+//					mrxList.addAll(0, decomposedMrxList);
 				
 				// generation
 				String mrx;
