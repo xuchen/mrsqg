@@ -27,7 +27,27 @@ import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 
-
+/**
+ * An MRS representation class.<p>
+ * Naming convention: <br/>
+ * In an example EP: <br/>
+ * [ <br/>
+ *   _poet_n_1_rel<4:8> <br/>
+ *   LBL: h10 <br/>
+ *   ARG0: x6 [ x PERS: 3 NUM: SG IND: + ] <br/>
+ * ] <br/>
+ * <b>type(EP) label</b>: _poet_n_1_rel <br/>
+ * <b>feature</b>: LBL/ARG0 <br/>
+ * <b>value</b>: h10/x6 <br/>
+ * <b>FvPair (feature/value pair)</b>: LBL: h10 <br/>
+ * <b>extra type (Var)</b>: [ x PERS: 3 NUM: SG IND: + ], h10 (simplified value)<br/>
+ * <b>extra feature</b>: PERS/NUM/IND <br/>
+ * <b>extra value</b>: 3/SG/+<br/>
+ *
+ * @author Xuchen Yao
+ * 
+ *
+ */
 public class MRS {
 	
 	/*
@@ -324,12 +344,13 @@ public class MRS {
 	}
 	
 	/**
-	 * return the ElementaryPredication element with a label.
-	 * for instance, return the EP with a label "x2"
-	 * @param label the label of the EP, such as "x2"
+	 * return the ElementaryPredication element with a label value <code>label</code>.
+	 * for instance, return the EP with a label value "h3".
+	 * Warning: could be multiple ones! DEBUG HERE!
+	 * @param label the label value of the EP, such as "h3"
 	 * @return an EP with the matching label
 	 */
-	public ElementaryPredication getEPbyLabel (String label) {
+	public ElementaryPredication getEPbyLabelValue (String label) {
 		ElementaryPredication retEP = null;
 		for (ElementaryPredication ep:eps) {
 			if (ep.getLabel().equals(label)) {
@@ -342,10 +363,27 @@ public class MRS {
 	}
 	
 	/**
-	 * get a list of the labels of all EPs
+	 * Return the first EP element with a type name <code>name</code>.
+	 * Warning: could be multiple ones! DEBUG HERE!
+	 * @param name a type name, such as "APPOS_REL"
+	 * @return an EP with a matching type name
+	 */
+	public ElementaryPredication getEPbyTypeName (String name) {
+		ElementaryPredication retEP = null;
+		for (ElementaryPredication ep:eps) {
+			if (ep.getTypeName().equals(name)) {
+				retEP = ep;
+				break;
+			}
+		}
+		return retEP;
+	}
+	
+	/**
+	 * get a list of the feature labels of all EPs
 	 * @return an ArrayList containing all the labels of EPS
 	 */
-	public ArrayList<String> getEPSlabelList () {
+	public ArrayList<String> getEPSfeatList () {
 		ArrayList<String> list = new ArrayList<String>();
 		for(ElementaryPredication ep:eps) {
 			list.add(ep.getLabel());
@@ -355,22 +393,22 @@ public class MRS {
 	}
 	
 	/**
-	 * get a list of the handles of all EPs
-	 * In an EP like:
-	 * [ _like_v_1_rel<5:10>
-  	 * LBL: h8
-  	 * ARG0: e9
-  	 * ARG1: x6
-     * ARG2: x10
-	 * ]
+	 * Get a list of the values of all EPs.<p>
+	 * In an EP like: <br/>
+	 * [ _like_v_1_rel<5:10><br/>
+  	 * LBL: h8<br/>
+  	 * ARG0: e9<br/>
+  	 * ARG1: x6<br/>
+     * ARG2: x10<br/>
+	 * ]<br/>
 	 * h8 is label. e9, x6, x10 are handles
-	 * @return an ArrayList containing all the handles of EPS
+	 * @return an ArrayList containing all the values of EPS
 	 */
-	public ArrayList<String> getEPShandleList () {
+	public ArrayList<String> getEPSvalueList () {
 		ArrayList<String> list = new ArrayList<String>();
 		for(ElementaryPredication ep:eps) {
 			for (FvPair fp:ep.getFvpair()) {
-				list.add(fp.getHandle());
+				list.add(fp.getValue());
 			}
 		}
 		
@@ -410,17 +448,17 @@ public class MRS {
 		return ret;
 	}
 	/**
-	 * find out an FvPair whose Rargname matches name and whose Var's label matches label
+	 * Find out an extra type whose extra feature/value match <code>feat</code> and <code>value</code>.
 	 *  
-	 * @param Rargname, such as "ARG0"
-	 * @param label label of Var, such as "e2"
+	 * @param feat the name of extra feature, such as "ARG0"
+	 * @param value the name of extra value, such as "e2"
 	 * @return a matching FvPair
 	 */
-	public FvPair getFvpairByRargnameAndIndex (String name, String label) {
+	public FvPair getExtraTypeByFeatAndValue (String feat, String value) {
 		
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
-				if (f.getRargname().equals(name) && f.getVar().getLabel().equals(label)) {
+				if (f.getRargname().equals(feat) && f.getVar().getLabel().equals(value)) {
 					return f;
 				}
 			}
@@ -429,22 +467,23 @@ public class MRS {
 	}
 	
 	/**
-	 * find out an EP whose Rargname matches name and whose Var's label matches label
+	 * find out an EP whose feature/value match <code>feat</code> and <code>value</code>
 	 *  
-	 * @param Rargname, such as "ARG0"
-	 * @param label label of Var, such as "e2"
-	 * @return a matching EP
+	 * @param feat feature name, such as "ARG0"
+	 * @param value value name, such as "e2"
+	 * @return an ArrayList of matching EP
 	 */
-	public ElementaryPredication getEPbyRargnameAndIndex (String name, String label) {
-		if (label==null) return null;
+	public ArrayList<ElementaryPredication> getEPbyFeatAndValue (String feat, String value) {
+		if (value==null) return null;
+		ArrayList<ElementaryPredication> list = new ArrayList<ElementaryPredication>();
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
-				if (f.getRargname().equals(name) && f.getVar().getLabel().equals(label)) {
-					return ep;
+				if (f.getRargname().equals(feat) && f.getVar().getLabel().equals(value)) {
+					list.add(ep);
 				}
 			}
 		}
-		return null;
+		return list;
 	}
 	
 	public void addEPtoEPS (ElementaryPredication ep) {
@@ -543,6 +582,25 @@ public class MRS {
 	}
 	
 	/**
+	 * Get a list of FvPair which has value matching <code>value</code>.
+	 * @param value a matching value, such as "x2".
+	 * @return an ArrayList of FvPair
+	 */
+	public ArrayList<FvPair> getFvPairByValue (String value) {
+		ArrayList<FvPair> list = new ArrayList<FvPair>();
+		for (ElementaryPredication ep:this.eps) {
+			for (FvPair p:ep.getFvpair()) {
+				if (p.getValue()!=null && p.getValue().equals(value)) {
+					list.add(p);
+					break;
+				}
+			}
+		}
+		
+		return list;
+	}
+	
+	/**
 	 * Set the sentence force of all events variables to "QUES". Theoretically only
 	 * the events of predicates should be set, but practically all of them are set.
 	 */
@@ -568,10 +626,10 @@ public class MRS {
 	 * @param mrs the original mrs to be extracted from 
 	 * @return a new MRS with only EPs concerning label 
 	 */
-	public static MRS extractByLabel (String label, MRS mrs) {
+	public static MRS extractByLabelValue (String label, MRS mrs) {
 		MRS extracted = new MRS(mrs);
 		// targetEP is the one with a label as the label in the parameter 
-		ElementaryPredication targetEP = extracted.getEPbyLabel(label);
+		ElementaryPredication targetEP = extracted.getEPbyLabelValue(label);
 		// targetEPS is a list of all EPs that have connections with targetEP
  
 		if (targetEP == null) {
@@ -610,18 +668,26 @@ public class MRS {
 		}
 		
 		// clean up HCONS list
-		ArrayList<String> labelList = extracted.getEPSlabelList();
-		ArrayList<String> handleList = extracted.getEPShandleList();
-		ArrayList<HCONS> hcopy = new ArrayList<HCONS>(extracted.getHcons()); 
+		extracted.cleanHCONS();
+		
+		return extracted;
+	}
+	
+	/**
+	 * Clean up the HCONS list. Any HCONS pairs, such as "h1 qeq h2", whose
+	 * hiLabel and loLabel can't be both found the the EPS type labels are removed.
+	 */
+	public void cleanHCONS () {
+		ArrayList<String> labelList = this.getEPSfeatList();
+		ArrayList<String> handleList = this.getEPSvalueList();
+		ArrayList<HCONS> hcopy = new ArrayList<HCONS>(this.getHcons()); 
 		for (HCONS h:hcopy) {
 			if (!handleList.contains(h.getHi()) || !labelList.contains(h.getLo())) {
-				if (!extracted.removeHCONS(h)) {
-					log.error("Error: HCONS "+h+" can't be removed from MRS:\n" + extracted);
+				if (!this.removeHCONS(h)) {
+					log.error("Error: HCONS "+h+" can't be removed from MRS:\n" + this);
 				}
 			}
 		}
-		
-		return extracted;
 	}
 	
 	/**
@@ -647,13 +713,50 @@ public class MRS {
 		
 		return labelSet;
 	}
+	
 	/**
-	 * remove ep from the EPS list
+	 * remove <code>ep</code> from the EPS list
 	 * @param ep the ep to be removed
 	 * @return success status
 	 */
 	public boolean removeEP (ElementaryPredication ep) {
-		return eps.remove(ep);
+		
+		if (eps.remove(ep)==false) {
+			log.error("Can't remove ep:\n"+ep+"\nfrom EPS list:\n"+eps);
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * remove all EPs whose flag is set to true from the EPS list
+	 */
+	public void removeEPbyFlag () {
+		ArrayList<ElementaryPredication> concurrentList = new ArrayList<ElementaryPredication> (this.eps);
+		
+		for (ElementaryPredication ep:concurrentList) {
+			if (ep.getFlag() == true) {
+				this.eps.remove(concurrentList.indexOf(ep));
+			}
+		}
+	}
+	
+	/**
+	 * remove a <code>list</code> of EP from the EPS list
+	 * @param list an ArrayList of EP
+	 * @return success status
+	 */
+	public boolean removeEPlist (ArrayList<ElementaryPredication> list) {
+		boolean ret = false;
+		for (ElementaryPredication ep:list) {
+			ret = eps.remove(ep);
+			if (!ret) {
+				log.error("Can't remove ep:\n"+ep+"\nfrom EPS list:\n"+eps);
+				break;
+			}
+		}
+		
+		return ret;
 	}
 	
 	/**

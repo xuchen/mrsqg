@@ -13,6 +13,11 @@ import com.googlecode.mrsqg.mrs.MRS;
  */
 public interface MrsDecomposer {
 	
-	public ArrayList<MRS> decompose(ArrayList<MRS> mlist);
+	/**
+	 * Given a list of MRS, decompose it into simpler ones
+	 * @param inList the original list of MRS to be decomposed.
+	 * @return a new ArrayList of decomposed MRS, without the original ones.
+	 */
+	public ArrayList<MRS> decompose(ArrayList<MRS> inList);
 
 }
