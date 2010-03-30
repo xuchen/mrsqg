@@ -18,11 +18,13 @@ public class FvPair {
 	private String rargname = null;
 	private String constant = null;
 	private Var var = null;
-	
+	public String getValue() {if (var!=null) return var.getLabel(); else return null;}	
+	public String getFeature() {return rargname;}
+
+	public void setFeature (String feat) {rargname = feat;}
 	public String getRargname() {return rargname;}
 	public String getConstant() {return constant;}
 	public Var getVar() {return var;}
-	public String getHandle() {if (var!=null) return var.getLabel(); else return null;}
 	public void setRargname(String s) {rargname = s;}
 	public void setConstant(String s) {constant = s;}
 	public void setVar(Var v) {var = v;}

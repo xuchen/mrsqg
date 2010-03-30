@@ -2,7 +2,6 @@ package com.googlecode.mrsqg;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import org.apache.log4j.Logger;
 
@@ -59,12 +58,12 @@ public class MrsTransformer {
 		// e2
 		MRS q_mrs = new MRS(ori_mrs);
 		String index = q_mrs.getIndex();
-		FvPair v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
+		FvPair v = q_mrs.getExtraTypeByFeatAndValue("ARG0", index);
 		if (v==null) {
 			log.error("FvPair ARG0: "+index+" not found! " +
 					"can't set SF to QUES!");
 		}
-		v.getVar().setExtrapairValue("SF", "QUES");
+		if (null != v.getVar()) v.getVar().setExtrapairValue("SF", "QUES");
 		
 		q_mrs.changeFromUnkToNamed();
 		q_mrs.setSentForce("Y/N");
@@ -95,7 +94,7 @@ public class MrsTransformer {
 					lo = loEP.getLabel();
 					// hiEP should be found through a qeq relation
 					hi = MRS.getHiLabelFromHconsList(lo, q_mrs.getHcons());
-					hiEP = q_mrs.getEPbyRargnameAndIndex("RSTR", hi);
+					hiEP = q_mrs.getEPbyFeatAndValue("RSTR", hi).get(0);
 					if (hi==null||hiEP==null) {
 						/*
 						 * It seems in a well-formed MRS, eps.size() is always 2.
@@ -110,11 +109,11 @@ public class MrsTransformer {
 
 					hiEP = loEP = eps.get(0);
 					hi = lo = eps.get(0).getLabel();
-					rstr = eps.get(1).getVarLabel("RSTR");
+					rstr = eps.get(1).getValueByFeature("RSTR");
 					if (rstr == null) {
 						loEP = eps.get(1);
 						lo = loEP.getLabel();
-						hi = hiEP.getVarLabel("RSTR");
+						hi = hiEP.getValueByFeature("RSTR");
 					} else {
 						hiEP = eps.get(1);
 						hi = rstr;
@@ -193,8 +192,10 @@ public class MrsTransformer {
 						// the Pred of an "in" preposition EP is something like: _in_p_
 						// so the first 3 chars _in must contain "in"
 						ppEP.setPred("LOC_NONSP_REL");
-						loEP.setPred("PLACE_N_REL");
-						q_mrs.setSentForce("WHERE");
+						if (neType.equals("NElocation")) {
+							loEP.setPred("PLACE_N_REL");
+							q_mrs.setSentForce("WHERE");
+						}
 						if (print) {
 							log.info("what question MRX:");
 						}

@@ -89,6 +89,18 @@ public class Var {
 		extrapair = new LinkedHashMap<String, String>();
 	}
 	
+//	@Override public boolean equals (Object obj) {
+//		Var v = (Var) obj;
+//		boolean ret = false;
+//		if (this.vid.equals(v.getVid()) && this.sort.equals(v.getVid())
+//				&& this.label.equals(v.getLabel())
+//				&& this.extrapair.equals(v.getExtrapair())) {
+//			ret = true;
+//		}
+//		
+//		return ret;
+//	}
+	
 	public void newExtraPair () {
 
 	}

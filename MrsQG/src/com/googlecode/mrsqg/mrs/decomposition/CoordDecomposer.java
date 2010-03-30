@@ -40,8 +40,8 @@ public class CoordDecomposer implements MrsDecomposer {
 				String pred = ep.getPred();
 				if (pred==null) pred = ep.getSpred();
 				if (coordEPlist.contains(pred)) {
-					String lHndl = ep.getVarLabel("L-HNDL");
-					String rHndl = ep.getVarLabel("R-HNDL");
+					String lHndl = ep.getValueByFeature("L-HNDL");
+					String rHndl = ep.getValueByFeature("R-HNDL");
 					if (lHndl != null && rHndl != null) {
 						// use L-HNDL and R-HNDL to assemble two individual MRS
 						String loLabel = null;
@@ -57,7 +57,7 @@ public class CoordDecomposer implements MrsDecomposer {
 								log.warn("In this MRS, the HNDL of a coordination is not" +
 										" in a qeq relation. Using HiLabel as the target for extraction.");
 							}
-							outList.add(MRS.extractByLabel(targetLabel, mrs));
+							outList.add(MRS.extractByLabelValue(targetLabel, mrs));
 						}
 					}
 				}

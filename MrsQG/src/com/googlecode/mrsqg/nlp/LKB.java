@@ -26,6 +26,7 @@ public class LKB {
 	private Process p;
 	/** whether LKB is loaded successfully */
 	private boolean success = false;
+	private boolean display;
 	
 	/**
 	 * LKB constructor 
@@ -35,7 +36,7 @@ public class LKB {
 	public LKB(boolean quicktest) {
 		String genCmd = "(index-for-generator)";
 		Properties prop = new Properties();
-		boolean display;
+
 		try { 
 			prop.load(new FileInputStream(propertyFile)); 
 		} catch (IOException e) {
@@ -105,6 +106,12 @@ public class LKB {
 	 * @return a boolean status
 	 */
 	public boolean isSuccess () { return success;}
+	
+	/**
+	 * Whether LKB is set to show display.
+	 * @return true or false
+	 */
+	public boolean getDisplay () { return display;}
 	
 	/**
 	 * Send an input string to LKB

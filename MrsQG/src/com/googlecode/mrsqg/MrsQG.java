@@ -1,6 +1,7 @@
 package com.googlecode.mrsqg;
 
 import com.googlecode.mrsqg.mrs.MRS;
+import com.googlecode.mrsqg.mrs.decomposition.ApposDecomposer;
 import com.googlecode.mrsqg.mrs.decomposition.CoordDecomposer;
 import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
@@ -62,7 +63,7 @@ public class MrsQG {
 	
 	public static void main(String[] args) {
 		
-		// initialize Ephyra and start command line interface
+		// initialize MrsQG and start command line interface
 		(new MrsQG()).commandLine();
 	}
 	
@@ -89,7 +90,8 @@ public class MrsQG {
 	 */
 	public void commandLine() {
 		Preprocessor p = null;
-		CoordDecomposer decomposer = new CoordDecomposer();
+		CoordDecomposer coordDecomposer = new CoordDecomposer();
+		ApposDecomposer apposDecomposer = new ApposDecomposer();
 		
 		while (true) {
 			System.out.println("Input: ");
@@ -128,11 +130,14 @@ public class MrsQG {
 				// TODO: add MRS selection here
 				
 				// decomposition
-//				ArrayList<MRS> decomposedMrxList = decomposer.decompose(mrxList);
-//				
-//				// add decomposed list to the front the original list
-//				if (decomposedMrxList.size() != 0)
-//					mrxList.addAll(0, decomposedMrxList);
+				//ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.decompose(mrxList);
+				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.decompose(mrxList);
+				
+				ArrayList<MRS> decomposedMrxList = apposDecomposedMrxList;
+				
+				// add decomposed list to the front the original list
+				if (decomposedMrxList.size() != 0)
+					mrxList.addAll(0, decomposedMrxList);
 				
 				// generation
 				String mrx;
@@ -333,6 +338,12 @@ public class MrsQG {
 				"\"Do Not Disturb\" sign outside your door,\n\tsend your secretary home " +
 				", order a takeout and start working.;-)");
 		printUsage();
+		
+		if (lkb!=null && lkb.getDisplay()) {
+			System.out.println("\tYour lkb.properties file sets LKB to show display. " +
+					"If you don't see the LKB window,\n\tthen the program doesn't start " +
+					"properly (this happens occasionally).\n\tInput exit and run MrsQG again.");
+		}
 	}
 	
 	public static void printUsage() {

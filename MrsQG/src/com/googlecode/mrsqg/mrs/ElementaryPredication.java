@@ -35,6 +35,12 @@ public class ElementaryPredication {
 	private String label_vid = null;
 	private ArrayList<FvPair> fvpair = null;
 	private FvPair currentFvPair = null;
+	/**
+	 * The use of flag purely serves engineering purposes. In decomposition, some EPs are
+	 * needed to be removed after a copy construction. But it's not easy to trace these EPs
+	 * by any sort of equals() methods. So a flag is set to mark these to-be-removed EPs.   
+	 */
+	private boolean flag = false;
 	
 	public int getCfrom() {return cfrom;}
 	public int getCto() {return cto;}
@@ -45,6 +51,9 @@ public class ElementaryPredication {
 	public String getLabel() {return label;}
 	public String getLabelVid() {return label_vid;}
 	public ArrayList<FvPair> getFvpair() {return fvpair;}
+	public String getTypeName() {if (pred!=null) return pred; else return spred;};
+	public boolean getFlag () {return flag;}
+	public void setFlag (boolean f) {this.flag = f;}
 	
 	public void setPred(String s) {pred=s;}
 	public void setSpred(String s) {spred=s;}
@@ -94,34 +103,61 @@ public class ElementaryPredication {
 	
 	/**
 	 * return the ARG0 value of this EP, if any
-	 * @return the ARG0 value, or null if none
+	 * @return the ARG0 value, such as "e2", or null if none
 	 */
 	public String getArg0() {
-		String arg0 = null;
-		for (FvPair fp:fvpair) {
-			if (fp.getRargname().equals("ARG0")) {
-				arg0 = fp.getVar().getLabel();
-				break;
-			}
-		}
-		return arg0;
+		return getValueByFeature("ARG0");
 	}
+	
+//	/**
+//	 * return the value of rargname
+//	 * @param rargname such as "ARG1".
+//	 * @return a String value, such as "x3".  
+//	 */
+//	public String getValueByRargname (String rargname) {
+//		String value = null;
+//		for (FvPair fp:fvpair) {
+//			if (fp.getRargname().equalsIgnoreCase(rargname)) {
+//				value = fp.getVar().getLabel();
+//				break;
+//			}
+//		}
+//		return value;
+//	}
+	
 	/**
-	 * Return the label of a selected Var field.
+	 * Return the value of a feature.
 	 * 
 	 * @param s can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
 	 * @return a label, such as "x3", or null if not found
 	 */
-	public String getVarLabel(String s) {
+	public String getValueByFeature (String s) {
 		String label = null;
 		s = s.toUpperCase();
 		for (FvPair p:fvpair) {
 			if (p.getRargname().equals(s)) {
-				label = p.getVar().getLabel();
+				label = p.getValue();
 				break;
 			}
 		}
 		return label;
+	}
+	
+	/**
+	 * Return the extra type (Var) of a feature.
+	 * @param feat can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
+	 * @return a corresponding Var
+	 */
+	public Var getValueVarByFeature (String feat) {
+		Var v = null;
+
+		for (FvPair p:fvpair) {
+			if (p.getRargname().equalsIgnoreCase(feat)) {
+				v = p.getVar();
+				break;
+			}
+		}
+		return v;
 	}
 	
 	/**
@@ -226,6 +262,7 @@ public class ElementaryPredication {
 		this.spred = old.getSpred();
 		this.label = old.getLabel();
 		this.label_vid = old.getLabelVid();
+		this.flag = old.getFlag();
 		this.fvpair = new ArrayList<FvPair>();
 		for(FvPair p:old.getFvpair()) {
 			this.fvpair.add(new FvPair(p));
@@ -236,6 +273,13 @@ public class ElementaryPredication {
 	public ElementaryPredication() {
 		fvpair = new ArrayList<FvPair>();
 	}
+	
+//	@Override public boolean equals (Object obj) {
+//		ElementaryPredication ep = (ElementaryPredication)obj;
+//		boolean ret = true;
+//		
+//		return ret;
+//	}
 	
 	public void processStartElement (String qName, Attributes atts) {
 //		;;; <!ELEMENT ep ((pred|realpred), label, fvpair*)>
