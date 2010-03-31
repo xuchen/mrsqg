@@ -130,9 +130,9 @@ public class MrsQG {
 				// TODO: add MRS selection here
 				
 				// decomposition
-				//ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.decompose(mrxList);
+				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
 				//ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.decompose(mrxList);
-				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
+				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(coordDecomposedMrxList);
 				
 				ArrayList<MRS> decomposedMrxList = apposDecomposedMrxList;
 				

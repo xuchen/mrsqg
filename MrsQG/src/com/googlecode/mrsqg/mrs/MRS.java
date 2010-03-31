@@ -80,6 +80,9 @@ public class MRS {
 	public ArrayList<HCONS> getHcons() {return hcons;}
 	public void setSentForce (String sentForce) {sent_force = sentForce;};
 	public void setIndex (String index) {
+		if (!index.startsWith("e")) {
+			log.warn("the main event of this MRS doesn't start with an e: "+index+"!");
+		}
 		this.index = index;
 		// index usually looks like "e2".
 		this.index_vid = index.substring(1);
@@ -344,39 +347,37 @@ public class MRS {
 	}
 	
 	/**
-	 * return the ElementaryPredication element with a label value <code>label</code>.
-	 * for instance, return the EP with a label value "h3".
-	 * Warning: could be multiple ones! DEBUG HERE!
+	 * Return a list of EP with a label value <code>label</code>.
+	 * for instance, return all EPs with a label value "h3".
 	 * @param label the label value of the EP, such as "h3"
-	 * @return an EP with the matching label
+	 * @return an ArrayList of EP with the matching label
 	 */
-	public ElementaryPredication getEPbyLabelValue (String label) {
-		ElementaryPredication retEP = null;
+	public ArrayList<ElementaryPredication> getEPbyLabelValue (String label) {
+		ArrayList<ElementaryPredication> retEP = new ArrayList<ElementaryPredication>();
 		for (ElementaryPredication ep:eps) {
 			if (ep.getLabel().equals(label)) {
-				retEP = ep;
+				retEP.add(ep);
 				break;
 			}
 		}
 		
-		return retEP;
+		return retEP.size() == 0? null: retEP;
 	}
 	
 	/**
-	 * Return the first EP element with a type name <code>name</code>.
-	 * Warning: could be multiple ones! DEBUG HERE!
+	 * Return a list of EP elements with a type name <code>name</code>.
 	 * @param name a type name, such as "APPOS_REL"
-	 * @return an EP with a matching type name
+	 * @return an ArrayList of EP with a matching type name, or null if no matching.
 	 */
-	public ElementaryPredication getEPbyTypeName (String name) {
-		ElementaryPredication retEP = null;
+	public ArrayList<ElementaryPredication> getEPbyTypeName (String name) {
+		ArrayList<ElementaryPredication> retEP = new ArrayList<ElementaryPredication>();
 		for (ElementaryPredication ep:eps) {
 			if (ep.getTypeName().equals(name)) {
-				retEP = ep;
+				retEP.add(ep);
 				break;
 			}
 		}
-		return retEP;
+		return retEP.size() == 0? null: retEP;
 	}
 	
 	/**
@@ -613,23 +614,30 @@ public class MRS {
 	}
 	
 	/**
-	 * extract a new MRS from mrs, containing only EPs that are associated with label.
-	 * currently, the label should only of a predicate's label. for instance, an EP looks like:
+	 * extract a new MRS from mrs, containing only EPs that are indirectly associated with label.
+	 * currently, the label should only be a predicate's label. for instance, an EP looks like:
 	 * [ _like_v_1_rel<5:10>
   	 * LBL: h8
   	 * ARG0: e9
   	 * ARG1: x6
      * ARG2: x10
 	 * ]
-	 * then all EPs with x6 and x10 as ARG0 are extracted. Those EPs make a new MRS.
-	 * @param label the label of the predicate
+	 * then all EPs with x6 and x10 as ARG* (indirectly) are extracted. Those EPs make a new MRS.
+	 * @param label the label value of the predicate, such as "h8"
 	 * @param mrs the original mrs to be extracted from 
 	 * @return a new MRS with only EPs concerning label 
 	 */
 	public static MRS extractByLabelValue (String label, MRS mrs) {
 		MRS extracted = new MRS(mrs);
-		// targetEP is the one with a label as the label in the parameter 
-		ElementaryPredication targetEP = extracted.getEPbyLabelValue(label);
+		// targetEP is the one with a label as the label in the parameter
+		
+		ElementaryPredication targetEP = null;
+		for (ElementaryPredication ep:extracted.getEPbyLabelValue(label)) {
+			if (ep.getArg0().equals(mrs.getIndex())) {
+				// the target EP is the main predicate of this MRS
+				targetEP = ep;
+			}
+		}
 		// targetEPS is a list of all EPs that have connections with targetEP
  
 		if (targetEP == null) {
@@ -674,6 +682,44 @@ public class MRS {
 	}
 	
 	/**
+	 * Extract a new MRS from mrs, containing only EPs that are directly associated with label.
+	 * This method is used when the label isn't a predicate's label. for instance, an EP looks like:
+	 * [ _like_v_1_rel<5:10>
+  	 * LBL: h8
+  	 * ARG0: e9
+  	 * ARG1: x6
+     * ARG2: x10
+	 * ]
+	 * then all EPs with x6 and x10 as ARG0 (directly) are extracted. Those EPs make a new MRS.
+	 * @param targetEP an EP to find references for
+	 * @param mrs the original mrs to be extracted from 
+	 * @return a new MRS with only EPs concerning <code>targetEP</code> 
+	 */
+	public static MRS extractByEPandArg0 (ElementaryPredication targetEP, MRS mrs) {
+		
+		if (targetEP == null) {
+			log.error("Can't find the EP " + targetEP +" in MRS:\n" + mrs);
+			return null;
+		}
+		
+		MRS extracted = new MRS(mrs);
+		
+		HashSet<String> argSet = targetEP.getAllARGvalue();
+		if (argSet.size() <= 1) {
+			log.warn("the EP "+targetEP+" contains less than 2 ARG." +
+					" Decomposition will probably fail.");
+		}
+		
+		extracted.markDeletionByEPref(targetEP);
+
+		extracted.removeEPbyFlag();
+		// clean up HCONS list
+		extracted.cleanHCONS();
+		
+		return extracted;
+	}
+	
+	/**
 	 * Clean up the HCONS list. Any HCONS pairs, such as "h1 qeq h2", whose
 	 * hiLabel and loLabel can't be both found the the EPS type labels are removed.
 	 */
@@ -691,10 +737,10 @@ public class MRS {
 	}
 	
 	/**
-	 * An EP refers to other EPs by the ARG* values. This method retrieves the labels
-	 * of all EPs which are referred by the ARG* values of ep.
+	 * This method retrieves the labels
+	 * of all EPs which are referred by the ARG0 values of ep.
 	 * @param ep An EP which has ARG* entries 
-	 * @return a HashSet of labels referred by the ARG* of this ep
+	 * @return a HashSet of labels referred by the ARG0 of this ep
 	 */
 	public HashSet<String> getAllReferredLabelByEP (ElementaryPredication ep) {
 		HashSet<String> labelSet = new HashSet<String>();
@@ -703,6 +749,7 @@ public class MRS {
 		HashSet<String> argList = ep.getAllARGvalue();
 		
 		for (ElementaryPredication e:getEps()) {
+			if (e==ep) continue;
 			for (String label:argList) {
 				if (e.getArg0().equals(label)) {
 					labelSet.add(e.getLabel());
@@ -712,6 +759,23 @@ public class MRS {
 		}
 		
 		return labelSet;
+	}
+	
+	/**
+	 * Mark deletion of one EP by judging its ARG0 doesn't refer to 
+	 * any ARG* values of <code>ep</code>
+	 * @param ep An EP which has ARG* entries
+	 */
+	public void markDeletionByEPref (ElementaryPredication ep) {
+
+		HashSet<String> argList = ep.getAllARGvalue();
+		
+		for (ElementaryPredication e:getEps()) {
+			if (e==ep) continue;
+			if (!argList.contains(e.getArg0())) {
+				e.setFlag(true);
+			}
+		}
 	}
 	
 	/**
@@ -730,15 +794,29 @@ public class MRS {
 	
 	/**
 	 * remove all EPs whose flag is set to true from the EPS list
+	 * @return a boolean success status
 	 */
-	public void removeEPbyFlag () {
-		ArrayList<ElementaryPredication> concurrentList = new ArrayList<ElementaryPredication> (this.eps);
-		
-		for (ElementaryPredication ep:concurrentList) {
+	public boolean removeEPbyFlag () {
+		ArrayList<ElementaryPredication> removedList = new ArrayList<ElementaryPredication>();
+		for (ElementaryPredication ep:this.eps) {
 			if (ep.getFlag() == true) {
-				this.eps.remove(concurrentList.indexOf(ep));
+				removedList.add(ep);
 			}
 		}
+		if(this.eps.removeAll(removedList)) {
+			return true;
+		} else {
+			log.error("removing EP by flag failed!");
+			return false;
+		}
+		// the following code contains a bug and thus is depreciated.
+//		ArrayList<ElementaryPredication> concurrentList = new ArrayList<ElementaryPredication> (this.eps);
+//		
+//		for (ElementaryPredication ep:concurrentList) {
+//			if (ep.getFlag() == true) {
+//				this.eps.remove(concurrentList.indexOf(ep));
+//			}
+//		}
 	}
 	
 	/**

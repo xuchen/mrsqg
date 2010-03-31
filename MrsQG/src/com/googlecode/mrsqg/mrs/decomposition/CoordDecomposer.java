@@ -22,7 +22,7 @@ import com.googlecode.mrsqg.mrs.MRS;
  * @author Xuchen Yao
  *
  */
-public class CoordDecomposer implements MrsDecomposer {
+public class CoordDecomposer extends MrsDecomposer {
 	
 	private static Logger log = Logger.getLogger(CoordDecomposer.class);
 
@@ -34,7 +34,7 @@ public class CoordDecomposer implements MrsDecomposer {
 		List<String> coordEPlist = Arrays.asList(coordEP);
 		
 		ArrayList<MRS> outList = new ArrayList<MRS>();
-		// TODO: recursive case (multiple coordinations)
+
 		for (MRS mrs:inList) {
 			for (ElementaryPredication ep:mrs.getEps()) {
 				String pred = ep.getPred();
