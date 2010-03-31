@@ -57,6 +57,7 @@ public class ElementaryPredication {
 	
 	public void setPred(String s) {pred=s;}
 	public void setSpred(String s) {spred=s;}
+	public void setTypeName(String s) {if (pred!=null) pred = s; else spred=s;}
 	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
 	
 	/**
