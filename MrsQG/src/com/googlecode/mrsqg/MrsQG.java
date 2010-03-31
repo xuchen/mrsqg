@@ -131,7 +131,8 @@ public class MrsQG {
 				
 				// decomposition
 				//ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.decompose(mrxList);
-				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.decompose(mrxList);
+				//ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.decompose(mrxList);
+				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
 				
 				ArrayList<MRS> decomposedMrxList = apposDecomposedMrxList;
 				
