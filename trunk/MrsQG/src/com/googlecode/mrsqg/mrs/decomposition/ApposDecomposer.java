@@ -29,6 +29,22 @@ import com.googlecode.mrsqg.mrs.Var;
 public class ApposDecomposer implements MrsDecomposer {
 	
 	private static Logger log = Logger.getLogger(ApposDecomposer.class);
+	
+	public ArrayList<MRS> doIt(ArrayList<MRS> inList) {
+		ArrayList<MRS> outList = new ArrayList<MRS>();
+		
+		ArrayList<MRS> decomposedList;
+		
+		decomposedList = decompose(inList);
+		while (decomposedList.size() != 0) {
+			outList.addAll(0, decomposedList);
+			decomposedList = decompose(decomposedList);
+		}
+		
+		outList.addAll(inList);
+		
+		return outList;
+	}
 
 
 	/* (non-Javadoc)
@@ -44,12 +60,12 @@ public class ApposDecomposer implements MrsDecomposer {
 		for (MRS mrs:inList) {
 			for (ElementaryPredication ep:mrs.getEps()) {
 
-				String pred = ep.getPred();
-				if (pred==null) pred = ep.getSpred();
+				String typeName = ep.getTypeName();
+
 				// TODO: VERY IMPORTANT! multiple APPOS_REL!
 				// see warnings in getEPbyTypeName() and getEPbyLabelValue().
-				if (apposEPlabel.equals(pred)) {
-					// Bingo! Found an apposition EP! remove it!
+				if (apposEPlabel.equals(typeName)) {
+					// Bingo! Found an apposition EP! Remove it later!
 
 					String arg1Value = ep.getValueByFeature("ARG1");
 					String arg2Value = ep.getValueByFeature("ARG2");
@@ -107,6 +123,10 @@ public class ApposDecomposer implements MrsDecomposer {
 					
 					outList.add(arg1Mrs);
 					outList.add(arg2Mrs);
+					
+					// this break is used only when this function is called
+					// from the doIt(), which recursively calls decompose(). 
+					break;
 				}
 			}
 		}
