@@ -95,8 +95,15 @@ public class LKB {
 		// Thus 3 threads are needed to retrieve LKB output
 		log.info(getRawOutput());
 		if (!quicktest) {
-			log.info(getRawOutput());
-			log.info(getRawOutput());
+			String out = getRawOutput()+"\n"+getRawOutput();
+			log.info(out);
+			if (out.contains("select using :continue")) {
+				success = false;
+				log.fatal("Fatal error: LKB doesn't start properly." +
+						" Press Enter and try again.");
+				System.out.println("Press Enter: ");
+				readLine();
+			}
 		}
 		log.info("Initializing LKB done. Quite a while, huh?;-)\n");
 	}

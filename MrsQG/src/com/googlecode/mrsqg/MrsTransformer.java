@@ -57,13 +57,16 @@ public class MrsTransformer {
 		// change SF to "QUES"
 		// e2
 		MRS q_mrs = new MRS(ori_mrs);
-		String index = q_mrs.getIndex();
-		FvPair v = q_mrs.getExtraTypeByFeatAndValue("ARG0", index);
-		if (v==null) {
-			log.error("FvPair ARG0: "+index+" not found! " +
-					"can't set SF to QUES!");
-		}
-		if (null != v.getVar()) v.getVar().setExtrapairValue("SF", "QUES");
+//		String index = q_mrs.getIndex();
+//		FvPair v = q_mrs.getExtraTypeByFeatAndValue("ARG0", index);
+		// It's possible that v==null in some malformed MRS that 
+		// no EP refers to the main event by ARG0
+//		if (v==null) {
+//			log.error("FvPair ARG0: "+index+" not found! " +
+//					"can't set SF to QUES! from the following MRS:\n"+q_mrs);
+//		}
+//		if (null != v.getVar()) v.getVar().setExtrapairValue("SF", "QUES");
+		q_mrs.setAllSF2QUES();
 		
 		q_mrs.changeFromUnkToNamed();
 		q_mrs.setSentForce("Y/N");

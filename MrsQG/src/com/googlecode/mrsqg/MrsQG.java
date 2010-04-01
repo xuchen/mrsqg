@@ -64,7 +64,13 @@ public class MrsQG {
 	public static void main(String[] args) {
 		
 		// initialize MrsQG and start command line interface
-		(new MrsQG()).commandLine();
+		MrsQG HelloLady = new MrsQG();;
+		try {
+			HelloLady.commandLine();
+		} catch (Exception e) {
+			e.printStackTrace();
+			HelloLady.exitAll();
+		}
 	}
 	
 	
@@ -84,6 +90,16 @@ public class MrsQG {
 	}
 	
 	/**
+	 * Exit everything and release memory properly.
+	 */
+	public void exitAll() {
+		if (parser!=null) parser.exit();
+		if (lkb != null) lkb.exit();
+		log.info("MrsQG ended at "+getTimestamp());
+		System.exit(0);
+	}
+	
+	/**
 	 * <p>A command line interface for MrsQG.</p>
 	 * 
 	 * <p>The command <code>exit</code> can be used to quit the program.</p>
@@ -98,10 +114,7 @@ public class MrsQG {
 			String input = readLine().trim();
 			if (input.length() == 0) continue;
 			if (input.equalsIgnoreCase("exit")) {
-				if (parser!=null) parser.exit();
-				if (lkb != null) lkb.exit();
-				log.info("MrsQG ended at "+getTimestamp());
-				System.exit(0);
+				exitAll();
 			}
 			
 			if (input.startsWith("mrx: ")||input.startsWith("MRX: ")) {
@@ -126,7 +139,10 @@ public class MrsQG {
 				// the option "-results=" in cheap.
 				// Usually it's 3.
 				ArrayList<MRS> mrxList = parser.getParsedMRSlist();
-				
+				if (p.getNumTokens() > 15) {
+					parser.releaseMemory();
+				}
+				if (!parser.isSuccess()) continue;
 				// TODO: add MRS selection here
 				
 				// decomposition
@@ -134,12 +150,8 @@ public class MrsQG {
 				//ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.decompose(mrxList);
 				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(coordDecomposedMrxList);
 				
-				ArrayList<MRS> decomposedMrxList = apposDecomposedMrxList;
-				
-				// add decomposed list to the front the original list
-				if (decomposedMrxList.size() != 0)
-					mrxList.addAll(0, decomposedMrxList);
-				
+				mrxList = apposDecomposedMrxList;
+								
 				// generation
 				String mrx;
 				MrsTransformer t;
@@ -255,6 +267,7 @@ public class MrsQG {
 			
 			if (! lkb.isSuccess()) {
 				log.error("LKB is not started properly.");
+				exitAll();
 			}
 		}
 		

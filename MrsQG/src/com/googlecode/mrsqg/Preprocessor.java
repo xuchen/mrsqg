@@ -49,6 +49,7 @@ public class Preprocessor {
 	String[][] getTokens() {return this.tokens;}
 	String[] getSentences() {return this.sentences;}
 	Term[][] getTerms () {return this.terms;}
+	int getNumTokens() {return this.tokens[0].length;}
 	
 	public boolean preprocess (String sents) {
 		log.info("Preprocessing");
