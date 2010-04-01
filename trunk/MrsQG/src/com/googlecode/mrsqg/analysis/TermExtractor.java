@@ -243,7 +243,8 @@ public class TermExtractor {
 					// phrase is in the dictionary?
 					if (dict.contains(text)) {
 						// construct term
-						Term t = new Term(text, Term.COMPOUND);
+						Term t = new Term(untokText, Term.COMPOUND, neTypes, id, id+length, tokenStart);
+						t.setPosFSC(pos);
 						termsL.add(t);
 						// mark tokens as assigned
 						for (int offset = 0; offset < length; offset++)

@@ -140,7 +140,7 @@ public class Cheap {
 	 * Retrieve a list of MRS objects from the parsing result.
 	 * Warning: Cannot be used simultaneously with getParseResult and getParsedMrxString
 	 * 
-	 * @return an ArrayList<MRS> with each member containing an MRS object
+	 * @return an ArrayList<MRS> with each member containing an MRS object, or null if none
 	 * 
 	 */
 	public ArrayList<MRS> getParsedMRSlist () {
@@ -153,7 +153,60 @@ public class Cheap {
 			list.add(m);
 		}
 		
-		return list;
+		return list.size()==0?null:list;
+	}
+	
+	/**
+	 * Release some memory by sending a very short sentence to cheap.
+	 * This is usually called after parsing a long sentence (number of tokens > 15).
+	 */
+	public void releaseMemory () {
+		String oneShotOneKill = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"+
+"<fsc version=\"1.0\">"+
+    "<chart id=\"fsc\">"+
+        "<text>Release !</text>"+
+        "<lattice init=\"v0\" final=\"v2\">"+
+            "<edge source=\"v0\" target=\"v1\">"+
+                "<fs type=\"token\">"+
+                    "<f name=\"+FORM\">"+
+                        "<str>Release</str>"+
+                    "</f>"+
+                    "<f name=\"+FROM\">"+
+                        "<str>0</str>"+
+                    "</f>"+
+                    "<f name=\"+TO\">"+
+                        "<str>7</str>"+
+                    "</f>"+
+                    "<f name=\"+TNT\">"+
+                        "<fs type=\"tnt\">"+
+                            "<f name=\"+TAGS\" org=\"list\">"+
+                                "<str>NNP</str>"+
+                            "</f>"+
+                            "<f name=\"+PRBS\" org=\"list\">"+
+                                "<str>1.000000e+00</str>"+
+                            "</f>"+
+                        "</fs>"+
+                    "</f>"+
+                "</fs>"+
+            "</edge>"+
+            "<edge source=\"v1\" target=\"v2\">"+
+                "<fs type=\"token\">"+
+                    "<f name=\"+FORM\">"+
+                        "<str>!</str>"+
+                    "</f>"+
+                    "<f name=\"+FROM\">"+
+                        "<str>8</str>"+
+                    "</f>"+
+                    "<f name=\"+TO\">"+
+                        "<str>9</str>"+
+                    "</f>"+
+                "</fs>"+
+            "</edge>"+
+        "</lattice>"+
+    "</chart>"+
+"</fsc>";
+		parse(oneShotOneKill);
+		getParseResult();
 	}
 	
 	/**
