@@ -80,6 +80,20 @@ public class HCONS {
 		this.lo_var = new Var(lo_vid, lo_sort);
 	}
 	
+	/**
+	 * A simple constructor, such as "h1 qeq h2"
+	 * @param hreln "qeq"
+	 * @param hi "h1"
+	 * @param lo "h2"
+	 */
+	public HCONS(String hreln, String hi, String lo) {
+		this.rel = hreln;
+		this.hi = hi;
+		this.lo = lo;
+		this.hi_var = new Var(hi);
+		this.lo_var = new Var(lo);
+	}
+	
 	public boolean checkValid() {
 		if (rel != null && hi != null && lo != null) {
 			return true;

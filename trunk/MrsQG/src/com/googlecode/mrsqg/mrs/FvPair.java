@@ -66,6 +66,27 @@ public class FvPair {
 		this.var = new Var(vid, sort);
 	}
 	
+	/**
+	 * a simple constructor, constructs an FvPair such as "RSTR: h9"
+	 * @param feature "RSTR"
+	 * @param value "h9"
+	 */
+	public FvPair(String feature, String value) {
+		this.rargname = feature;
+		this.var = new Var(value);
+	}
+	
+	/**
+	 * constructs a complex FvPair such as "ARG0: e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]"
+	 * @param feature "ARG0"
+	 * @param value "e13"
+	 * @param extraPairs {"SF", "PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"}
+	 */
+	public FvPair(String feature, String value, String[] extraPairs) {
+		this.rargname = feature;
+		this.var = new Var(value, extraPairs);
+	}
+	
 	public void serializeXML (ContentHandler hd) {
 		AttributesImpl atts = new AttributesImpl();
 		try {
