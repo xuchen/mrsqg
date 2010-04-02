@@ -105,7 +105,8 @@ public class LKB {
 				readLine();
 			}
 		}
-		log.info("Initializing LKB done. Quite a while, huh?;-)\n");
+		if (!quicktest)
+			log.info("Initializing LKB done. Quite a while, huh?;-)\n");
 	}
 	
 	/**
@@ -124,6 +125,7 @@ public class LKB {
 	 * Send an input string to LKB
 	 */
 	public void sendInput (String input) {
+		//String cmd = input.replaceAll("\n","").replaceAll("\"", "\\\\\"");
 		InputWriter in = new InputWriter(input);
 		in.start();
 	}
@@ -350,7 +352,7 @@ LKB(6):
 	public static void main(String args[]) {
 				
 		PropertyConfigurator.configure("conf/log4j.properties");
-		boolean quicktest = false;
+		boolean quicktest = true;
 		LKB lkb = new LKB(quicktest);
 		
 		if (! lkb.isSuccess()) {

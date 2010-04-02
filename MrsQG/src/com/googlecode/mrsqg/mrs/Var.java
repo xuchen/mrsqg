@@ -82,6 +82,29 @@ public class Var {
 		this.extrapair = new LinkedHashMap<String, String>();
 	}
 	
+	public Var(String value) {
+		this.vid = value.substring(1);
+		this.sort = value.substring(0, 1);
+		this.label = sort+vid;
+		this.extrapair = new LinkedHashMap<String, String>();
+	}
+	
+	/**
+	 * Construct a complex Var such as "e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]"
+	 * @param value "e13"
+	 * @param extraPairs {"SF", "PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"}
+	 */
+	public Var(String value, String[] extraPairs) {
+		this.vid = value.substring(1);
+		this.sort = value.substring(0, 1);
+		this.label = sort+vid;
+		this.extrapair = new LinkedHashMap<String, String>();
+		int size = extraPairs.length/2;
+		for (int i=0; i<size; i++) {
+			extrapair.put(extraPairs[2*i], extraPairs[2*i+1]);
+		}
+	}
+	
 	public Var(Attributes atts) {
 		vid = atts.getValue("vid");
 		sort = atts.getValue("sort");

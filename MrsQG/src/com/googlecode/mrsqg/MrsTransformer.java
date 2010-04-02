@@ -48,15 +48,45 @@ public class MrsTransformer {
 	}
 	
 	public ArrayList<MRS> transform (boolean print) {
-		//ArrayList<MRS> trMrsList = new ArrayList<MRS>();
+		ArrayList<MRS> trMrsList;
 		Term[] terms = pre.getTerms()[0];
-		
-		ArrayList<ElementaryPredication> eps;
 		
 		// generate yes/no question
 		// change SF to "QUES"
 		// e2
-		MRS q_mrs = new MRS(ori_mrs);
+		MRS q_mrs = transformYNques();
+
+		this.gen_mrs.add(q_mrs);
+		
+		trMrsList = transformWHques(terms);
+		if (trMrsList != null)
+			this.gen_mrs.addAll(trMrsList);
+		
+		trMrsList = transformHOWques(terms);
+		if (trMrsList != null)
+			this.gen_mrs.addAll(trMrsList);
+		
+		if (print) {
+			for (MRS m:this.gen_mrs) {
+				log.info(m.getSentType()+" question MRX:");
+				log.info(m.toMRXstring());
+				log.info(m);
+			}
+		}
+		
+		return this.gen_mrs;
+	}
+
+	/**
+	 * Transform from a declarative to Y/N interrogative.
+	 *
+	 * @return an interrogative MRS
+	 */
+	public MRS transformYNques () {
+		// generate yes/no question
+		// change SF to "QUES"
+		// e2
+		MRS q_mrs = new MRS(this.ori_mrs);
 //		String index = q_mrs.getIndex();
 //		FvPair v = q_mrs.getExtraTypeByFeatAndValue("ARG0", index);
 		// It's possible that v==null in some malformed MRS that 
@@ -69,16 +99,23 @@ public class MrsTransformer {
 		q_mrs.setAllSF2QUES();
 		
 		q_mrs.changeFromUnkToNamed();
-		q_mrs.setSentForce("Y/N");
+		q_mrs.setSentType("Y/N");
 		q_mrs.setAllSF2QUES();
-		this.gen_mrs.add(q_mrs);
-		if (print) {
-			log.info("yes/no question MRX:");
-			log.info(q_mrs.toMRXstring());
-			log.info(q_mrs);
-		}
 		
-		if (terms == null) return this.gen_mrs;
+		return q_mrs;
+	}
+	
+	/**
+	 * Transform from a declarative to WH (who/which/what/where/when) interrogative.
+	 * @param terms all the terms in this MRS.
+	 * @return an ArrayList of generated interrogative MRS, or null if none.
+	 */
+	public ArrayList<MRS> transformWHques (Term[] terms) {
+		if (terms == null) return null;
+		
+		ArrayList<MRS> outList = new ArrayList<MRS>();
+		MRS q_mrs;
+		ArrayList<ElementaryPredication> eps;
 		
 		for (Term term:terms) {
 			for (String neType:term.getNeTypes()) {
@@ -88,9 +125,9 @@ public class MrsTransformer {
 				}
 				
 				//if (neType.contains("NEperson")||neType.contains("NElocation")||neType.contains("NEdate"))
-				q_mrs = new MRS(ori_mrs);
+				q_mrs = new MRS(this.ori_mrs);
 				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
-				String hi, lo, rstr;
+				String hi, lo;
 				ElementaryPredication hiEP, loEP;
 				if (eps.size() == 1) {
 					loEP = eps.get(0);
@@ -109,46 +146,10 @@ public class MrsTransformer {
 					}
 				} else if (eps.size() == 2) {
 					// one is hi, the other is lo in a qeq relation
-
-					hiEP = loEP = eps.get(0);
-					hi = lo = eps.get(0).getLabel();
-					rstr = eps.get(1).getValueByFeature("RSTR");
-					if (rstr == null) {
-						loEP = eps.get(1);
-						lo = loEP.getLabel();
-						hi = hiEP.getValueByFeature("RSTR");
-					} else {
-						hiEP = eps.get(1);
-						hi = rstr;
-						try {
-							assert lo == rstr;
-						} catch (AssertionError e) {
-							log.error("In eps:\n"+eps+"\none should refer" +
-							"the other in RSTR field");
-							continue;
-						}
-					}
-					// check whether hi and lo match HCONS
-					boolean match = false;
-					for (HCONS h: q_mrs.getHcons()) {
-						if (h.getHi().equals(hi)) {
-							try {
-								assert h.getLo().equals(lo);
-								assert h.getRel().equals("qeq");
-								match = true;
-								break;
-							} catch (AssertionError e) {
-								log.error("hi "+hi+" and lo "+lo+" don't match" +
-										" with HCONS: "+h);
-								continue;
-							}
-						}
-					}
-					if (!match) {
-						log.error("hi "+hi+" and lo "+lo+" don't match" +
-								" with HCONS: "+q_mrs.getHcons());
-						continue;
-					}
+					int hiIdx = MRS.determineHiEPindex (eps, q_mrs);
+					if (hiIdx == -1) continue;
+					hiEP = eps.get(hiIdx);
+					loEP = eps.get(1-hiIdx);
 				} else {
 					log.error("the size of eps isn't 1 or 2: "+eps);
 					continue;
@@ -160,30 +161,20 @@ public class MrsTransformer {
 				// change loEP to person_rel
 				if (neType.equals("NEperson")||neType.equals("NEfirstName")) {
 					loEP.setPred("PERSON_REL");
-					q_mrs.setSentForce("WHO");
-					if (print) {
-						log.info("who question MRX:");
-					}
+					q_mrs.setSentType("WHO");
+
 				} else if (neType.equals("NElocation")) {
 //					loEP.setPred("PLACE_N_REL");
 //					q_mrs.setSentForce("WHERE");
 					loEP.setPred("THING_REL");
-					q_mrs.setSentForce("WHAT");
-					if (print) {
-						log.info("what question MRX:");
-					}
+					q_mrs.setSentType("WHAT");
 				} else if (neType.equals("NEdate")) {
 					loEP.setPred("TIME_N_REL");
-					q_mrs.setSentForce("WHEN");
-					if (print) {
-						log.info("when question MRX:");
-					}
+					q_mrs.setSentType("WHEN");
+
 				} else {
 					loEP.setPred("THING_REL");
-					q_mrs.setSentForce("WHAT");
-					if (print) {
-						log.info("what question MRX:");
-					}
+					q_mrs.setSentType("WHAT");
 				}
 				if (neType.equals("NElocation") || neType.equals("NEdate"))
 				{
@@ -197,10 +188,7 @@ public class MrsTransformer {
 						ppEP.setPred("LOC_NONSP_REL");
 						if (neType.equals("NElocation")) {
 							loEP.setPred("PLACE_N_REL");
-							q_mrs.setSentForce("WHERE");
-						}
-						if (print) {
-							log.info("what question MRX:");
+							q_mrs.setSentType("WHERE");
 						}
 					}
 
@@ -222,19 +210,111 @@ public class MrsTransformer {
 //				v.getVar().setExtrapairValue("SF", "QUES");
 
 				q_mrs.changeFromUnkToNamed();
-				this.gen_mrs.add(q_mrs);
-				if (print) {
-					log.info(q_mrs.toMRXstring());
-					log.info(q_mrs);
-				}
-
+				outList.add(q_mrs);
 			}
 		}
-		return this.gen_mrs;
+		return outList.size() == 0 ? null : outList;
 	}
-
-	public static void main(String[] args) {
-
+	
+	/**
+	 * Transform from a declarative to how many/much interrogative.
+	 * Note: currently LKB doesn't generate from this function, for unknown reason.
+	 * @param terms all the terms in this MRS.
+	 * @return an ArrayList of generated interrogative MRS, or null if none.
+	 */
+	public ArrayList<MRS> transformHOWques (Term[] terms) {
+		if (terms == null) return null;
+		
+		ArrayList<MRS> outList = new ArrayList<MRS>();
+		MRS q_mrs;
+		ArrayList<ElementaryPredication> eps;
+		
+		for (Term term:terms) {
+			for (String neType:term.getNeTypes()) {
+				//neType = Arrays.toString(term.getNeTypes());
+				if (neType.length()==0) {
+					log.error("NE types shouldn't be none: "+term);
+				}
+				
+				if (neType.contains("NEnumber")||neType.contains("NEhour")) {
+					q_mrs = new MRS(this.ori_mrs);
+					eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
+					
+					// there should be two: one is UDEF_Q_REL, the other is card_rel
+					if (eps.size() != 2) {
+						log.error("the size of eps isn't 2: "+eps);
+						continue;
+					}
+					
+					ElementaryPredication hiEP, loEP;
+					
+					// one is hi, the other is lo in a qeq relation
+					int hiIdx = MRS.determineHiEPindex (eps, q_mrs);
+					if (hiIdx == -1) continue;
+					hiEP = eps.get(hiIdx);
+					loEP = eps.get(1-hiIdx);
+					
+					// loEP should be "CARD_REL"
+					if (!loEP.getTypeName().equals("CARD_REL")) {
+						log.warn("The EP's type name is not CARD_REL in a how many/much question:\n"+loEP);
+					}
+					loEP.delFvpair("CARG");
+					loEP.setTypeName("MUCH-MANY_A_REL");
+					
+					// construct a new qeq relation with:
+					// WHICH_Q_REL qeq ABSTR_DEG_REL 
+					/*
+			          [ abstr_deg_rel<0:1>
+			            LBL: h7
+			            ARG0: x8 ]
+			          [ which_q_rel<0:1>
+			            LBL: h9
+			            ARG0: x8
+			            RSTR: h11
+			            BODY: h10 ]
+					 */
+					ArrayList<String> labelStore = q_mrs.generateUnusedLabel('h', 4);
+					ElementaryPredication whichEP = new ElementaryPredication("WHICH_Q_REL", labelStore.get(0));
+					String arg0 = q_mrs.generateUnusedLabel('x', 1).get(0);
+					whichEP.addSimpleFvpair("ARG0", arg0);
+					whichEP.addSimpleFvpair("RSTR", labelStore.get(1));
+					whichEP.addSimpleFvpair("BODY", labelStore.get(2));
+					ElementaryPredication abstrEP = new ElementaryPredication("ABSTR_DEG_REL", labelStore.get(3));
+					abstrEP.addSimpleFvpair("ARG0", arg0);
+					q_mrs.addEPtoEPS(whichEP);
+					q_mrs.addEPtoEPS(abstrEP);
+					q_mrs.addToHCONSsimple("qeq", labelStore.get(1), labelStore.get(3));
+					
+					// construct a new EP "MEASURE_REL" with the same label of loEP
+					// and takes WHICH_Q_REL as ARG2 (ARG0 and ARG1 are all events)
+					// and takes loEP's ARG0 as ARG1
+					/*
+			          [ measure_rel<0:1>
+			            LBL: h12
+			            ARG0: e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]
+			            ARG1: e14 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]
+			            ARG2: x8 ]
+					 */
+					ElementaryPredication measureEP = new ElementaryPredication("MEASURE_REL", loEP.getLabel());
+					ArrayList<String> eStore = q_mrs.generateUnusedLabel('e', 1);
+					String[] extraPairs = {"SF", "PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"};
+					measureEP.addFvpair("ARG0", eStore.get(0), extraPairs);
+					measureEP.addFvpair("ARG1", loEP.getArg0(), extraPairs);
+					measureEP.addSimpleFvpair("ARG2", arg0);
+					q_mrs.addEPtoEPS(measureEP);
+	
+					// change SF to "QUES"
+					q_mrs.setAllSF2QUES();
+					q_mrs.setSentType("HOW MANY/MUCH");
+					q_mrs.changeFromUnkToNamed();
+					// build cross references?
+					q_mrs.buildCoref();
+					outList.add(q_mrs);
+				}
+			}
+		}
+		return outList.size() == 0 ? null : outList;
 	}
-
+	
+	
 }

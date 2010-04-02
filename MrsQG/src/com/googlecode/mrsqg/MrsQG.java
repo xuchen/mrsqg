@@ -122,6 +122,10 @@ public class MrsQG {
 				File file = new File(fileLine);
 				MrsTransformer t = new MrsTransformer(file, p);
 				t.transform(true);
+			} else if (input.startsWith("lkb: ")) {
+				input = input.substring(4).trim();
+				lkb.sendInput(input);
+				System.out.println(lkb.getRawOutput());
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
 				input = input.substring(5).trim();

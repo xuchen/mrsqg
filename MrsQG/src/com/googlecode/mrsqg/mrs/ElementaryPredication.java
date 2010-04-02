@@ -35,6 +35,40 @@ public class ElementaryPredication {
 	private String label_vid = null;
 	private ArrayList<FvPair> fvpair = null;
 	private FvPair currentFvPair = null;
+	
+	/**
+	* Copy constructor.
+	*/
+	public ElementaryPredication(ElementaryPredication old) {
+		if (old == null) return;
+		this.cfrom = old.getCfrom();
+		this.cto = old.getCto();
+		this.surface = old.getSurface();
+		this.base= old.getBase();
+		this.pred = old.getPred();
+		this.spred = old.getSpred();
+		this.label = old.getLabel();
+		this.label_vid = old.getLabelVid();
+		this.flag = old.getFlag();
+		this.fvpair = new ArrayList<FvPair>();
+		for(FvPair p:old.getFvpair()) {
+			this.fvpair.add(new FvPair(p));
+		}
+	}
+
+
+	public ElementaryPredication() {
+		fvpair = new ArrayList<FvPair>();
+	}
+	
+	public ElementaryPredication(String typeName, String label) {
+		this();
+		this.pred = typeName;
+		this.cfrom = 0;
+		this.cto = 0;
+		this.setLabel(label);		
+	}
+	
 	/**
 	 * The use of flag purely serves engineering purposes. In decomposition, some EPs are
 	 * needed to be removed after a copy construction. But it's not easy to trace these EPs
@@ -59,6 +93,7 @@ public class ElementaryPredication {
 	public void setSpred(String s) {spred=s;}
 	public void setTypeName(String s) {if (pred!=null) pred = s; else spred=s;}
 	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
+	public void setLabel(String s) {label=s; label_vid=s.substring(1);}
 	
 	/**
 	 * return all "ARG*" values in this EP.
@@ -84,6 +119,21 @@ public class ElementaryPredication {
 
 		return set;
 	}
+	
+	/**
+	 * Get all values in an EP, such as "x9", "e2", etc.
+	 * @return a HashSet containing all "ARG*" values
+	 */
+	public HashSet<String> getAllValue() {
+
+		HashSet<String> set = new HashSet<String>();
+		for (FvPair fp:fvpair) {
+			set.add(fp.getVar().getLabel());
+		}
+
+		return set;
+	}
+	
 	/*
 	public ArrayList<String> getAllARGvalue() {
 		// TreeMap guarantees that the map will be in ascending key order
@@ -189,6 +239,30 @@ public class ElementaryPredication {
 	}
 	
 	/**
+	 * add a simple FvPair (such as "RSTR: h9") to this EP
+	 * 
+	 * @param feature "RSTR"
+	 * @param value "h9"
+	 */
+	public void addSimpleFvpair(String feature, String value) {
+		FvPair p = new FvPair(feature, value);
+		this.fvpair.add(p);
+	}
+	
+	/**
+	 * add a complex FvPair to this EP.
+	 * For instance, "ARG0: e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]"
+	 * 
+	 * @param feature "ARG0"
+	 * @param value "e13"
+	 * @param extraPairs {"SF", "PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"}
+	 */
+	public void addFvpair(String feature, String value, String[] extraPairs) {
+		FvPair p = new FvPair(feature, value, extraPairs);
+		this.fvpair.add(p);
+	}
+	
+	/**
 	 * Keep some extrapair in fvpair and remove all others.
 	 * 
 	 * @param fv can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
@@ -249,31 +323,7 @@ public class ElementaryPredication {
 		res.append("]");
 		return res.toString();
 	}
-	
-	/**
-	* Copy constructor.
-	*/
-	public ElementaryPredication(ElementaryPredication old) {
-		if (old == null) return;
-		this.cfrom = old.getCfrom();
-		this.cto = old.getCto();
-		this.surface = old.getSurface();
-		this.base= old.getBase();
-		this.pred = old.getPred();
-		this.spred = old.getSpred();
-		this.label = old.getLabel();
-		this.label_vid = old.getLabelVid();
-		this.flag = old.getFlag();
-		this.fvpair = new ArrayList<FvPair>();
-		for(FvPair p:old.getFvpair()) {
-			this.fvpair.add(new FvPair(p));
-		}
-	}
 
-
-	public ElementaryPredication() {
-		fvpair = new ArrayList<FvPair>();
-	}
 	
 //	@Override public boolean equals (Object obj) {
 //		ElementaryPredication ep = (ElementaryPredication)obj;

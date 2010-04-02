@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -65,7 +66,7 @@ public class MRS {
 	// 2
 	private String index_vid = "";
 	// the type of sentence, e.g. PROP, WHEN, WHERE, etc
-	private String sent_force = "PROP";
+	private String sent_type = "PROP";
 	
 	private ArrayList <ElementaryPredication> eps;
 	private ArrayList<HCONS> hcons;
@@ -75,10 +76,10 @@ public class MRS {
 	public String getLabelVid() {return label_vid;}
 	public String getIndex() {return index;}
 	public String getIndexVid() {return index_vid;} 
-	public String getSentForce() {return sent_force;}
+	public String getSentType() {return sent_type;}
 	public ArrayList <ElementaryPredication> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
-	public void setSentForce (String sentForce) {sent_force = sentForce;};
+	public void setSentType (String sentForce) {sent_type = sentForce;};
 	public void setIndex (String index) {
 		if (!index.startsWith("e")) {
 			log.warn("the main event of this MRS doesn't start with an e: "+index+"!");
@@ -92,7 +93,7 @@ public class MRS {
 	@Override public String toString() {
 		StringBuilder res = new StringBuilder();
 		res.append("\n");
-		res.append("SentForce: "+sent_force+"\n");
+		res.append("SentType: "+sent_type+"\n");
 		// LTOP: h1
 		res.append("LTOP: "+ltop+"\n");
 		// INDEX: e2 [ e SF: PROP-OR-QUES TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
@@ -135,7 +136,7 @@ public class MRS {
 		this.label_vid = old.getLabelVid();
 		this.index = old.getIndex();
 		this.index_vid = old.getIndexVid();
-		this.sent_force = old.getSentForce();
+		this.sent_type = old.getSentType();
 		this.eps = new ArrayList<ElementaryPredication>();
 		for (ElementaryPredication ep:old.getEps()) {
 			this.eps.add(new ElementaryPredication(ep));
@@ -504,6 +505,10 @@ public class MRS {
 		this.hcons.add(new HCONS(hreln, hi_vid, hi_sort, lo_vid, lo_sort));
 	}
 	
+	public void addToHCONSsimple (String hreln, String hi, String lo) {
+		this.hcons.add(new HCONS(hreln, hi, lo));
+	}
+	
 	/**
 	 * Given a hiLabel, check the corresponding loLabel in the list.
 	 * For instance, the list contains a "h1 qeq h2" relation, then
@@ -523,6 +528,67 @@ public class MRS {
 			}
 		}
 		return loLabel;
+	}
+	
+	/**
+	 * Give an EP ArrayList of size 2, determine which is the HiEP, and return the 
+	 * index (0 or 1).
+	 * @param eps an EP ArrayList of size 2
+	 * @param mrs the MRS in which <code>eps</code> comes from
+	 * @return an index 0 or 1, or -1 if error
+	 */
+	public static int determineHiEPindex (ArrayList<ElementaryPredication> eps, MRS mrs) {
+		if (eps.size() != 2) {
+			log.error("EPS size should be exactly 2!\n" + eps);
+		}
+		
+		int hiIdx;
+		String hi, lo, rstr;
+		ElementaryPredication hiEP, loEP;
+		
+		hiEP = loEP = eps.get(0);
+		hi = lo = eps.get(0).getLabel();
+		rstr = eps.get(1).getValueByFeature("RSTR");
+		if (rstr == null) {
+			hiIdx = 0;
+			loEP = eps.get(1);
+			lo = loEP.getLabel();
+			hi = hiEP.getValueByFeature("RSTR");
+		} else {
+			hiEP = eps.get(1);
+			hi = rstr;
+			try {
+				assert lo == rstr;
+			} catch (AssertionError e) {
+				log.error("In eps:\n"+eps+"\none should refer" +
+				"the other in RSTR field");
+				return -1;
+			}
+			hiIdx = 1;
+		}
+		// check whether hi and lo match HCONS
+		boolean match = false;
+		for (HCONS h: mrs.getHcons()) {
+			if (h.getHi().equals(hi)) {
+				try {
+					assert h.getLo().equals(lo);
+					assert h.getRel().equals("qeq");
+					match = true;
+					break;
+				} catch (AssertionError e) {
+					log.error("hi "+hi+" and lo "+lo+" don't match" +
+							" with HCONS: "+h);
+					continue;
+				}
+			}
+		}
+		if (!match) {
+			log.error("hi "+hi+" and lo "+lo+" don't match" +
+					" with HCONS: "+mrs.getHcons());
+			return -1;
+		}
+		
+		return hiIdx;
 	}
 	
 	/**
@@ -844,6 +910,36 @@ public class MRS {
 	 */
 	public boolean removeHCONS (HCONS h) {
 		return hcons.remove(h);
+	}
+	
+	/**
+	 * Generate a list of unused labels of specific type <code>labelType</code>.
+	 * @param labelType 'e', 'x', 'h', etc
+	 * @param num the number of unused labels to return
+	 * @return an ArrayList containing <code>num</code> members, such as "h7", "h8", "h9", ...
+	 */
+	public ArrayList<String> generateUnusedLabel (char labelType, int num) {
+		HashSet<Integer> valueSet = new HashSet<Integer>();
+		ArrayList<String> list = new ArrayList<String>();
+		
+		for (ElementaryPredication e:getEps()) {
+			for (String value:e.getAllValue()) {
+				if (value.charAt(0) == labelType) {
+					valueSet.add(Integer.parseInt(value.substring(1)));
+				}
+			}
+			if (e.getLabel().charAt(0) == labelType) {
+				valueSet.add(Integer.parseInt(e.getLabel().substring(1)));
+			}
+		}
+		
+		Integer[] valueArray = (Integer[]) valueSet.toArray(new Integer[]{});
+		Arrays.sort(valueArray);
+		for (int i=valueArray[valueArray.length-1]+1; num>0; i++, num--) {
+			list.add(labelType+String.valueOf(i));
+		}
+		
+		return list;				
 	}
 	
 	/**
