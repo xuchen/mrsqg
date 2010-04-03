@@ -7,8 +7,6 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.analysis.Term;
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
-import com.googlecode.mrsqg.mrs.FvPair;
-import com.googlecode.mrsqg.mrs.HCONS;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -122,6 +120,7 @@ public class MrsTransformer {
 				//neType = Arrays.toString(term.getNeTypes());
 				if (neType.length()==0) {
 					log.error("NE types shouldn't be none: "+term);
+					continue;
 				}
 				
 				//if (neType.contains("NEperson")||neType.contains("NElocation")||neType.contains("NEdate"))
@@ -168,7 +167,7 @@ public class MrsTransformer {
 //					q_mrs.setSentForce("WHERE");
 					loEP.setPred("THING_REL");
 					q_mrs.setSentType("WHAT");
-				} else if (neType.equals("NEdate")) {
+				} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
 					loEP.setPred("TIME_N_REL");
 					q_mrs.setSentType("WHEN");
 

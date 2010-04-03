@@ -45,11 +45,11 @@ public class Preprocessor {
 	/** <code>Dictionaries</code> for term extraction. */
 	private static ArrayList<Dictionary> dicts = new ArrayList<Dictionary>();
 	
-	String[] getOriginalSentences() {return this.originalSentences;}
-	String[][] getTokens() {return this.tokens;}
-	String[] getSentences() {return this.sentences;}
-	Term[][] getTerms () {return this.terms;}
-	int getNumTokens() {return this.tokens[0].length;}
+	public String[] getOriginalSentences() {return this.originalSentences;}
+	public 	String[][] getTokens() {return this.tokens;}
+	public String[] getSentences() {return this.sentences;}
+	public Term[][] getTerms () {return this.terms;}
+	public int getNumTokens() {return this.tokens[0].length;}
 	
 	public boolean preprocess (String sents) {
 		log.info("Preprocessing");
