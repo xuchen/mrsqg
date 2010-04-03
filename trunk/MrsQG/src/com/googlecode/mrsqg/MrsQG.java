@@ -26,6 +26,7 @@ import com.googlecode.mrsqg.nlp.SnowballStemmer;
 import com.googlecode.mrsqg.nlp.StanfordNeTagger;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
+import com.googlecode.mrsqg.postprocessing.Fallback;
 
 
 public class MrsQG {
@@ -157,9 +158,9 @@ public class MrsQG {
 				mrxList = apposDecomposedMrxList;
 								
 				// generation
-				String mrx;
-				MrsTransformer t;
 				if (mrxList != null && lkb != null) {
+					String mrx;
+					MrsTransformer t;
 					int i=0;
 					for (MRS m:mrxList) {
 						int countType = 0;
@@ -208,6 +209,10 @@ public class MrsQG {
 								"%d questions of %d types.", i, countNum, countType));
 					}
 				}
+				
+				// fallback
+				Fallback planB = new Fallback (parser, lkb, p);
+				planB.doIt();
 				
 			} else {
 				p = new Preprocessor();
@@ -357,11 +362,11 @@ public class MrsQG {
 				", order a takeout and start working.;-)");
 		printUsage();
 		
-		if (lkb!=null && lkb.getDisplay()) {
-			System.out.println("\tYour lkb.properties file sets LKB to show display. " +
-					"If you don't see the LKB window,\n\tthen the program doesn't start " +
-					"properly (this happens occasionally).\n\tInput exit and run MrsQG again.");
-		}
+//		if (lkb!=null && lkb.getDisplay()) {
+//			System.out.println("\tYour lkb.properties file sets LKB to show display. " +
+//					"If you don't see the LKB window,\n\tthen the program doesn't start " +
+//					"properly (this happens occasionally).\n\tInput exit and run MrsQG again.");
+//		}
 	}
 	
 	public static void printUsage() {
@@ -375,6 +380,9 @@ public class MrsQG {
 		System.out.println("\t\tmrx: an declrative MRS XML (MRX) file.");
 		System.out.println("\t\tMrsQG reads this MRX and transforms it into interrogative MRX.");
 		System.out.println("\t\tThen you can copy/paste the transformed MRX to LKB for generation.");
+		System.out.println("\t4. Input the following line:");
+		System.out.println("\t\tlkb: an LKB command");
+		System.out.println("\t\tThen MrsQG serves as a wrapper for LKB. You can talk with LKB interactively through the prompt.");
 		System.out.println();
 	}
 }
