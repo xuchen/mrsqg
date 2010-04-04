@@ -272,17 +272,17 @@ public class MrsTransformer {
 			            RSTR: h11
 			            BODY: h10 ]
 					 */
-					ArrayList<String> labelStore = q_mrs.generateUnusedLabel('h', 4);
-					ElementaryPredication whichEP = new ElementaryPredication("WHICH_Q_REL", labelStore.get(0));
-					String arg0 = q_mrs.generateUnusedLabel('x', 1).get(0);
+					ArrayList<String> labelStore = q_mrs.generateUnusedLabel(6);
+					ElementaryPredication whichEP = new ElementaryPredication("WHICH_Q_REL", "h"+labelStore.get(0));
+					String arg0 = "x"+labelStore.get(4);
 					whichEP.addSimpleFvpair("ARG0", arg0);
-					whichEP.addSimpleFvpair("RSTR", labelStore.get(1));
-					whichEP.addSimpleFvpair("BODY", labelStore.get(2));
-					ElementaryPredication abstrEP = new ElementaryPredication("ABSTR_DEG_REL", labelStore.get(3));
+					whichEP.addSimpleFvpair("RSTR", "h"+labelStore.get(1));
+					whichEP.addSimpleFvpair("BODY", "h"+labelStore.get(2));
+					ElementaryPredication abstrEP = new ElementaryPredication("ABSTR_DEG_REL", "h"+labelStore.get(3));
 					abstrEP.addSimpleFvpair("ARG0", arg0);
 					q_mrs.addEPtoEPS(whichEP);
 					q_mrs.addEPtoEPS(abstrEP);
-					q_mrs.addToHCONSsimple("qeq", labelStore.get(1), labelStore.get(3));
+					q_mrs.addToHCONSsimple("qeq", "h"+labelStore.get(1), "h"+labelStore.get(3));
 					
 					// construct a new EP "MEASURE_REL" with the same label of loEP
 					// and takes WHICH_Q_REL as ARG2 (ARG0 and ARG1 are all events)
@@ -295,9 +295,8 @@ public class MrsTransformer {
 			            ARG2: x8 ]
 					 */
 					ElementaryPredication measureEP = new ElementaryPredication("MEASURE_REL", loEP.getLabel());
-					ArrayList<String> eStore = q_mrs.generateUnusedLabel('e', 1);
 					String[] extraPairs = {"SF", "PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"};
-					measureEP.addFvpair("ARG0", eStore.get(0), extraPairs);
+					measureEP.addFvpair("ARG0", "e"+labelStore.get(5), extraPairs);
 					measureEP.addFvpair("ARG1", loEP.getArg0(), extraPairs);
 					measureEP.addSimpleFvpair("ARG2", arg0);
 					q_mrs.addEPtoEPS(measureEP);
