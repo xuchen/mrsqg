@@ -57,7 +57,7 @@ public class CoordDecomposer extends MrsDecomposer {
 							else {
 								targetLabel = hiLabel;
 								log.warn("In this MRS, the HNDL of a coordination is not" +
-										" in a qeq relation. Using HiLabel as the target for extraction.");
+										" in a qeq relation. Using HiLabel as the target for extraction: "+hiLabel);
 							}
 							outList.add(MRS.extractByLabelValue(targetLabel, mrs));
 						}

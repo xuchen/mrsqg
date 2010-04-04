@@ -749,7 +749,7 @@ public class MRS {
 		// targetEPS is a list of all EPs that have connections with targetEP
  
 		if (targetEP == null) {
-			log.error("Can't find the EP with a label" + label +" in MRS:\n" + mrs);
+			log.error("Can't find the EP with a label " + label +" in MRS:\n" + mrs);
 			return null;
 		}
 		
@@ -829,7 +829,7 @@ public class MRS {
 	
 	/**
 	 * Clean up the HCONS list. Any HCONS pairs, such as "h1 qeq h2", whose
-	 * hiLabel and loLabel can't be both found the the EPS type labels are removed.
+	 * hiLabel and loLabel can't be both found in the EPS, are removed.
 	 */
 	public void cleanHCONS () {
 		ArrayList<String> labelList = this.getEPSfeatList();

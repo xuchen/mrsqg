@@ -128,7 +128,8 @@ public class ElementaryPredication {
 
 		HashSet<String> set = new HashSet<String>();
 		for (FvPair fp:fvpair) {
-			set.add(fp.getVar().getLabel());
+			if (fp.getVar() != null)
+				set.add(fp.getVar().getLabel());
 		}
 
 		return set;
