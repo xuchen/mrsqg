@@ -99,13 +99,13 @@ public class LKB {
 			log.info(out);
 			if (out.contains("select using :continue")) {
 				success = false;
-				log.fatal("Fatal error: LKB doesn't start properly." +
+				log.fatal("Fatal error: LKB didn't start properly." +
 						" Press Enter and try again.");
 				System.out.println("Press Enter: ");
 				readLine();
 			}
 		}
-		if (!quicktest)
+		if (!quicktest && success)
 			log.info("Initializing LKB done. Quite a while, huh?;-)\n");
 	}
 	
@@ -356,7 +356,7 @@ LKB(6):
 		LKB lkb = new LKB(quicktest);
 		
 		if (! lkb.isSuccess()) {
-			log.fatal("LKB is not started properly.");
+			log.fatal("LKB was not started properly.");
 			return;
 		}
 		

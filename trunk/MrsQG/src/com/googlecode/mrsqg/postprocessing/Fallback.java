@@ -108,6 +108,7 @@ public class Fallback {
 				String mrx;
 				for (MRS m:mrxList) {
 					// generate from original sentence
+					m.changeFromUnkToNamed();
 					mrx = m.toMRXstring();
 					generator.sendMrxToGen(mrx);
 					log.info("\nGenerate from transformed sentence:\n");

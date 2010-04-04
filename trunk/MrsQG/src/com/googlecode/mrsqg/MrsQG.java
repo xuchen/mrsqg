@@ -1,9 +1,7 @@
 package com.googlecode.mrsqg;
 
 import com.googlecode.mrsqg.mrs.MRS;
-import com.googlecode.mrsqg.mrs.decomposition.ApposDecomposer;
-import com.googlecode.mrsqg.mrs.decomposition.CoordDecomposer;
-import com.googlecode.mrsqg.mrs.decomposition.SubclauseDecomposer;
+import com.googlecode.mrsqg.mrs.decomposition.*;
 import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 import com.googlecode.mrsqg.nlp.indices.Prepositions;
@@ -108,6 +106,7 @@ public class MrsQG {
 	 */
 	public void commandLine() {
 		Preprocessor p = null;
+		SubordinateDecomposer subordDecomposer = new SubordinateDecomposer();
 		CoordDecomposer coordDecomposer = new CoordDecomposer();
 		ApposDecomposer apposDecomposer = new ApposDecomposer();
 		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
@@ -130,6 +129,23 @@ public class MrsQG {
 				input = input.substring(4).trim();
 				lkb.sendInput(input);
 				System.out.println(lkb.getRawOutput());
+			} else if (input.startsWith("cheap: ")) {
+				input = input.substring(6).trim();
+				// pre-processing, get the output FSC XML in a string fsc
+				p = new Preprocessor();
+				String fsc = p.getFSCbyTerms(input);
+				log.info("\nFSC XML from preprocessing:\n");
+				log.info(fsc);
+				
+				// parsing fsc with cheap
+				if (parser == null) continue;
+				parser.parse(fsc);
+				log.info(parser.getParsedMRSlist());
+
+				if (p.getNumTokens() > 15) {
+					parser.releaseMemory();
+				}
+				if (!parser.isSuccess()) continue;
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
 				input = input.substring(5).trim();
@@ -154,8 +170,8 @@ public class MrsQG {
 				// TODO: add MRS selection here
 				
 				// decomposition
-				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
-				//ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.decompose(mrxList);
+				ArrayList<MRS> coordDecomposedMrxList = subordDecomposer.doIt(mrxList);
+				//ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
 				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(coordDecomposedMrxList);
 				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(apposDecomposedMrxList);
 				mrxList = subDecomposedMrxList;
@@ -174,7 +190,7 @@ public class MrsQG {
 						
 						// generate from original sentence
 						lkb.sendMrxToGen(mrx);
-						log.info("\nGenerate from original sentence:\n");
+						log.info("\nGenerate from the original sentence:\n");
 						log.info(lkb.getGenSentences());
 						log.info("\nFrom the following MRS:\n");
 						log.info(mrx);
@@ -280,7 +296,6 @@ public class MrsQG {
 			lkb = new LKB(false);
 			
 			if (! lkb.isSuccess()) {
-				log.error("LKB is not started properly.");
 				exitAll();
 			}
 		}
@@ -388,6 +403,9 @@ public class MrsQG {
 		System.out.println("\t4. Input the following line:");
 		System.out.println("\t\tlkb: an LKB command");
 		System.out.println("\t\tThen MrsQG serves as a wrapper for LKB. You can talk with LKB interactively through the prompt.");
+		System.out.println("\t5. Input the following line:");
+		System.out.println("\t\tcheap: a sentence");
+		System.out.println("\t\tThen MrsQG serves as a wrapper for Cheap. You can talk with cheap interactively through the prompt.");
 		System.out.println();
 	}
 }
