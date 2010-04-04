@@ -114,14 +114,14 @@ public class SubclauseDecomposer extends MrsDecomposer {
 			// set the lowEP of oneArg to a different label
 			ArrayList<ElementaryPredication> argList = mrs.getEPbyFeatAndValue("ARG0", oneArg);
 			if (argList.size() == 1) {
-				argList.get(0).setLabel(mrs.generateUnusedLabel('h', 1).get(0));
+				argList.get(0).setLabel("h"+mrs.generateUnusedLabel(1).get(0));
 			} else if (argList.size() == 2) {
 				int hiEPidx = MRS.determineHiEPindex(argList, mrs);
 				ElementaryPredication hiEP = argList.get(hiEPidx);
 				ElementaryPredication lowEP = argList.get(1-hiEPidx);
 				String oldLowLabel = lowEP.getLabel();
 				// correct the HCONS list
-				String newLowLabel = mrs.generateUnusedLabel('h', 1).get(0);
+				String newLowLabel = "h"+mrs.generateUnusedLabel(1).get(0);
 				lowEP.setLabel(newLowLabel);
 				for (HCONS h:mrs.getHcons()) {
 					if (h.getHi().equals(hiEP.getValueByFeature("RSTR")) && h.getLo().equals(oldLowLabel)) {

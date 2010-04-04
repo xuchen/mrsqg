@@ -955,12 +955,12 @@ public class MRS {
 	}
 	
 	/**
-	 * Generate a list of unused labels of specific type <code>labelType</code>.
-	 * @param labelType 'e', 'x', 'h', etc
+	 * Generate a list of the index for unused labels.
+	 * 
 	 * @param num the number of unused labels to return
-	 * @return an ArrayList containing <code>num</code> members, such as "h7", "h8", "h9", ...
+	 * @return an ArrayList containing <code>num</code> members, such as "7", "8", "9", ...
 	 */
-	public ArrayList<String> generateUnusedLabel (char labelType, int num) {
+	public ArrayList<String> generateUnusedLabel (int num) {
 		HashSet<Integer> valueSet = new HashSet<Integer>();
 		ArrayList<String> list = new ArrayList<String>();
 		
@@ -976,7 +976,7 @@ public class MRS {
 		Integer[] valueArray = (Integer[]) valueSet.toArray(new Integer[]{});
 		Arrays.sort(valueArray);
 		for (int i=valueArray[valueArray.length-1]+1; num>0; i++, num--) {
-			list.add(labelType+String.valueOf(i));
+			list.add(String.valueOf(i));
 		}
 		
 		return list;				
