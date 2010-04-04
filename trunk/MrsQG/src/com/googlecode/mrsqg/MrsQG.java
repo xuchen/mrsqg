@@ -170,8 +170,8 @@ public class MrsQG {
 				// TODO: add MRS selection here
 				
 				// decomposition
-				ArrayList<MRS> coordDecomposedMrxList = subordDecomposer.doIt(mrxList);
-				//ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
+				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
+				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(subordDecomposedMrxList);
 				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(coordDecomposedMrxList);
 				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(apposDecomposedMrxList);
 				mrxList = subDecomposedMrxList;
