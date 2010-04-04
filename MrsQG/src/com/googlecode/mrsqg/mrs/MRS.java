@@ -914,7 +914,10 @@ public class MRS {
 		if(this.eps.removeAll(removedList)) {
 			return true;
 		} else {
-			log.error("removing EP by flag failed!");
+			log.error("Removing EP by flag failed!");
+			if (removedList.size() == 0) {
+				log.error("None of EPS is set to have a true flag!");
+			}
 			return false;
 		}
 		// the following code contains a bug and thus is depreciated.
