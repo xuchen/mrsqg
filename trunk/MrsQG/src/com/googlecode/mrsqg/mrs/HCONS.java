@@ -19,31 +19,32 @@ public class HCONS {
 	 */
 	
 	private String rel = null;
-	private String hi = null;
-	private String lo = null;
-	private Var hi_var = null;
+//	private String hi = null;
+//	private String lo = null;
+	private Var hiVar = null;
 	
-	// could be either var or label
-	private Var lo_var = null;
-	private String lo_label = null;
+	// could be either Var or label
+	private Var loVar = null;
+	/** <code>loLabel</code> is rarely used in <!ELEMENT lo (label|var)>. use loVar instead. */
+	private String loLabel = null;
 	
 	public String getRel() {return rel;}
-	public String getHi() {return hi;}
-	public String getLo() {return lo;}
-	public Var getHiVar() {return hi_var;}
-	public Var getLoVar() {return lo_var;}
-	public String getLoLabel() {return lo_label;}
+	public String getHi() {return hiVar.getLabel();}
+	public String getLo() {return loVar.getLabel();}
+	public Var getHiVar() {return hiVar;}
+	public Var getLoVar() {return loVar;}
+	public String getLoLabelRare() {return loLabel;}
 	public void setRel(String s) {rel=s;}
-	public void setHi(String s) {hi=s;}
-	public void setLo(String s) {lo=s;}
-	public void setHiVar(Var v) {hi_var=v;}
-	public void setLoVar(Var v) {lo_var=v;}
-	public void setLoLabel(String s) {lo_label=s;}
+	public void setHi(String s) {if (hiVar!=null) hiVar.setLabel(s);}
+	public void setLo(String s) {if (loVar!=null) loVar.setLabel(s);}
+	public void setHiVar(Var v) {hiVar=v;}
+	public void setLoVar(Var v) {loVar=v;}
+	public void setLoLabelRare (String s) {loLabel=s;}
 	
 	@Override public String toString() {
 		StringBuilder res = new StringBuilder();
 		// h5 qeq h7
-		res.append(hi+" "+rel+" "+lo);
+		res.append(getHi()+" "+rel+" "+getLo());
 		return res.toString();
 	}
 	/**
@@ -52,11 +53,9 @@ public class HCONS {
 	public HCONS(HCONS old) {
 		if (old == null) return;
 		this.rel = old.getRel();
-		this.hi = old.getHi();
-		this.lo = old.getLo();
-		this.hi_var = new Var(old.getHiVar());
-		this.lo_var = new Var(old.getLoVar());
-		this.lo_label = old.getLoLabel();
+		this.hiVar = new Var(old.getHiVar());
+		this.loVar = new Var(old.getLoVar());
+		this.loLabel = old.getLoLabelRare();
 	}
 	
 	public HCONS(String rel) {
@@ -74,10 +73,8 @@ public class HCONS {
 	public HCONS(String hreln, String hi_vid, String hi_sort,
 			String lo_vid, String lo_sort) {
 		this.rel = hreln;
-		this.hi = hi_sort+hi_vid;
-		this.lo = lo_sort+lo_vid;
-		this.hi_var = new Var(hi_vid, hi_sort);
-		this.lo_var = new Var(lo_vid, lo_sort);
+		this.hiVar = new Var(hi_vid, hi_sort);
+		this.loVar = new Var(lo_vid, lo_sort);
 	}
 	
 	/**
@@ -88,14 +85,12 @@ public class HCONS {
 	 */
 	public HCONS(String hreln, String hi, String lo) {
 		this.rel = hreln;
-		this.hi = hi;
-		this.lo = lo;
-		this.hi_var = new Var(hi);
-		this.lo_var = new Var(lo);
+		this.hiVar = new Var(hi);
+		this.loVar = new Var(lo);
 	}
 	
 	public boolean checkValid() {
-		if (rel != null && hi != null && lo != null) {
+		if (rel != null && hiVar != null && (loVar != null || loLabel != null) ) {
 			return true;
 		} else {
 			return false;
@@ -112,17 +107,17 @@ public class HCONS {
 			// <hi>
 			atts.clear();
 			hd.startElement("", "", "hi", atts);
-			hi_var.serializeXML(hd);
+			hiVar.serializeXML(hd);
 			hd.endElement("", "", "hi");
 			// <lo>
 			atts.clear();
 			hd.startElement("", "", "lo", atts);
-			if (lo_var != null) {
-				lo_var.serializeXML(hd);
-			} else if (lo_label != null) {
+			if (loVar != null) {
+				loVar.serializeXML(hd);
+			} else if (loLabel != null) {
 				// <label>
 				atts.clear();
-				atts.addAttribute("", "", "vid", "CDATA", lo_label);
+				atts.addAttribute("", "", "vid", "CDATA", loLabel);
 				hd.startElement("", "", "label", atts);
 				hd.endElement("", "", "label");
 			} else {

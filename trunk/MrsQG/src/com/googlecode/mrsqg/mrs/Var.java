@@ -1,7 +1,6 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import org.xml.sax.Attributes;
@@ -43,6 +42,11 @@ public class Var {
 	public LinkedHashMap<String, String> getExtrapair() {return extrapair;}
 	public void setSort(String s) {sort = s; label=sort+vid;}
 	public void setVid(String s) {vid = s; label=sort+vid;}
+	public void setLabel(String value) {
+		this.vid = value.substring(1);
+		this.sort = value.substring(0, 1);
+		this.label = value;
+	}
 	
 	@Override public String toString() {
 		// x6 [ x PERS: 3 NUM: SG IND: + ]

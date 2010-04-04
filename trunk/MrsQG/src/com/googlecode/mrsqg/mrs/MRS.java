@@ -230,7 +230,7 @@ public class MRS {
 					currentEP.processStartElement(qName, atts);
 				} else if (parent.equals("lo")) {
 					HCONS h = hcons.get(hcons.size()-1);
-					h.setLoLabel(atts.getValue("vid"));
+					h.setLoLabelRare(atts.getValue("vid"));
 					h.setLo(atts.getValue("vid"));
 					log.error("Warning: <label> inisde <lo>. " +
 							"not in sample. check the code!");
@@ -258,14 +258,12 @@ public class MRS {
 					// get the last one in the list
 					HCONS h = hcons.get(hcons.size()-1);
 					// should be sth. like "h11"
-					h.setHi(sort+vid);
 					h.setHiVar(new Var(atts));
 				} else if (parent.equals("lo")) {
 					String sort = atts.getValue("sort");
 					// get the last one in the list
 					HCONS h = hcons.get(hcons.size()-1);
 					// should be sth. like "h11"
-					h.setLo(sort+vid);
 					h.setLoVar(new Var(atts));
 				} else {
 					log.error("file format error: unknown" +
@@ -450,22 +448,42 @@ public class MRS {
 		return ret;
 	}
 	/**
-	 * Find out an extra type whose extra feature/value match <code>feat</code> and <code>value</code>.
+	 * Find out a list of extra type whose extra feature/value match <code>feat</code> and <code>value</code>.
 	 *  
 	 * @param feat the name of extra feature, such as "ARG0"
 	 * @param value the name of extra value, such as "e2"
-	 * @return a matching FvPair
+	 * @return a list of matching FvPair
 	 */
-	public FvPair getExtraTypeByFeatAndValue (String feat, String value) {
+	public ArrayList<FvPair> getExtraTypeByFeatAndValue (String feat, String value) {
 		
+		ArrayList<FvPair> list = new ArrayList<FvPair>();
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
 				if (f.getRargname().equals(feat) && f.getVar().getLabel().equals(value)) {
-					return f;
+					list.add(f);
 				}
 			}
 		}
-		return null;
+		return list.size() == 0 ? null : list;
+	}
+	
+	/**
+	 * Find out a list of extra type whose extra value match <code>value</code>.
+	 *  
+	 * @param value the name of extra value, such as "e2"
+	 * @return a list of matching FvPair
+	 */
+	public ArrayList<FvPair> getExtraTypeByValue (String value) {
+		
+		ArrayList<FvPair> list = new ArrayList<FvPair>();
+		for (ElementaryPredication ep:this.eps) {
+			for (FvPair f: ep.getFvpair()) {
+				if (f.getVar().getLabel().equals(value)) {
+					list.add(f);
+				}
+			}
+		}
+		return list.size() == 0 ? null : list;
 	}
 	
 	/**
@@ -490,6 +508,30 @@ public class MRS {
 	
 	public void addEPtoEPS (ElementaryPredication ep) {
 		if (ep!=null) this.eps.add(ep);
+	}
+	
+	/**
+	 * Get the tense of this MRS. in a malformed MRS, it's possible that there's no tense found,
+	 * in this case return "PRES"
+	 * @return a string of tense
+	 */
+	public String getTense () {
+		try {
+			return (getExtraTypeByValue(getIndex()).get(0)).getVar().getExtrapair().get("TENSE");
+		} catch (NullPointerException e) {
+			// 
+			return "PRES";
+		}
+	}
+	
+	/**
+	 * Set the tense of this MRS
+	 * @param tense
+	 */
+	public void setTense (String tense) {
+		ArrayList<FvPair> list = getExtraTypeByValue(getIndex());
+		for (FvPair p:list) 
+			p.getVar().getExtrapair().put("TENSE", tense);
 	}
 	
 	/**
@@ -922,15 +964,13 @@ public class MRS {
 		HashSet<Integer> valueSet = new HashSet<Integer>();
 		ArrayList<String> list = new ArrayList<String>();
 		
+		// LKB takes index globally, so we count everything under "h/x/e/p..."
+		// http://lists.delph-in.net/archive/developers/2010/001402.html
 		for (ElementaryPredication e:getEps()) {
 			for (String value:e.getAllValue()) {
-				if (value.charAt(0) == labelType) {
-					valueSet.add(Integer.parseInt(value.substring(1)));
-				}
+				valueSet.add(Integer.parseInt(value.substring(1)));
 			}
-			if (e.getLabel().charAt(0) == labelType) {
-				valueSet.add(Integer.parseInt(e.getLabel().substring(1)));
-			}
+			valueSet.add(Integer.parseInt(e.getLabel().substring(1)));
 		}
 		
 		Integer[] valueArray = (Integer[]) valueSet.toArray(new Integer[]{});

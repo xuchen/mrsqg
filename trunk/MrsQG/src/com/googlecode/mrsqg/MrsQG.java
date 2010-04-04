@@ -3,6 +3,7 @@ package com.googlecode.mrsqg;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.mrs.decomposition.ApposDecomposer;
 import com.googlecode.mrsqg.mrs.decomposition.CoordDecomposer;
+import com.googlecode.mrsqg.mrs.decomposition.SubclauseDecomposer;
 import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 import com.googlecode.mrsqg.nlp.indices.Prepositions;
@@ -109,6 +110,8 @@ public class MrsQG {
 		Preprocessor p = null;
 		CoordDecomposer coordDecomposer = new CoordDecomposer();
 		ApposDecomposer apposDecomposer = new ApposDecomposer();
+		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
+		boolean fallback = false;
 		
 		while (true) {
 			System.out.println("Input: ");
@@ -154,8 +157,8 @@ public class MrsQG {
 				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
 				//ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.decompose(mrxList);
 				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(coordDecomposedMrxList);
-				
-				mrxList = apposDecomposedMrxList;
+				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(apposDecomposedMrxList);
+				mrxList = subDecomposedMrxList;
 								
 				// generation
 				if (mrxList != null && lkb != null) {
@@ -210,9 +213,11 @@ public class MrsQG {
 					}
 				}
 				
-				// fallback
-				Fallback planB = new Fallback (parser, lkb, p);
-				planB.doIt();
+				if (fallback) {
+					// fallback
+					Fallback planB = new Fallback (parser, lkb, p);
+					planB.doIt();
+				}
 				
 			} else {
 				p = new Preprocessor();
