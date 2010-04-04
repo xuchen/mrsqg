@@ -25,7 +25,7 @@ public abstract class MrsDecomposer {
 		ArrayList<MRS> decomposedList;
 		
 		decomposedList = decompose(inList);
-		while (decomposedList.size() != 0) {
+		while (decomposedList != null) {
 			outList.addAll(0, decomposedList);
 			decomposedList = decompose(decomposedList);
 		}

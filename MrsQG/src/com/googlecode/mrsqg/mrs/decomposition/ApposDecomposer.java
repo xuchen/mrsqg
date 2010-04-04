@@ -38,6 +38,7 @@ public class ApposDecomposer extends MrsDecomposer {
 	public ArrayList<MRS> decompose(ArrayList<MRS> inList) {
 		
 		//String[] argList = new String[] {"ARG1", "ARG2"};
+		if (inList == null) return null;
 		
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
@@ -67,7 +68,7 @@ public class ApposDecomposer extends MrsDecomposer {
 			}
 		}
 
-		return outList;
+		return outList.size() == 0 ? null : outList;
 	}
 	
 	/**

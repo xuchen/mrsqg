@@ -30,6 +30,8 @@ public class CoordDecomposer extends MrsDecomposer {
 	 * @see com.googlecode.mrsqg.mrs.decomposition.MrsDecomposer#decompose(java.util.ArrayList)
 	 */
 	public ArrayList<MRS> decompose(ArrayList<MRS> inList) {
+		if (inList == null) return null;
+		
 		String[] coordEP = new String[]{"_AND_C_REL", "_OR_C_REL", "_BUT_C_REL"};
 		List<String> coordEPlist = Arrays.asList(coordEP);
 		
@@ -64,7 +66,7 @@ public class CoordDecomposer extends MrsDecomposer {
 			}
 		}
 
-		return outList;
+		return outList.size() == 0 ? null : outList;
 	}
 
 	/**
