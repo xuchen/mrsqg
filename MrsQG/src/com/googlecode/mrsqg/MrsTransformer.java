@@ -180,7 +180,7 @@ public class MrsTransformer {
 					ElementaryPredication ppEP = q_mrs.getEPbefore(term.getCfrom(), term.getCto());
 					String pp = this.pre.getPrepositionBeforeTerm(term, 0);
 					// change the preposition (if any) before the term
-					if (pp!=null && ppEP.getPred()!=null && 
+					if (pp!=null && ppEP != null && ppEP.getPred()!=null && 
 							ppEP.getPred().substring(0, pp.length()+1).toLowerCase().contains(pp.toLowerCase())) {
 						// the Pred of an "in" preposition EP is something like: _in_p_
 						// so the first 3 chars _in must contain "in"

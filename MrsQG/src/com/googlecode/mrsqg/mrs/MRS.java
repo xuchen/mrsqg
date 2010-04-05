@@ -353,7 +353,7 @@ public class MRS {
 	 * Return a list of EP with a label value <code>label</code>.
 	 * for instance, return all EPs with a label value "h3".
 	 * @param label the label value of the EP, such as "h3"
-	 * @return an ArrayList of EP with the matching label
+	 * @return an ArrayList of EP with the matching label or null if none
 	 */
 	public ArrayList<ElementaryPredication> getEPbyLabelValue (String label) {
 		ArrayList<ElementaryPredication> retEP = new ArrayList<ElementaryPredication>();
