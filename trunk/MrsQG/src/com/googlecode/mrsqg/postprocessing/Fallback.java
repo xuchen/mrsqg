@@ -73,6 +73,9 @@ public class Fallback {
 					pair = new Pair(sentence, tranSent, "HOW MANY");
 					tranSent = Fallback.transformSentence(sentence, term, "how much");
 					extraPair = new Pair(sentence, tranSent, "HOW MUCH");
+				} else if (neType.equals("NEcountry")) {
+					tranSent = Fallback.transformSentence(sentence, term, "which country");
+					pair = new Pair(sentence, tranSent, "WHICH");
 				} else {
 					tranSent = Fallback.transformSentence(sentence, term, "what");
 					pair = new Pair(sentence, tranSent, "WHAT");
@@ -135,7 +138,9 @@ public class Fallback {
 	public static String transformSentence (String sentence, Term term, String quesWord) {
 		String ret;
 		ret =  sentence.substring(0, term.getCfrom()) + quesWord + sentence.subSequence(term.getCto(), sentence.length());
-		ret = ret.substring(0, ret.length()-1) + "?";
+		if (ret.substring(ret.length()-1).equals("."))
+			ret = ret.substring(0, ret.length()-1) + "?";
+		else ret = ret + "?";
 		return ret;
 	}
 

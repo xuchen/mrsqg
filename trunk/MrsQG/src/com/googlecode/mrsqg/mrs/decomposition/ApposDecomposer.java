@@ -97,17 +97,13 @@ public class ApposDecomposer extends MrsDecomposer {
 			// There are some EP without a range <cfrom:cto>, in this case,
 			// if they are covered by the apposEP, don't remove it.
 			if (ep.getCto() == -1 && ep.getCfrom() == -1 && inside) continue;
-			if (ep.getCto() < cfrom) {
-				inside = false;
-				ep.setFlag(true);
-			}
-			else if (ep.getCfrom() > cto) {
-				inside = false;
-				ep.setFlag(true);
-			}
-			else {
+			if (ep.getCfrom() >= cfrom && ep.getCto() <= cto) {
 				inside = true;
+			} else {
+				inside = false;
+				ep.setFlag(true);
 			}
+
 		}
 		if (!apposMrs.removeEPbyFlag()) return null;
 		
@@ -123,11 +119,11 @@ public class ApposDecomposer extends MrsDecomposer {
 		// step 2
 		apposMrs.setIndex(apposEP.getArg0());
 		// step 3
-		apposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", "PRES");
+		apposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", "PAST");
 		// step 4
 		//apposMrs.setAllSF2QUES();
 		apposMrs.setDecomposer("Apposition");
-		
+		apposMrs.changeFromUnkToNamed();
 		apposMrs.cleanHCONS();
 		
 		return apposMrs;
@@ -201,6 +197,9 @@ public class ApposDecomposer extends MrsDecomposer {
 		
 		arg1Mrs.cleanHCONS();
 		arg2Mrs.cleanHCONS();
+		
+		arg1Mrs.changeFromUnkToNamed();
+		arg2Mrs.changeFromUnkToNamed();
 		
 		outList.add(arg1Mrs);
 		outList.add(arg2Mrs);

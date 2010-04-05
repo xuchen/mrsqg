@@ -26,6 +26,7 @@ import com.googlecode.mrsqg.nlp.StanfordNeTagger;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
 import com.googlecode.mrsqg.postprocessing.Fallback;
+import com.googlecode.mrsqg.postprocessing.MrsReplacer;
 
 
 public class MrsQG {
@@ -110,7 +111,7 @@ public class MrsQG {
 		CoordDecomposer coordDecomposer = new CoordDecomposer();
 		ApposDecomposer apposDecomposer = new ApposDecomposer();
 		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
-		boolean fallback = false;
+		boolean fallback = true;
 		
 		while (true) {
 			System.out.println("Input: ");
@@ -162,19 +163,25 @@ public class MrsQG {
 				// the number of MRS in the list depends on 
 				// the option "-results=" in cheap.
 				// Usually it's 3.
-				ArrayList<MRS> mrxList = parser.getParsedMRSlist();
+				ArrayList<MRS> origMrsList = parser.getParsedMRSlist();
+				ArrayList<MRS> mrxList = origMrsList;
+				boolean success = parser.isSuccess();
 				if (p.getNumTokens() > 15) {
 					parser.releaseMemory();
 				}
-				if (!parser.isSuccess()) continue;
+				if (!success) continue;
 				// TODO: add MRS selection here
 				
 				// decomposition
 				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
-				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(subordDecomposedMrxList);
-				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(coordDecomposedMrxList);
-				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(apposDecomposedMrxList);
-				mrxList = subDecomposedMrxList;
+				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
+				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
+				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
+				
+				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
+				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
+				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
+				if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
 								
 				// generation
 				if (mrxList != null && lkb != null) {
@@ -200,6 +207,7 @@ public class MrsQG {
 						t = new MrsTransformer(mrx, p);
 						ArrayList<MRS> trMrsList = t.transform(false);
 						
+						if (trMrsList == null) continue;
 						// generate question
 						for (MRS qmrs:trMrsList) {
 							mrx = qmrs.toMRXstring();
@@ -233,6 +241,8 @@ public class MrsQG {
 					// fallback
 					Fallback planB = new Fallback (parser, lkb, p);
 					planB.doIt();
+					MrsReplacer planC = new MrsReplacer (parser, lkb, p, origMrsList);
+					planC.doIt();
 				}
 				
 			} else {

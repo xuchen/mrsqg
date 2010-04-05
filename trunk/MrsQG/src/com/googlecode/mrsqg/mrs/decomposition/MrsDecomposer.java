@@ -20,6 +20,7 @@ public abstract class MrsDecomposer {
 	 * @return a new decomposed MRS, including the original one <code>inList</code>
 	 */
 	public ArrayList<MRS> doIt(ArrayList<MRS> inList) {
+		if (inList == null) return null;
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 		
 		ArrayList<MRS> decomposedList;
@@ -30,7 +31,7 @@ public abstract class MrsDecomposer {
 			decomposedList = decompose(decomposedList);
 		}
 		
-		outList.addAll(inList);
+		//outList.addAll(inList);
 		
 		return outList;
 	}

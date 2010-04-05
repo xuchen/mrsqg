@@ -48,7 +48,9 @@ public class CoordDecomposer extends MrsDecomposer {
 					String lEvent = ep.getValueByFeature("L-INDEX");
 					String rHndl = ep.getValueByFeature("R-HNDL");
 					String rEvent = ep.getValueByFeature("R-INDEX");
-					if (lHndl != null && rHndl != null) {
+					if (lHndl != null && rHndl != null && 
+							mrs.getEPbyLabelValue(lHndl) != null && 
+							mrs.getEPbyLabelValue(rHndl) != null) {
 						// use L-HNDL and R-HNDL to assemble two individual MRS
 						String loLabel = null;
 						String targetLabel = null;
