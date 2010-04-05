@@ -33,7 +33,7 @@ public class CoordDecomposer extends MrsDecomposer {
 	public ArrayList<MRS> decompose(ArrayList<MRS> inList) {
 		if (inList == null) return null;
 		
-		String[] coordEPnames = new String[]{"_AND_C_REL", "_OR_C_REL", "_BUT_C_REL"};
+		String[] coordEPnames = new String[]{"_AND_C_REL", "_OR_C_REL", "_BUT_C_REL"/*, "IMPLICIT_CONJ_REL"*/};
 		List<String> coordEPlist = Arrays.asList(coordEPnames);
 		
 		ArrayList<MRS> outList = new ArrayList<MRS>();
@@ -62,8 +62,6 @@ public class CoordDecomposer extends MrsDecomposer {
 								targetLabel = loLabel;
 							else {
 								targetLabel = hiLabel;
-//								log.warn("In this MRS, the HNDL of a coordination is not" +
-//										" in a qeq relation. Using HiLabel as the target for extraction: "+hiLabel);
 							}
 							//outList.add(MRS.extractByLabelValue(targetLabel, mrs));
 							MRS cMrs = new MRS(mrs);
@@ -127,10 +125,12 @@ public class CoordDecomposer extends MrsDecomposer {
 							} else {
 								cMrs.setIndex(rEvent);
 							}
-							cMrs.removeEPbyFlag();
-							cMrs.cleanHCONS();
-							cMrs.changeFromUnkToNamed();
-							outList.add(cMrs);
+							if (cMrs.removeEPbyFlag()) {
+								cMrs.cleanHCONS();
+								cMrs.changeFromUnkToNamed();
+								cMrs.setDecomposer("Coordination");
+								outList.add(cMrs);
+							}
 						}
 						break;
 					}
@@ -141,11 +141,5 @@ public class CoordDecomposer extends MrsDecomposer {
 		return outList.size() == 0 ? null : outList;
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-
-	}
 
 }

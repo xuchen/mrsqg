@@ -67,6 +67,8 @@ public class MRS {
 	private String index_vid = "";
 	// the type of sentence, e.g. PROP, WHEN, WHERE, etc
 	private String sent_type = "PROP";
+	/** which decomposer this MRS comes from. */
+	private ArrayList<String> decomposer = null;
 	
 	private ArrayList <ElementaryPredication> eps;
 	private ArrayList<HCONS> hcons;
@@ -79,7 +81,9 @@ public class MRS {
 	public String getSentType() {return sent_type;}
 	public ArrayList <ElementaryPredication> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
-	public void setSentType (String sentForce) {sent_type = sentForce;};
+	public void setSentType (String sentForce) {sent_type = sentForce;}
+	public void setDecomposer (String p) {decomposer.add(p);}
+	public ArrayList<String> getDecomposer () {return decomposer;}
 	public void setIndex (String index) {
 		if (!index.startsWith("e")) {
 			log.warn("the main event of this MRS doesn't start with an e: "+index+"!");
@@ -94,6 +98,7 @@ public class MRS {
 		StringBuilder res = new StringBuilder();
 		res.append("\n");
 		res.append("SentType: "+sent_type+"\n");
+		res.append("Decomposer: "+decomposer+"\n");
 		// LTOP: h1
 		res.append("LTOP: "+ltop+"\n");
 		// INDEX: e2 [ e SF: PROP-OR-QUES TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
@@ -115,6 +120,7 @@ public class MRS {
 	public MRS() {
 		hcons = new ArrayList<HCONS>();
 		eps = new ArrayList<ElementaryPredication>();
+		decomposer = new ArrayList<String>();
 	}
 	
 	public MRS(File file) {
@@ -138,6 +144,8 @@ public class MRS {
 		this.index_vid = old.getIndexVid();
 		this.sent_type = old.getSentType();
 		this.eps = new ArrayList<ElementaryPredication>();
+		this.decomposer = new ArrayList<String>();
+		for (String s:old.getDecomposer()) decomposer.add(s);
 		for (ElementaryPredication ep:old.getEps()) {
 			this.eps.add(new ElementaryPredication(ep));
 		}
@@ -336,10 +344,6 @@ public class MRS {
 			if (ep.getCfrom()==cfrom && ep.getCto()==cto) {
 				epsList.add(ep);
 			}
-		}
-		
-		if (epsList.size() == 0) {
-			log.error(String.format("EPS(c%d-c%d) not found.", cfrom, cto));
 		}
 		
 		return epsList;
