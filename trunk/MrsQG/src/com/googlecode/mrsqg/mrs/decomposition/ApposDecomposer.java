@@ -23,6 +23,9 @@ import com.googlecode.mrsqg.mrs.Var;
  * (My friend is a young. Sue is young. <-= My friend Sue is young.).
  * Then the NER could work better.
  * 
+ * Test sentences:
+pipe: the girl Anna likes the dog Bark.
+ * 
  * @author Xuchen Yao
  *
  */
@@ -54,12 +57,14 @@ public class ApposDecomposer extends MrsDecomposer {
 					
 					// PART I: use this apposition to form a short sentence
 					// for instance, "the girl Anna" -> "the girl is Anna."
-					outList.add(assembleApposition2sent(mrs, ep));
+					MRS m = assembleApposition2sent(mrs, ep);
+					if (m != null) outList.add(m);
 					
 					// PART II: decompose the sentence by the first apposition.
 					// for instance, "the girl Anna likes dogs."
 					// -> "the girl like dogs." && "Anna likes dogs."
-					outList.addAll(divideApposition2sent(mrs, ep));
+					ArrayList<MRS> l = divideApposition2sent(mrs, ep);
+					if (l != null) outList.addAll(l);
 					
 					// this break is used only when this function is called
 					// from the doIt(), which recursively calls decompose(). 
@@ -80,7 +85,31 @@ public class ApposDecomposer extends MrsDecomposer {
 	 */
 	public MRS assembleApposition2sent (MRS mrs, ElementaryPredication apposEP) {
 		
-		MRS apposMrs = MRS.extractByEPandArg0(apposEP, mrs);
+		// There's obviously a better way to do this, which I omitted the first time.
+		//MRS apposMrs = MRS.extractByEPandArg0(apposEP, mrs);
+		MRS apposMrs = new MRS(mrs);
+		apposEP = apposMrs.getEps().get(mrs.getEps().indexOf(apposEP));
+		int cfrom = apposEP.getCfrom();
+		int cto = apposEP.getCto();
+		boolean inside = false;
+		
+		for (ElementaryPredication ep:apposMrs.getEps()) {
+			// There are some EP without a range <cfrom:cto>, in this case,
+			// if they are covered by the apposEP, don't remove it.
+			if (ep.getCto() == -1 && ep.getCfrom() == -1 && inside) continue;
+			if (ep.getCto() < cfrom) {
+				inside = false;
+				ep.setFlag(true);
+			}
+			else if (ep.getCfrom() > cto) {
+				inside = false;
+				ep.setFlag(true);
+			}
+			else {
+				inside = true;
+			}
+		}
+		if (!apposMrs.removeEPbyFlag()) return null;
 		
 		// It should contain only 1 EP. We have 3 steps here:
 		// 1. change APPOS_REL to _BE_V_ID_REL
@@ -88,16 +117,18 @@ public class ApposDecomposer extends MrsDecomposer {
 		// 3. change TENSE of the event to PRES
 		// 4. change SF to QUES
 
-		ElementaryPredication newApposEP = apposMrs.getEPbyTypeName(apposEPlabel).get(0);
+		//ElementaryPredication newApposEP = apposMrs.getEPbyTypeName(apposEPlabel).get(0);
 		// step 1
-		newApposEP.setTypeName("_BE_V_ID_REL");
+		apposEP.setTypeName("_BE_V_ID_REL");
 		// step 2
-		apposMrs.setIndex(newApposEP.getArg0());
+		apposMrs.setIndex(apposEP.getArg0());
 		// step 3
-		newApposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", "PRES");
+		apposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", "PRES");
 		// step 4
-		apposMrs.setAllSF2QUES();
+		//apposMrs.setAllSF2QUES();
 		apposMrs.setDecomposer("Apposition");
+		
+		apposMrs.cleanHCONS();
 		
 		return apposMrs;
 	}
@@ -107,74 +138,75 @@ public class ApposDecomposer extends MrsDecomposer {
 	 * for instance, "the girl Anna likes dogs."
 	 * -> "the girl like dogs." && "Anna likes dogs."
 	 * @param mrs an input MRS
-	 * @param ep the apposition EP, must be in <code>mrs</code>
+	 * @param apposEP the apposition EP, must be in <code>mrs</code>
 	 * @return a new list of MRS representing a simple sentence formed by apposition
 	 */
-	public ArrayList<MRS> divideApposition2sent (MRS mrs, ElementaryPredication ep) {
+	public ArrayList<MRS> divideApposition2sent (MRS mrs, ElementaryPredication apposEP) {
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
-		String arg1Value = ep.getValueByFeature("ARG1");
-		String arg2Value = ep.getValueByFeature("ARG2");
+		String arg1Value = apposEP.getValueByFeature("ARG1");
+		String arg2Value = apposEP.getValueByFeature("ARG2");
 
 		if (arg1Value==null || arg2Value==null) {
-			log.error("Error: APPOS_REL should have ARG1 and ARG2:\n"+ep);
+			log.error("Error: APPOS_REL should have ARG1 and ARG2:\n"+apposEP);
 			return null;
 		}
-		ep.setFlag(true);
+		apposEP.setFlag(true);
 		MRS arg1Mrs = new MRS(mrs);
 		MRS arg2Mrs = new MRS(mrs);
-		ep.setFlag(false);
+		apposEP.setFlag(false);
 		
-		ArrayList<ElementaryPredication> arg1EPlist = arg1Mrs.getEPbyFeatAndValue("ARG0", arg1Value);
-		if (arg1EPlist.size()==0) {
-			log.error("Error: can't find an EP with ARG0:"+arg1Value+" in "+arg1Mrs);
-			return null;
-		}
-		ArrayList<ElementaryPredication> arg2EPlist = arg2Mrs.getEPbyFeatAndValue("ARG0", arg2Value);
-		if (arg2EPlist.size()==0) {
-			log.error("Error: can't find an EP with ARG0:"+arg2Value+" in "+arg2Mrs);
-			return null;
-		}
-		
-		// WARNING: the order of the 3 following operations are very important.
-		// DO NOT CHANGE IT!
-		
-		// remove Appositive EP
-		arg1Mrs.removeEPbyFlag();
-		arg2Mrs.removeEPbyFlag();
-		
-		// replace all referred ARG1 to ARG2 and vice versa
-		// another bug here: can't be really replaced! sigh!
-		ArrayList<FvPair> arg2list = arg1Mrs.getFvPairByValue(arg2Value);
-		Var arg1Var = arg1EPlist.get(0).getValueVarByFeature("ARG0");
-		if (arg2list.size() != 0) {
-			for (FvPair p:arg2list) {
-				p.setVar(arg1Var);
+		int cfrom = apposEP.getCfrom();
+		int cto = apposEP.getCto();
+		ElementaryPredication ep;
+		boolean inside = false;
+		boolean arg2Area = false;
+		// remove all arg2 in arg1Mrs and all arg1 in arg2Mrs
+		for (int i=0; i<mrs.getEps().size(); i++) {
+			ep = mrs.getEps().get(i);
+			if (ep.getCto() == -1 && ep.getCfrom() == -1 && inside) continue;
+			if (ep.getCto() < cfrom) {
+				inside = false;
+			}
+			else if (ep.getCfrom() > cto) {
+				inside = false;
+			}
+			else {
+				inside = true;
+				/*
+				 * We want to have a clear cut between arg1 and arg2 in side this apposition.
+				 * This is a weak judgment: the EP with (ARG0: ARG1value) should be the head
+				 * of the ARG1 phase, it's usually in the last position. So if it's ARG0 value
+				 * matches arg1Value, plus that it's not a hiLabel, then this is the end of
+				 * arg1. Following is Arg2 so set arg2Area = true.
+				 */
+				if (arg2Area) {
+					arg1Mrs.getEps().get(i).setFlag(true);
+				} else {
+					arg2Mrs.getEps().get(i).setFlag(true);
+				}
+				if (ep.getValueByFeature("ARG0").equals(arg1Value) &&
+						ep.getValueByFeature("RSTR") == null) {
+					arg2Area = true;
+				}
 			}
 		}
-		ArrayList<FvPair> arg1list = arg2Mrs.getFvPairByValue(arg1Value);
-		Var arg2Var = arg2EPlist.get(0).getValueVarByFeature("ARG0");
-		if (arg1list.size() != 0) {
-			for (FvPair p:arg1list) {
-				p.setVar(arg2Var);
-			}
-		}
 		
-		// remove the other ARG EP
-		if (arg1Mrs.removeEPlist(arg1EPlist)) {
-			arg1Mrs.cleanHCONS();
-			arg1Mrs.setDecomposer("Apposition");
-			outList.add(arg1Mrs);
-		}
+		if(!arg1Mrs.removeEPbyFlag()) return null;
+		if(!arg2Mrs.removeEPbyFlag()) return null;
 		
-		if (arg2Mrs.removeEPlist(arg2EPlist)) {
-			arg2Mrs.cleanHCONS();
-			arg2Mrs.setDecomposer("Apposition");
-			outList.add(arg2Mrs);
-		}
+		arg1Mrs.changeEPvalue(arg2Value, arg1Value);
+		arg2Mrs.changeEPvalue(arg1Value, arg2Value);
+		
+		arg1Mrs.cleanHCONS();
+		arg2Mrs.cleanHCONS();
+		
+		outList.add(arg1Mrs);
+		outList.add(arg2Mrs);
 		
 		return outList;
 	}
 
 }
+

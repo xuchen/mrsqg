@@ -510,6 +510,22 @@ public class MRS {
 		return list;
 	}
 	
+	/**
+	 * Change all <code>oldValue</code> values to <code>newValue</code>.
+	 * For instance, change all "x5" to "x6"  
+	 * @param oldValue "x5"
+	 * @param newValue "x6"
+	 */
+	public void changeEPvalue (String oldValue, String newValue) {
+		for (ElementaryPredication ep:this.eps) {
+			for (FvPair f: ep.getFvpair()) {
+				if (f.getValue() != null && f.getValue().equals(oldValue)) {
+					f.setValue(newValue);
+				}
+			}
+		}
+	}
+	
 	public void addEPtoEPS (ElementaryPredication ep) {
 		if (ep!=null) this.eps.add(ep);
 	}
