@@ -86,7 +86,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		// 1. change APPOS_REL to _BE_V_ID_REL
 		// 2. change the main event of sentence to ARG0 of _BE_V_ID_REL
 		// 3. change TENSE of the event to PRES
-		// 3. change SF to QUES
+		// 4. change SF to QUES
 
 		ElementaryPredication newApposEP = apposMrs.getEPbyTypeName(apposEPlabel).get(0);
 		// step 1
@@ -97,6 +97,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		newApposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", "PRES");
 		// step 4
 		apposMrs.setAllSF2QUES();
+		apposMrs.setDecomposer("Apposition");
 		
 		return apposMrs;
 	}
@@ -161,14 +162,17 @@ public class ApposDecomposer extends MrsDecomposer {
 		}
 		
 		// remove the other ARG EP
-		arg1Mrs.removeEPlist(arg1EPlist);
-		arg2Mrs.removeEPlist(arg2EPlist);
+		if (arg1Mrs.removeEPlist(arg1EPlist)) {
+			arg1Mrs.cleanHCONS();
+			arg1Mrs.setDecomposer("Apposition");
+			outList.add(arg1Mrs);
+		}
 		
-		arg1Mrs.cleanHCONS();
-		arg2Mrs.cleanHCONS();
-		
-		outList.add(arg1Mrs);
-		outList.add(arg2Mrs);
+		if (arg2Mrs.removeEPlist(arg2EPlist)) {
+			arg2Mrs.cleanHCONS();
+			arg2Mrs.setDecomposer("Apposition");
+			outList.add(arg2Mrs);
+		}
 		
 		return outList;
 	}

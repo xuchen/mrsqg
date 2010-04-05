@@ -39,10 +39,12 @@ public class SubordinateDecomposer extends MrsDecomposer {
 						if (e.getCto() > subEP.getCto()) break;
 						e.setFlag(true);
 					}
-					subMrs.removeEPbyFlag();
-					subMrs.cleanHCONS();
-					outList.add(subMrs);
-					break;
+					if (subMrs.removeEPbyFlag()) {
+						subMrs.cleanHCONS();
+						subMrs.setDecomposer("Subordinate");
+						outList.add(subMrs);
+						break;
+					}
 				}
 			}
 		}
