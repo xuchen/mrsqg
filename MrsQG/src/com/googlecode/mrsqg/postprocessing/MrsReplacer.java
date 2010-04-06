@@ -1,5 +1,6 @@
 /**
- * 
+ * Current this class replaces a coordination phrase (indicated by the
+ * _AND_C_REL relation) with "what", and tries to generate from it.
  */
 package com.googlecode.mrsqg.postprocessing;
 

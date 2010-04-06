@@ -58,7 +58,7 @@ public class CoordDecomposer extends MrsDecomposer {
 						// get the loLabel from the HCONS list
 						for (String hiLabel: new String[]{lHndl, rHndl}) {
 							coordEP = ep;
-							loLabel = MRS.getLoLabelFromHconsList(hiLabel, mrs.getHcons());
+							loLabel = mrs.getLoLabelFromHconsList(hiLabel);
 							// targetLabel indicates the EP we want to extract
 							if (loLabel != null)
 								targetLabel = loLabel;
