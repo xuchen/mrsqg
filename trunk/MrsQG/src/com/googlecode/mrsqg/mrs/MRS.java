@@ -511,6 +511,42 @@ public class MRS {
 	}
 	
 	/**
+	 * Get the EP of the main verb
+	 * @return an EP representing the main verb in this MRS
+	 */
+	public ElementaryPredication getVerbEP () {
+		ElementaryPredication verbEP = null;
+		ElementaryPredication modalEP = null;
+		
+		// the main event of this MRS
+		String event = this.getIndex();
+		ArrayList<ElementaryPredication> eventEPS = this.getEPbyFeatAndValue("ARG0", event);
+		for (ElementaryPredication ep:eventEPS) {
+			if (ep.getTypeName().contains("_modal_")) {
+				// it could be that a modal verb, such as 'can'/'must',
+				// takes this event
+				modalEP = ep;
+			} else {
+				verbEP = ep;
+			}
+		}
+		
+		if (modalEP != null) {
+			// the modal verb refers to the main verb by a qeq relation
+			String hiLabel = modalEP.getValueByFeature("ARG1");
+			String loLabel = this.getLoLabelFromHconsList(hiLabel);
+			ArrayList<ElementaryPredication> verbList = this.getEPbyLabelValue(loLabel);
+			if (verbList.size() == 1) {
+				verbEP = verbList.get(0);
+			} else {
+				log.warn("this MRS contains more than one verbEP?\n"+verbList);
+			}
+		}
+		
+		return verbEP;
+	}
+	
+	/**
 	 * Change all <code>oldValue</code> values to <code>newValue</code>.
 	 * For instance, change all "x5" to "x6"  
 	 * @param oldValue "x5"
@@ -576,10 +612,10 @@ public class MRS {
 	 * For instance, the list contains a "h1 qeq h2" relation, then
 	 * given a hiLabel "h1", the function returns the loLabel "h2"
 	 * @param hiLabel a hiLabel
-	 * @param list a list possibly containing the loLabel
 	 * @return a corresponding loLabel in the list, or null if not found
 	 */
-	public static String getLoLabelFromHconsList (String hiLabel, ArrayList<HCONS> list) {
+	public String getLoLabelFromHconsList (String hiLabel) {
+		ArrayList<HCONS> list = this.getHcons();
 		String loLabel = null;
 		if (hiLabel != null) {
 			for (HCONS h:list) {

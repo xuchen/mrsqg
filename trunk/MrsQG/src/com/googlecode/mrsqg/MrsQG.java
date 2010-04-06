@@ -111,6 +111,7 @@ public class MrsQG {
 		CoordDecomposer coordDecomposer = new CoordDecomposer();
 		ApposDecomposer apposDecomposer = new ApposDecomposer();
 		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
+		WhyDecomposer whyDecomposer = new WhyDecomposer();
 		boolean fallback = true;
 		
 		while (true) {
@@ -169,7 +170,7 @@ public class MrsQG {
 				if (p.getNumTokens() > 15) {
 					parser.releaseMemory();
 				}
-				if (!success) continue;
+				if (!success || mrxList == null) continue;
 				// TODO: add MRS selection here
 				
 				// decomposition
@@ -177,11 +178,13 @@ public class MrsQG {
 				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
 				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
 				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
+				ArrayList<MRS> whyDecomposedMrxList = whyDecomposer.doIt(mrxList);
 				
 				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
 				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
 				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
 				if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
+				if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 								
 				// generation
 				if (mrxList != null && lkb != null) {

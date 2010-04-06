@@ -92,6 +92,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		int cfrom = apposEP.getCfrom();
 		int cto = apposEP.getCto();
 		boolean inside = false;
+		String oriTense = mrs.getTense();
 		
 		for (ElementaryPredication ep:apposMrs.getEps()) {
 			// There are some EP without a range <cfrom:cto>, in this case,
@@ -119,7 +120,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		// step 2
 		apposMrs.setIndex(apposEP.getArg0());
 		// step 3
-		apposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", "PAST");
+		apposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", oriTense);
 		// step 4
 		//apposMrs.setAllSF2QUES();
 		apposMrs.setDecomposer("Apposition");
