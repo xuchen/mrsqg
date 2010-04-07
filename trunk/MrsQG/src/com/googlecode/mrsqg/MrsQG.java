@@ -25,8 +25,10 @@ import com.googlecode.mrsqg.nlp.SnowballStemmer;
 import com.googlecode.mrsqg.nlp.StanfordNeTagger;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
+import com.googlecode.mrsqg.postprocessing.AndReplacer;
 import com.googlecode.mrsqg.postprocessing.Fallback;
 import com.googlecode.mrsqg.postprocessing.MrsReplacer;
+import com.googlecode.mrsqg.postprocessing.WhereReplacer;
 
 
 public class MrsQG {
@@ -174,16 +176,16 @@ public class MrsQG {
 				// TODO: add MRS selection here
 				
 				// decomposition
-//				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
-//				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
-//				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
-				//ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
+				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
+				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
+				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
+				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
 				ArrayList<MRS> whyDecomposedMrxList = whyDecomposer.doIt(mrxList);
 				
-//				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
-//				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
-//				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
-				//if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
+				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
+				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
+				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
+				if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
 				if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 								
 				// generation
@@ -244,8 +246,9 @@ public class MrsQG {
 					// fallback
 					Fallback planB = new Fallback (parser, lkb, p);
 					planB.doIt();
-					MrsReplacer planC = new MrsReplacer (parser, lkb, p, origMrsList);
-					planC.doIt();
+					// TODO:  here the generated MRS list should go in !!
+					new AndReplacer (parser, lkb, p, origMrsList).doIt();
+					new WhereReplacer (parser, lkb, p, origMrsList).doIt();
 				}
 				
 			} else {
