@@ -174,16 +174,16 @@ public class MrsQG {
 				// TODO: add MRS selection here
 				
 				// decomposition
-				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
-				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
-				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
-				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
+//				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
+//				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
+//				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
+				//ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
 				ArrayList<MRS> whyDecomposedMrxList = whyDecomposer.doIt(mrxList);
 				
-				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
-				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
-				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
-				if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
+//				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
+//				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
+//				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
+				//if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
 				if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 								
 				// generation

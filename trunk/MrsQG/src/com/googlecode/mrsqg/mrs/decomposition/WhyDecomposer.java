@@ -32,12 +32,13 @@ public class WhyDecomposer extends MrsDecomposer {
 
 			for (ElementaryPredication ep:inMrs.getEps()) {
 				if (ep.getTypeName().equals(because)) {
-					
+					ArrayList<MRS> l;
 					if (ep.getCfrom() > 0) {
-						ArrayList<MRS> l = becauseMiddle (inMrs, ep);
-						if (l!=null) outList.addAll(l);
+						l = becauseMiddle (inMrs, ep);
 					} else {
+						l = becauseFront(inMrs, ep);
 					}
+					if (l!=null) outList.addAll(l);
 
 					break;
 				}
@@ -75,7 +76,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		}
 		
 		// the event index of resultMrs is inherited from the original MRS
-		// we need to find out the event index for reason Mrs
+		// we need to find out the event index for the reasonMrs
 		String reasonEvent = null;
 		for (ElementaryPredication ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
 			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
@@ -103,24 +104,83 @@ public class WhyDecomposer extends MrsDecomposer {
 			list.add(resultMrs);
 		}
 
+		MRS whyMrs = constructWhyMrs(resultMrs);
+		if (whyMrs != null)
+			list.add(whyMrs);
+		
+		return list.size()==0 ? null : list;
+	}
+	
+	protected ArrayList<MRS> becauseFront(MRS inMrs, ElementaryPredication becauseEP) {
+//		MRS reasonMrs = new MRS(inMrs);
+//		MRS resultMrs = new MRS(inMrs);
+		ArrayList<MRS> list = new ArrayList<MRS>();
+		
+		String resultHi = becauseEP.getValueByFeature("ARG1");
+		String reasonHi = becauseEP.getValueByFeature("ARG2");
+//		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
+		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
+//		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
+//		
+//		ElementaryPredication cutEP = null;
+		
+		MRS reasonMrs = inMrs.extractByLabel(reasonHi, becauseEP);
+		MRS resultMrs = inMrs.extractByLabel(resultHi, becauseEP);
+		
+		// the event index of resultMrs is inherited from the original MRS
+		// we need to find out the event index for the reasonMrs
+		String reasonEvent = null;
+		for (ElementaryPredication ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
+			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
+				String tense = ep.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
+				if (tense != null && !tense.equals("UNTENSED")) {
+					reasonEvent = ep.getArg0();
+					break;
+				}
+			}
+		}
+		
+		if (reasonEvent != null) reasonMrs.setIndex(reasonEvent);
+		
+		reasonMrs.setDecomposer("WhyDecomposerReason");
+		resultMrs.setDecomposer("WhyDecomposerResult");
+		
+		list.add(reasonMrs);
+		list.add(resultMrs);
+		
+		MRS whyMrs = constructWhyMrs(resultMrs);
+		if (whyMrs != null)
+			list.add(whyMrs);
+		
+		return list.size()==0 ? null : list;
+	}
+
+	/**
+	 * Given a result MRS, construct a why MRS from it. For instance: 
+	 * "mice don't like cats" -> "why don't mice like cats?" 
+	 * @param resultMrs
+	 * @return
+	 */
+	protected MRS constructWhyMrs (MRS resultMrs) {
 		/* Construct a why MRS
-          [ _for_p_rel<0:1>
-            LBL: h3
-            ARG0: i5
-            ARG1: e4 [ e SF: PROP-OR-QUES TENSE: UNTENSED MOOD: INDICATIVE PROG: - PERF: - ]
-            ARG2: x6 ]
-          [ which_q_rel
-            LBL: h7
-            ARG0: x6
-            RSTR: h9
-            BODY: h8 ]
-          [ reason_rel<0:1>
-            LBL: h10
-            ARG0: x6 ]
+        [ _for_p_rel<0:1>
+          LBL: h3
+          ARG0: i5
+          ARG1: e4 [ e SF: PROP-OR-QUES TENSE: UNTENSED MOOD: INDICATIVE PROG: - PERF: - ]
+          ARG2: x6 ]
+        [ which_q_rel
+          LBL: h7
+          ARG0: x6
+          RSTR: h9
+          BODY: h8 ]
+        [ reason_rel<0:1>
+          LBL: h10
+          ARG0: x6 ]
 		 */
 		MRS whyMrs = new MRS(resultMrs);
 		// Generate the WHICH_Q_REL qeq REASON_REL pair
 		ArrayList<String> labelStore = whyMrs.generateUnusedLabel(6);
+		if (labelStore == null) return null;
 		ElementaryPredication whichEP = new ElementaryPredication("WHICH_Q_REL", "h"+labelStore.get(0));
 		String arg0 = "x"+labelStore.get(4);
 		whichEP.addSimpleFvpair("ARG0", arg0);
@@ -136,35 +196,18 @@ public class WhyDecomposer extends MrsDecomposer {
 		ElementaryPredication verbEP = whyMrs.getVerbEP();
 		ElementaryPredication forEP = new ElementaryPredication("_FOR_P_REL", verbEP.getLabel());
 		forEP.addSimpleFvpair("ARG0", "i"+labelStore.get(5));
-		forEP.addSimpleFvpair("ARG1", verbEP.getValueByFeature("ARG0"));
+		forEP.addFvpair("ARG1", verbEP.getValueVarByFeature("ARG0"));
 		forEP.addSimpleFvpair("ARG2", arg0);
 		
 		whyMrs.addEPtoEPS(forEP);
 		
 		whyMrs.setAllSF2QUES();
 		whyMrs.setSentType("WHY");
+		whyMrs.setDecomposer("WhyDecomposerWhy");
 		whyMrs.changeFromUnkToNamed();
 		// build cross references?
 		whyMrs.buildCoref();
-		list.add(whyMrs);
 		
-		return list.size()==0 ? null : list;
+		return whyMrs;
 	}
-	
-	protected ArrayList<MRS> becauseFront(MRS inMrs, ElementaryPredication becauseEP) {
-		MRS reasonMrs = new MRS(inMrs);
-		MRS resultMrs = new MRS(inMrs);
-		ArrayList<MRS> list = new ArrayList<MRS>();
-		
-		String resultHi = becauseEP.getValueByFeature("ARG1");
-		String reasonHi = becauseEP.getValueByFeature("ARG2");
-		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
-		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
-		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
-		
-		ElementaryPredication cutEP = null;
-		
-		return list.size()==0 ? null : list;
-	}
-
 }

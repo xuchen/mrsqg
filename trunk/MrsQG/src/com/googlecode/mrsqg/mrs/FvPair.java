@@ -88,6 +88,16 @@ public class FvPair {
 		this.var = new Var(value, extraPairs);
 	}
 	
+	/**
+	 * constructs a complex FvPair from <code>feature</code> and <code>value</code>.
+	 * @param feature a feature String, such as "ARG0".
+	 * @param value a value Var.
+	 */
+	public FvPair(String feature, Var value) {
+		this.rargname = feature;
+		this.var = value;
+	}
+	
 	public void serializeXML (ContentHandler hd) {
 		AttributesImpl atts = new AttributesImpl();
 		try {
