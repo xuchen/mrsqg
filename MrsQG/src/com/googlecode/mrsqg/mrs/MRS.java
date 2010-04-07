@@ -1063,6 +1063,16 @@ public class MRS {
 	}
 	
 	/**
+	 * Set the flag of all the EPS to <code>flag</code> 
+	 * @param flag a boolean value
+	 */
+	public void setAllFlag (boolean flag) {
+		for (ElementaryPredication ep:this.getEps()) {
+			ep.setFlag(flag);
+		}
+	}
+	
+	/**
 	 * remove a <code>list</code> of EP from the EPS list
 	 * @param list an ArrayList of EP
 	 * @return success status
