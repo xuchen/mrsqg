@@ -135,6 +135,23 @@ public class ElementaryPredication {
 		return set;
 	}
 	
+	
+	/**
+	 * Get all values and label in an EP, such as "x9", "e2", etc.
+	 * @return a HashSet containing all "ARG*" values
+	 */
+	public HashSet<String> getAllValueAndLabel() {
+
+		HashSet<String> set = new HashSet<String>();
+		for (FvPair fp:fvpair) {
+			if (fp.getVar() != null)
+				set.add(fp.getVar().getLabel());
+		}
+		set.add(this.getLabel());
+
+		return set;
+	}
+	
 	/*
 	public ArrayList<String> getAllARGvalue() {
 		// TreeMap guarantees that the map will be in ascending key order
@@ -260,6 +277,16 @@ public class ElementaryPredication {
 	 */
 	public void addFvpair(String feature, String value, String[] extraPairs) {
 		FvPair p = new FvPair(feature, value, extraPairs);
+		this.fvpair.add(p);
+	}
+	
+	/**
+	 * add a complex FvPair to this EP.
+	 * @param feature a feature string, such as "ARG0".
+	 * @param value a Var value.
+	 */
+	public void addFvpair(String feature, Var value) {
+		FvPair p = new FvPair(feature, value);
 		this.fvpair.add(p);
 	}
 	

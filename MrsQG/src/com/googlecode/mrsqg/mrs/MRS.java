@@ -884,6 +884,82 @@ public class MRS {
 	}
 	
 	/**
+	 * This method returns a new MRS containing all EPs referred by label, both
+	 * directly or indirectly. The new MRS doesn't contain any EPs referred by
+	 * <code>exceptionEP</code>. Note this method doesn't set the event index
+	 * of the whole MRS. You have to do it yourself.
+	 * @param label a h* label
+	 * @param exceptionEP
+	 * @return a new MRS, or null if none matches
+	 */
+	public MRS extractByLabel (String label, ElementaryPredication exceptionEP) {
+		MRS mrs = new MRS(this);
+		HashSet<String> set = new HashSet<String>();
+		HashSet<String> moreSet = new HashSet<String>();
+		set.add(label);
+		String loLabel = mrs.getLoLabelFromHconsList(label);
+		if (loLabel!=null) set.add(loLabel);
+		if (exceptionEP != null) 
+			mrs.getEps().get(this.getEps().indexOf(exceptionEP)).setFlag(true);
+		int oldSize = 0;
+		
+		// get all h* and x* referred by label and loLabel
+		for (String l:set) {
+			ArrayList<ElementaryPredication> list = mrs.getEPbyLabelValue(l);
+			if (list == null) continue;
+			for (ElementaryPredication ep:list) {
+				for (String v:ep.getAllValue()) {
+					if (v.startsWith("h") || v.startsWith("x")) {
+						moreSet.add(v);
+						String lo = mrs.getLoLabelFromHconsList(v);
+						if (lo != null) moreSet.add(lo);
+					}
+				}
+			}
+		}
+		set.addAll(moreSet);
+		
+		// loop recursively to find out all referred EPs.
+		while (oldSize < set.size()) {
+			oldSize = set.size();
+			for (ElementaryPredication ep:mrs.getEps()) {
+				if (ep.getFlag()) continue;
+				for (String v:ep.getAllValueAndLabel()) {
+					if (v.startsWith("h")) {
+						String lo = mrs.getLoLabelFromHconsList(v);
+						if (lo!=null && set.contains(lo)) 
+							set.add(lo);
+					}
+					if (set.contains(v)) {
+						set.add(v);
+						for (String vv:ep.getAllValueAndLabel()) {
+							if (vv.startsWith("h") || vv.startsWith("x")) set.add(vv);
+						}
+					}
+				}
+			}
+		}
+		
+		for (ElementaryPredication ep:mrs.getEps()) {
+			if (ep.getFlag()) continue;
+			boolean flag = true;
+			for (String v:ep.getAllValue()) {
+				if (set.contains(v)) {
+					flag = false;
+					break;
+				}
+			}
+			ep.setFlag(flag);
+		}
+		
+		if (mrs.removeEPbyFlag()) {
+			mrs.cleanHCONS();
+			mrs.buildCoref();
+			return mrs;
+		} else return null;
+	}
+	
+	/**
 	 * Clean up the HCONS list. Any HCONS pairs, such as "h1 qeq h2", whose
 	 * hiLabel and loLabel can't be both found in the EPS, are removed.
 	 */
@@ -1034,6 +1110,7 @@ public class MRS {
 		
 		Integer[] valueArray = (Integer[]) valueSet.toArray(new Integer[]{});
 		Arrays.sort(valueArray);
+		if (valueArray.length == 0) return null;
 		for (int i=valueArray[valueArray.length-1]+1; num>0; i++, num--) {
 			list.add(String.valueOf(i));
 		}
