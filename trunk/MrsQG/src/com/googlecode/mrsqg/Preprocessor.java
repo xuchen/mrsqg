@@ -258,19 +258,25 @@ public class Preprocessor {
 	}
 
 	/**
-	 * Output preprocessed sentence to FSC format by terms
+	 * Output preprocessed sentence to FSC format by terms. <code>tokenPos</code>
+	 * controls whether to also output the POS tags of tokens. If set to false, 
+	 * then only output POS of terms. When sentences are highly possible to contain
+	 * unknown words, set it to true so PET parses.
 	 * 
+	 * @param os an output stream, could be a file, stdout, etc.
+	 * @param tokenPos a boolean value.
 	 */
-	public void outputFSCbyTerms (OutputStream os) {
+	public void outputFSCbyTerms (OutputStream os, boolean tokenPos) {
 		
 		if (countOfSents == 0) {
-			log.info("No input sentence.");
+			log.error("No input sentence.");
 			return;
 		}
 		String sent = sentences[0];
 		int nTokens = tokens[0].length;
 		String[] tokens = this.tokens[0];
 		Term[] terms = this.terms[0];
+		String[] pos = this.pos[0];
 		
 		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
 		of.setIndent(1);
@@ -380,7 +386,7 @@ public class Preprocessor {
 				hd.endElement("", "", "str");
 				hd.endElement("", "", "f");
 				
-				if (term != null) {
+				if (tokenPos) {
 	//				<f name="+TNT">
 	//	              <fs type="tnt">
 	//	                <f name="+TAGS" org="list"><str>DT</str></f>
@@ -401,7 +407,10 @@ public class Preprocessor {
 					hd.startElement("", "", "f", atts);
 					atts.clear();
 					hd.startElement("", "", "str", atts);
-					hd.characters(term.getPosFSC().toCharArray(), 0, term.getPosFSC().length());
+					if (term != null)
+						hd.characters(term.getPosFSC().toCharArray(), 0, term.getPosFSC().length());
+					else
+						hd.characters(pos[i].toCharArray(), 0, pos[i].length());
 					hd.endElement("", "", "str");
 					hd.endElement("", "", "f");
 					
@@ -447,13 +456,15 @@ public class Preprocessor {
 	 * This functions first calls preprocess() and then output
 	 * FSC XML by terms. 
 	 * @param input a raw sentence
+	 * @param tokenPos a boolean value, whether to also output the POS tags of tokens.
+	 *  If set to false, then only output POS of terms.
 	 * @return a string representing FSC in XML 
 	 */
-	public String getFSCbyTerms(String input) {
+	public String getFSCbyTerms(String input, boolean tokenPos) {
 		
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		preprocess(input);
-		outputFSCbyTerms(os);
+		outputFSCbyTerms(os, tokenPos);
 		String fsc = os.toString();
 		
 		return fsc;

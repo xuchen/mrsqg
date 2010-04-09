@@ -137,7 +137,7 @@ public class MrsQG {
 				input = input.substring(6).trim();
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
-				String fsc = p.getFSCbyTerms(input);
+				String fsc = p.getFSCbyTerms(input, true);
 				log.info("\nFSC XML from preprocessing:\n");
 				log.info(fsc);
 				
@@ -149,14 +149,14 @@ public class MrsQG {
 				if (p.getNumTokens() > 15) {
 					parser.releaseMemory();
 				}
-				if (!parser.isSuccess()) continue;
+				//if (!parser.isSuccess()) continue;
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
 				input = input.substring(5).trim();
 				
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
-				String fsc = p.getFSCbyTerms(input);
+				String fsc = p.getFSCbyTerms(input, true);
 				log.info("\nFSC XML from preprocessing:\n");
 				log.info(fsc);
 				
@@ -254,7 +254,7 @@ public class MrsQG {
 			} else {
 				p = new Preprocessor();
 				p.preprocess(input);
-				p.outputFSCbyTerms(System.out);
+				p.outputFSCbyTerms(System.out, true);
 			}
 		}
 	}

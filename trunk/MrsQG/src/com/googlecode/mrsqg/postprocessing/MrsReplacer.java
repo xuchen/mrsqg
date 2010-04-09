@@ -44,7 +44,7 @@ public abstract class MrsReplacer {
 		Preprocessor pre;
 		for (Pair p:this.pairs) {
 			pre = new Preprocessor();
-			String fsc = pre.getFSCbyTerms(p.getTranSent());
+			String fsc = pre.getFSCbyTerms(p.getTranSent(), true);
 			log.info("Transformed sentence:");
 			log.info(p.getTranSent());
 //			log.info("\nFSC XML from preprocessing:\n");
