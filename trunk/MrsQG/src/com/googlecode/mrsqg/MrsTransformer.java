@@ -163,10 +163,10 @@ public class MrsTransformer {
 					q_mrs.setSentType("WHO");
 
 				} else if (neType.equals("NElocation")) {
-//					loEP.setPred("PLACE_N_REL");
-//					q_mrs.setSentForce("WHERE");
-					loEP.setPred("THING_REL");
-					q_mrs.setSentType("WHAT");
+					loEP.setPred("PLACE_N_REL");
+					q_mrs.setSentType("WHERE");
+//					loEP.setPred("THING_REL");
+//					q_mrs.setSentType("WHAT");
 				} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
 					loEP.setPred("TIME_N_REL");
 					q_mrs.setSentType("WHEN");
@@ -175,6 +175,27 @@ public class MrsTransformer {
 					loEP.setPred("THING_REL");
 					q_mrs.setSentType("WHAT");
 				}
+				loEP.delFvpair("CARG");
+				String[] extra = {"NUM", "PERS"};
+				loEP.keepExtrapairInFvpair("ARG0", extra);
+				
+				if (neType.equals("NElocation")) {
+					// NElocation generates two types of questions: where and which place
+					// this scope of code generates the "which place" question
+					MRS placeMrs = new MRS(q_mrs);
+					// set hiEP to _WHICH_Q_REL and loEP to _place_n_of_rel
+					placeMrs.getEPbyParallelIndex(q_mrs, hiEP).setTypeName("_WHICH_Q_REL");
+					ElementaryPredication placeEP = placeMrs.getEPbyParallelIndex(q_mrs, loEP);
+					placeEP.setTypeName("_place_n_of_rel");
+					placeEP.addSimpleFvpair("ARG1", "i"+placeMrs.generateUnusedLabel(1).get(0));
+					placeEP.getValueVarByFeature("ARG0").addExtrapair("IND", "+");
+					placeMrs.setAllSF2QUES();
+					placeMrs.changeFromUnkToNamed();
+					placeMrs.setSentType("WHICH");
+					outList.add(placeMrs);
+				}
+				
+				
 				if (neType.equals("NElocation") || neType.equals("NEdate"))
 				{
 					ElementaryPredication ppEP = q_mrs.getEPbefore(term.getCfrom(), term.getCto());
@@ -192,22 +213,10 @@ public class MrsTransformer {
 					}
 
 				}
-				loEP.delFvpair("CARG");
-				String[] extra = {"NUM", "PERS"};
-				loEP.keepExtrapairInFvpair("ARG0", extra);
+
 
 				// change SF to "QUES"
 				q_mrs.setAllSF2QUES();
-				// e2
-//				index = q_mrs.getIndex();
-//				v = q_mrs.getFvpairByRargnameAndIndex("ARG0", index);
-//				if (v==null) {
-//					log.error("FvPair ARG0: "+index+" not found! " +
-//					"can't set SF to QUES!");
-//					continue;
-//				}
-//				v.getVar().setExtrapairValue("SF", "QUES");
-
 				q_mrs.changeFromUnkToNamed();
 				outList.add(q_mrs);
 			}

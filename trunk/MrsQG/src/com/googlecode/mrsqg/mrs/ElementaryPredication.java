@@ -9,6 +9,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import com.googlecode.mrsqg.util.StringUtils;
+
 
 public class ElementaryPredication {
 //	<!ELEMENT ep ((pred|realpred), label, fvpair*)>
@@ -29,7 +31,9 @@ public class ElementaryPredication {
 	private int cto = -1;
 	private String surface = null;
 	private String base = null;
+	/** "upper case" relations*/
 	private String pred = null;
+	/** "lower case" relations */
 	private String spred = null;
 	private String label = null;
 	private String label_vid = null;
@@ -63,7 +67,10 @@ public class ElementaryPredication {
 	
 	public ElementaryPredication(String typeName, String label) {
 		this();
-		this.pred = typeName;
+		if (StringUtils.containsUppercase(typeName))
+			this.pred = typeName;
+		else 
+			this.spred = typeName;
 		this.cfrom = 0;
 		this.cto = 0;
 		this.setLabel(label);		
@@ -91,10 +98,18 @@ public class ElementaryPredication {
 	
 	public void setPred(String s) {pred=s;}
 	public void setSpred(String s) {spred=s;}
-	public void setTypeName(String s) {if (pred!=null) pred = s; else spred=s;}
 	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
 	public void setLabel(String s) {label=s; label_vid=s.substring(1);}
-	
+
+	public void setTypeName(String typeName) {
+		if (StringUtils.containsUppercase(typeName)) {
+			this.pred = typeName;
+			this.spred = null;
+		} else { 
+			this.spred = typeName;
+			this.pred = null;
+		}
+	}
 	/**
 	 * return all "ARG*" values in this EP.
 	 * for instance, an EP looks like:

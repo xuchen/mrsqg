@@ -174,6 +174,18 @@ public class Var {
 		}
 	}
 	
+	/**
+	 * Add an extra pair to exiting ones, such as add "IND: +" to  [ x PERS: 3 NUM: SG ]
+	 * @param extraFeature
+	 * @param extraValue
+	 */
+	public void addExtrapair(String extraFeature, String extraValue) {
+		if (this.extrapair != null)
+			this.extrapair.put(extraFeature, extraValue);
+		
+		return;
+	}
+	
 	public void serializeXML (ContentHandler hd) {
 		
 		// <var vid='5' sort='x'>

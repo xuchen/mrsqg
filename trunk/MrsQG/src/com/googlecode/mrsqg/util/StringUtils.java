@@ -414,6 +414,23 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Check whether a string contains upper-case letters.
+	 * 
+	 */
+	public static boolean containsUppercase(String input) {
+		if (input == null) return false;
+		boolean upperFound = false;
+		for (char c : input.toCharArray()) {
+		    if (Character.isUpperCase(c)) {
+		        upperFound = true;
+		        break;
+		    }
+		}
+		    
+		return upperFound;
+	}
+	
+	/**
 	 * Make the first letter of <code>input</code> lower case and return the new string.
 	 * 
 	 */
