@@ -8,9 +8,7 @@ import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
-import com.googlecode.mrsqg.mrs.FvPair;
 import com.googlecode.mrsqg.mrs.MRS;
-import com.googlecode.mrsqg.mrs.Var;
 
 /**
  * Apposition decomposer. Apposition is a relationship between 
