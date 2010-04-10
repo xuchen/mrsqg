@@ -511,6 +511,18 @@ public class MRS {
 	}
 	
 	/**
+	 * Retrieve the same EP as <code>copyEP</code> in <code>copyMrs</code>. This is used when
+	 * the current MRS is a copy of <code>copyEP</code>, then we return the same EP as <code>copyEP</code>
+	 * by computing parallel index in the current MRS
+	 * @param copyMrs an MRS which the current MRS is copied from
+	 * @param copyEP one EP in <code>copyMrs</code>
+	 * @return a corresponding EP the "same" to <code>copyEP</code>
+	 */
+	public ElementaryPredication getEPbyParallelIndex (MRS copyMrs, ElementaryPredication copyEP) {
+		return this.getEps().get(copyMrs.getEps().indexOf(copyEP));
+	}
+	
+	/**
 	 * Get the EP of the main verb
 	 * @return an EP representing the main verb in this MRS
 	 */
