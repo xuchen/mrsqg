@@ -730,8 +730,8 @@ public class MRS {
 	 */
 	public void changeFromUnkToNamed () {
 		for (ElementaryPredication ep:this.eps) {
-			if (ep.getPred()!=null && ep.getPred().equalsIgnoreCase("NAMED_UNK_REL")) {
-				ep.setPred("NAMED_REL");
+			if (ep.getPred()!=null && ep.getTypeName().equalsIgnoreCase("NAMED_UNK_REL")) {
+				ep.setTypeName("NAMED_REL");
 			}
 		}
 	}

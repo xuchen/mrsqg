@@ -24,15 +24,15 @@ public class Var {
 	 * Any new field added to this class must also be added to the copy constructor. 
 	 */
 	
-	private String vid = null;
-	private String sort = null;
+	protected String vid = null;
+	protected String sort = null;
 	// label = sort+vid
-	private String label = null;
+	protected String label = null;
 //	;;; <!ELEMENT extrapair (path,value)>
 //	;;; <!ELEMENT path (#PCDATA)>
 //	;;; <!ELEMENT value (#PCDATA)>
 	// use LinkedHashMap to get insertion order of keys
-	private LinkedHashMap<String, String> extrapair = null;
+	protected LinkedHashMap<String, String> extrapair = null;
 	private String path;
 	
 	public String getVid() {return vid;}
