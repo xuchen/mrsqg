@@ -170,6 +170,10 @@ public class TermExtractor {
 		}
 		// tag part of speech
 		String[] pos = OpenNLP.tagPos(tokens);
+		// temporarily avoid errors such as invalid predicates: |"_thermoplastics_nns_rel"|
+		for (int j=0; j<pos.length; j++) {
+			if (pos[j].equals("NNS")) pos[j] = "NNPS";
+		}
 		// tag phrase chunks
 		String[] chunks = OpenNLP.tagChunks(tokens, pos);
 		// mark tokens as not yet assigned to a term

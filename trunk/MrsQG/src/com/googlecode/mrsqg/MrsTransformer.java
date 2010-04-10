@@ -214,6 +214,10 @@ public class MrsTransformer {
 						if (neType.equals("NElocation")) {
 							loEP.setTypeName("PLACE_N_REL");
 							loEP.getValueVarByFeature("ARG0").setExtrapairValue("NUM", "SG");
+							// only keep "ARG0" as the feature
+							loEP.keepFvpair(new String[]{"ARG0"});
+							// also "ARG0" should be the same with hiEP
+							loEP.setFvpairByFeatAndValue("ARG0", hiEP.getValueVarByFeature("ARG0"));
 							q_mrs.setSentType("WHERE");
 						}
 					}
