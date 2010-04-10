@@ -26,6 +26,7 @@ import com.googlecode.mrsqg.nlp.StanfordNeTagger;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
 import com.googlecode.mrsqg.postprocessing.AndReplacer;
+import com.googlecode.mrsqg.postprocessing.ApposReplacer;
 import com.googlecode.mrsqg.postprocessing.Fallback;
 import com.googlecode.mrsqg.postprocessing.MrsReplacer;
 import com.googlecode.mrsqg.postprocessing.WhereReplacer;
@@ -249,6 +250,7 @@ public class MrsQG {
 					// TODO:  here the generated MRS list should go in !!
 					new AndReplacer (parser, lkb, p, origMrsList).doIt();
 					new WhereReplacer (parser, lkb, p, origMrsList).doIt();
+					new ApposReplacer (parser, lkb, p, origMrsList).doIt();
 				}
 				
 			} else {
