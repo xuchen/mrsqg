@@ -73,7 +73,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 				}
 
 
-				// find out the ofther arg
+				// find out the other arg
 				if (verbEP == null) continue;
 				if (mrs == null) continue;
 				for (String arg:verbEP.getAllARGvalue()) {
@@ -117,7 +117,8 @@ public class SubclauseDecomposer extends MrsDecomposer {
 							continue;
 						}
 						if (eep == verbEP) continue;
-						if (eep.getTypeName().contains("_v_") || eep.getTypeName().contains("_V_")) {
+						if ((eep.getTypeName().contains("_v_") || eep.getTypeName().contains("_V_")) && 
+								eep.getCfrom() < verbEP.getCfrom()) {
 							eep.setFlag(true);
 							continue;
 						}
@@ -127,6 +128,8 @@ public class SubclauseDecomposer extends MrsDecomposer {
 						for (String s:epSet) {
 							if (subSet.contains(s)) {
 								subSet.addAll(epSet);
+								String lo = mrs.getLoLabelFromHconsList(s);
+								if (lo != null) subSet.add(lo);
 								flag = false;
 								break;
 							}

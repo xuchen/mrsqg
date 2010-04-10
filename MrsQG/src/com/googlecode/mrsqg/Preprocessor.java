@@ -1,7 +1,5 @@
 package com.googlecode.mrsqg;
 
-
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -68,6 +66,10 @@ public class Preprocessor {
 			//tokens[i] = NETagger.tokenize(original);
 			tokens[i] = OpenNLP.tokenize(original);
 			pos[i] = OpenNLP.tagPos(tokens[i]);
+			// temporarily avoid errors such as invalid predicates: |"_thermoplastics_nns_rel"|
+			for (int j=0; j<pos[i].length; j++) {
+				if (pos[i][j].equals("NNS")) pos[i][j] = "NNPS";
+			}
 			sentences[i] = StringUtils.concatWithSpaces(this.tokens[i]);
 		}
 		

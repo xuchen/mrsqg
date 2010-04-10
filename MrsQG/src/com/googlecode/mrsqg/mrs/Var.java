@@ -202,6 +202,7 @@ public class Var {
 				atts.clear();
 				for (String path: extrapair.keySet()) {
 					String value = extrapair.get(path);
+					if (value == null || path == null) continue;
 					hd.startElement("", "", "extrapair", atts);
 					hd.startElement("", "", "path", atts);
 					hd.characters(path.toCharArray(),0, path.length());
