@@ -306,6 +306,21 @@ public class ElementaryPredication {
 	}
 	
 	/**
+	 * Set the value of a feature. For instance, set the value of 
+	 * <code>feature</code> "ARG0" to "x3" (a Var).
+	 * @param feature feature's name
+	 * @param value a Var
+	 */
+	public void setFvpairByFeatAndValue (String feature, Var value) {
+		for (FvPair p:fvpair) {
+			if (p.getFeature().equals(feature)) {
+				p.setVar(value);
+				break;
+			}
+		}
+	}
+	
+	/**
 	 * Keep some extrapair in fvpair and remove all others.
 	 * 
 	 * @param fv can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
@@ -313,7 +328,6 @@ public class ElementaryPredication {
 	 */
 	public void keepExtrapairInFvpair(String fv, String[] extra) {
 		fv = fv.toUpperCase();
-		
 
 		for (FvPair p:fvpair) {
 			if (p.getRargname().equals(fv)) {
@@ -322,6 +336,25 @@ public class ElementaryPredication {
 			}
 		}
 	}
+	
+	public void keepFvpair(String[] pairs) {
+		ArrayList<String> list = StringUtils.arrayToArrayList(pairs);
+		ArrayList<FvPair> fvlist = new ArrayList<FvPair>(); 
+
+		for (FvPair p:fvpair) {
+			if (!list.contains(p.getFeature())) {
+				fvlist.add(p);
+			}
+		}
+		
+		if (!fvpair.removeAll(fvlist)) {
+			log.error("Removing fvlist from fvpair failed!");
+			log.error("fvlist: " + fvlist);
+			log.error("fvpair: " + fvpair);
+		}
+	}
+	
+	
 	
 	/**
 	 * return the Var list in fvpair.

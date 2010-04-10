@@ -155,24 +155,29 @@ public class MrsTransformer {
 				}
 
 				// change hiEP to which_q_rel
-				hiEP.setPred("WHICH_Q_REL");
+				hiEP.setTypeName("WHICH_Q_REL");
 
 				// change loEP to person_rel
 				if (neType.equals("NEperson")||neType.equals("NEfirstName")) {
-					loEP.setPred("PERSON_REL");
+					loEP.setTypeName("PERSON_REL");
 					q_mrs.setSentType("WHO");
 
 				} else if (neType.equals("NElocation")) {
-					loEP.setPred("PLACE_N_REL");
+					loEP.setTypeName("PLACE_N_REL");
+					loEP.getValueVarByFeature("ARG0").setExtrapairValue("NUM", "SG");
 					q_mrs.setSentType("WHERE");
-//					loEP.setPred("THING_REL");
+//					loEP.setTypeName("THING_REL");
 //					q_mrs.setSentType("WHAT");
 				} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
-					loEP.setPred("TIME_N_REL");
+					loEP.setTypeName("TIME_N_REL");
 					q_mrs.setSentType("WHEN");
 
 				} else {
-					loEP.setPred("THING_REL");
+					loEP.setTypeName("THING_REL");
+					// only keep "ARG0" as the feature
+					loEP.keepFvpair(new String[]{"ARG0"});
+					// also "ARG0" should be the same with hiEP
+					loEP.setFvpairByFeatAndValue("ARG0", hiEP.getValueVarByFeature("ARG0"));
 					q_mrs.setSentType("WHAT");
 				}
 				loEP.delFvpair("CARG");
@@ -205,9 +210,10 @@ public class MrsTransformer {
 							ppEP.getPred().substring(0, pp.length()+1).toLowerCase().contains(pp.toLowerCase())) {
 						// the Pred of an "in" preposition EP is something like: _in_p_
 						// so the first 3 chars _in must contain "in"
-						ppEP.setPred("LOC_NONSP_REL");
+						ppEP.setTypeName("LOC_NONSP_REL");
 						if (neType.equals("NElocation")) {
-							loEP.setPred("PLACE_N_REL");
+							loEP.setTypeName("PLACE_N_REL");
+							loEP.getValueVarByFeature("ARG0").setExtrapairValue("NUM", "SG");
 							q_mrs.setSentType("WHERE");
 						}
 					}

@@ -441,6 +441,17 @@ public class StringUtils {
 	}
 	
 	/**
+	 * Convert a String array to ArrayList
+	 */
+	public static ArrayList<String> arrayToArrayList (String[] array) {
+		ArrayList<String> list = new ArrayList<String>();
+		for (int i=0; i<array.length; i++) {
+			list.add(array[i]);
+		}
+		return list;
+	}
+	
+	/**
 	 * replace XML-specific symbols:
 	 * <           ->     &lt;
 	 * &           ->     &amps;
