@@ -1,7 +1,9 @@
 package com.googlecode.mrsqg;
 
+import com.googlecode.mrsqg.analysis.Pair;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.mrs.decomposition.*;
+import com.googlecode.mrsqg.mrs.selection.PreSelector;
 import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 import com.googlecode.mrsqg.nlp.indices.Prepositions;
@@ -16,20 +18,10 @@ import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
 
-import com.googlecode.mrsqg.nlp.Cheap;
-import com.googlecode.mrsqg.nlp.LKB;
-import com.googlecode.mrsqg.nlp.LingPipe;
-import com.googlecode.mrsqg.nlp.NETagger;
-import com.googlecode.mrsqg.nlp.OpenNLP;
-import com.googlecode.mrsqg.nlp.SnowballStemmer;
-import com.googlecode.mrsqg.nlp.StanfordNeTagger;
+import com.googlecode.mrsqg.nlp.*;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
-import com.googlecode.mrsqg.postprocessing.AndReplacer;
-import com.googlecode.mrsqg.postprocessing.ApposReplacer;
-import com.googlecode.mrsqg.postprocessing.Fallback;
-import com.googlecode.mrsqg.postprocessing.MrsReplacer;
-import com.googlecode.mrsqg.postprocessing.WhereReplacer;
+import com.googlecode.mrsqg.postprocessing.*;
 
 
 public class MrsQG {
@@ -158,8 +150,8 @@ public class MrsQG {
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
 				String fsc = p.getFSCbyTerms(input, true);
-				log.info("\nFSC XML from preprocessing:\n");
-				log.info(fsc);
+				//log.info("\nFSC XML from preprocessing:\n");
+				//log.info(fsc);
 				
 				// parsing fsc with cheap
 				if (parser == null) continue;
@@ -168,27 +160,41 @@ public class MrsQG {
 				// the option "-results=" in cheap.
 				// Usually it's 3.
 				ArrayList<MRS> origMrsList = parser.getParsedMRSlist();
-				ArrayList<MRS> mrxList = origMrsList;
+				ArrayList<MRS> mrxList = PreSelector.doIt(lkb, origMrsList);
 				boolean success = parser.isSuccess();
 				if (p.getNumTokens() > 15) {
 					parser.releaseMemory();
 				}
 				if (!success || mrxList == null) continue;
-				// TODO: add MRS selection here
+
+				// pairs for declarative sentences, could be original, or decomposed.
+				ArrayList<Pair> declSuccPairs = new ArrayList<Pair>();
+				ArrayList<Pair> declFailPairs = new ArrayList<Pair>();
+				// pairs for successfully generated questions
+				ArrayList<Pair> quesSuccPairs = new ArrayList<Pair>();
+				// pairs for not successfully generated questions
+				ArrayList<Pair> quesFailPairs = new ArrayList<Pair>();
 				
 				// decomposition
-				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
-				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
-				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
-				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
-				ArrayList<MRS> whyDecomposedMrxList = whyDecomposer.doIt(mrxList);
+//				ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
+//				ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
+//				ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
+//				ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
+//				ArrayList<MRS> whyDecomposedMrxList = whyDecomposer.doIt(mrxList);
+//				
+//				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
+//				if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
+//				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
+//				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
+//				if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 				
-				if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
-				if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
-				if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
-				if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
-				if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
-								
+				mrxList = subordDecomposer.doIt(mrxList);
+				mrxList = subDecomposer.doIt(mrxList);
+				mrxList = coordDecomposer.doIt(mrxList);
+				mrxList = apposDecomposer.doIt(mrxList);
+				mrxList = whyDecomposer.doIt(mrxList);
+				
+				
 				// generation
 				if (mrxList != null && lkb != null) {
 					String mrx;
@@ -204,13 +210,28 @@ public class MrsQG {
 						// generate from original sentence
 						lkb.sendMrxToGen(mrx);
 						log.info("\nGenerate from the original sentence:\n");
-						log.info(lkb.getGenSentences());
+						ArrayList<String> genOriSentList = lkb.getGenSentences();
+						log.info(genOriSentList);
 						log.info("\nFrom the following MRS:\n");
 						log.info(mrx);
 						log.info(m);
 						
+						ArrayList<String> genOriSentFailedList = null;
+						if (genOriSentList == null) {
+							genOriSentFailedList = lkb.getFailedGenSentences();
+						}
+						
+						if (!(genOriSentList == null && genOriSentFailedList == null)) {
+							Pair pair = new Pair(input, m, genOriSentList, genOriSentFailedList);
+							if (genOriSentList!=null) declSuccPairs.add(pair);
+							else declFailPairs.add(pair);
+							
+						} else {
+							continue;
+						}
+						
 						// transform
-						t = new MrsTransformer(mrx, p);
+						t = new MrsTransformer(m, p);
 						ArrayList<MRS> trMrsList = t.transform(false);
 						
 						if (trMrsList == null) continue;
@@ -221,22 +242,31 @@ public class MrsQG {
 							// generate from original sentence
 							lkb.sendMrxToGen(mrx);
 							log.info("\nGenerated Questions:");
-							ArrayList<String> genSentList = lkb.getGenSentences();
-							if (genSentList != null) {
+							ArrayList<String> genQuesList = lkb.getGenSentences();
+							ArrayList<String> genQuesFailedList = null;
+							if (genQuesList != null) {
 								countType++;
-								countNum += genSentList.size();
-								log.info(genSentList);
+								countNum += genQuesList.size();
+								log.info(genQuesList);
 							} else {
 								// generation failure
-								genSentList = lkb.getFailedGenSentences();
-								if (genSentList != null) {
+								genQuesFailedList = lkb.getFailedGenSentences();
+								if (genQuesFailedList != null) {
 									log.warn("Generation failure. *gen-chart* summary:");
-									log.warn(genSentList);
+									log.warn(genQuesFailedList);
 								}
 							}
 							log.info("\nFrom the following MRS:\n");
 							log.info(mrx);
 							log.info(qmrs);
+							
+							// Add to pair list
+							if (!(genQuesList==null && genQuesFailedList==null)) {
+								Pair pair = new Pair (input, m, genOriSentList, genOriSentFailedList,
+										qmrs, genQuesList, genQuesFailedList);
+								if (genQuesList!=null)	quesSuccPairs.add(pair);
+								else quesFailPairs.add(pair);
+							}
 						}
 						log.info(String.format("Cheap MRS %d generates " +
 								"%d questions of %d types.", i, countNum, countType));
@@ -245,12 +275,51 @@ public class MrsQG {
 				
 				if (fallback) {
 					// fallback
-					Fallback planB = new Fallback (parser, lkb, p);
-					planB.doIt();
-					// TODO:  here the generated MRS list should go in !!
-					new AndReplacer (parser, lkb, p, origMrsList).doIt();
-					new WhereReplacer (parser, lkb, p, origMrsList).doIt();
-					new ApposReplacer (parser, lkb, p, origMrsList).doIt();
+					if (declSuccPairs.size() != 0) {
+						Fallback planB = new Fallback (parser, lkb, declSuccPairs);
+						planB.doIt();
+						ArrayList<Pair> pairs = planB.getGenSuccPairs();
+						if (pairs!=null) quesSuccPairs.addAll(pairs);
+						pairs = planB.getGenFailPairs();
+						if (pairs!=null) quesFailPairs.addAll(pairs);
+
+						AndReplacer andR = new AndReplacer (parser, lkb, declSuccPairs);
+						andR.doIt();
+						pairs = andR.getGenSuccPairs();
+						if (pairs!=null) quesSuccPairs.addAll(pairs);
+						pairs = andR.getGenFailPairs();
+						if (pairs!=null) quesFailPairs.addAll(pairs);
+						
+						WhereReplacer whereR = new WhereReplacer (parser, lkb, declSuccPairs);
+						whereR.doIt();
+						pairs = whereR.getGenSuccPairs();
+						if (pairs!=null) quesSuccPairs.addAll(pairs);
+						pairs = whereR.getGenFailPairs();
+						if (pairs!=null) quesFailPairs.addAll(pairs);
+						
+						ApposReplacer apposR = new ApposReplacer (parser, lkb, declSuccPairs);
+						apposR.doIt();
+						pairs = apposR.getGenSuccPairs();
+						if (pairs!=null) quesSuccPairs.addAll(pairs);
+						pairs = apposR.getGenFailPairs();
+						if (pairs!=null) quesFailPairs.addAll(pairs);
+					}
+				}
+				
+				// summary
+				log.info("===========Summary of Generated Questions============");
+				log.info("oriSent: "+input);
+				if (quesSuccPairs.size()!=0) {
+					for (Pair pair:quesSuccPairs) {
+						log.info("\n");
+						if (pair.getGenOriCand()!=null) log.info("oriSent: "+pair.getGenOriCand());
+						log.info("SentType: "+pair.getQuesMrs().getSentType());
+						log.info("Decomposer: "+pair.getQuesMrs().getDecomposer());
+						log.info("Question: "+pair.getGenQuesCand());
+						log.info(pair.getGenQuesList());
+					}
+				} else {
+					log.info("No questions generated.");
 				}
 				
 			} else {

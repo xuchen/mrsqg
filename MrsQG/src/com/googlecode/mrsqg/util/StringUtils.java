@@ -464,4 +464,57 @@ public class StringUtils {
 		return input.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 		.replaceAll("\"", "&quot;").replaceAll("\'", "&apos;");
 	}
+	
+	/**
+	 * Given a list of strings, return a list of longest strings.
+	 */
+	public static ArrayList<String> getLongest (ArrayList<String> inList) {
+		if (inList == null) return null;
+		ArrayList<String> outList = new ArrayList<String>();
+		
+		int shortest, oldshortest = 0;
+		for (String s:inList) {
+			shortest = s.length();
+			if (shortest > oldshortest) {
+				oldshortest = shortest;
+				outList.clear();
+				outList.add(s);
+			} else if (shortest == oldshortest){
+				outList.add(s);
+			}
+		}
+		
+		return outList;
+	}
+	
+	/**
+	 * Given a list of strings, return a list of shortest strings.
+	 */
+	public static ArrayList<String> getShortest (ArrayList<String> inList) {
+		if (inList == null) return null;
+		ArrayList<String> outList = new ArrayList<String>();
+		
+		int shortest, oldshortest = 10000;
+		for (String s:inList) {
+			shortest = s.length();
+			if (shortest < oldshortest) {
+				oldshortest = shortest;
+				outList.clear();
+				outList.add(s);
+			} else if (shortest == oldshortest){
+				outList.add(s);
+			}
+		}
+		
+		return outList;
+	}
+
+	/**
+	 * Compute the minimum edit distance between 2 strings. Return -1 if failed.
+	 */
+	public static int getLevenshteinDistance (String s1, String s2) {
+		if (s1==null || s2==null) return -1;
+		else
+			return LevenshteinDistance.compute(s1, s2);
+	}
 }

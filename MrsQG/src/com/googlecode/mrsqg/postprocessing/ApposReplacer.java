@@ -2,6 +2,10 @@
  * 
 pipe: The man after Hurricane Katrina did not cause a big collapse.
 -> The man after which Hurricane did not cause a big collapse.
+
+bug:
+
+The girl Anna likes which the dog ?
  */
 package com.googlecode.mrsqg.postprocessing;
 
@@ -18,33 +22,30 @@ import com.googlecode.mrsqg.nlp.LKB;
  * @author Xuchen Yao
  *
  */
-public class ApposReplacer extends MrsReplacer {
+public class ApposReplacer extends Fallback {
 
-	/**
-	 * @param cheap
-	 * @param lkb
-	 * @param pre
-	 * @param list
-	 */
-	public ApposReplacer(Cheap cheap, LKB lkb, Preprocessor pre,
-			ArrayList<MRS> list) {
-		super(cheap, lkb, pre, list);
+
+	public ApposReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
+		super(cheap, lkb, oriPairs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.googlecode.mrsqg.postprocessing.MrsReplacer#doIt()
-	 */
-	@Override
 	public void doIt() {
-		if (this.origList == null) return;
+		if (this.oriPairs == null) return;
 		
-		String sentence = pre.getSentences()[0];
+		Preprocessor pre = new Preprocessor();
+		String sentence;
 		String tranSent;
-		Pair pair;
-		
+				
 		String apposEPvalue = "APPOS_REL";
+		
+		log.info("============== Fallback Generation -- ApposReplacer==============");
 
-		for (MRS mrs:origList) {
+		for (Pair oriPair:oriPairs) {
+			if (oriPair.getGenOriCand()==null) continue;
+			pre.preprocess(oriPair.getGenOriCand());
+			
+			sentence = pre.getSentences()[0];
+			MRS mrs = oriPair.getOriMrs();
 			for (ElementaryPredication ep:mrs.getEps()) {
 				if (ep.getTypeName().equals(apposEPvalue)) {
 					/*
@@ -61,6 +62,10 @@ public class ApposReplacer extends MrsReplacer {
 
 					int cfromArg1 = argList.get(0).getCfrom();
 					int ctoArg1 = argList.get(0).getCto();
+					for (ElementaryPredication e:argList) {
+						if (e.getCfrom()<cfromArg1) cfromArg1=e.getCfrom();
+						if (e.getCto()>ctoArg1) ctoArg1=e.getCto();
+					}
 					if (cfromArg1 < 0 || ctoArg1 < 0) continue;
 					
 					argList = mrs.getEPbyFeatAndValue("ARG0", arg2);
@@ -68,7 +73,17 @@ public class ApposReplacer extends MrsReplacer {
 
 					int cfromArg2 = argList.get(0).getCfrom();
 					int ctoArg2 = argList.get(0).getCto();
+					for (ElementaryPredication e:argList) {
+						if (e.getCfrom()<cfromArg2) cfromArg2=e.getCfrom();
+						if (e.getCto()>ctoArg2) ctoArg2=e.getCto();
+					}
 					if (cfromArg2 < 0 || ctoArg2 < 0) continue;
+					
+					// Some decomposed (thus shorter) sentence has an MRS from the original one,
+					// thus the cto index might exceed the sentence length.
+					// It's not easy to get the exact MRS for the decomposed one (especially
+					// when parsing gives multiple results), so we just continue;
+					if (ctoArg1>sentence.length()||ctoArg2>sentence.length()) continue;
 					
 					// replace arg2 with arg1
 					// The man after Hurricane Hurricane did not cause a big collapse.
@@ -84,17 +99,10 @@ public class ApposReplacer extends MrsReplacer {
 						tranSent = tranSent.substring(0, tranSent.length()-1) + "?";
 					else tranSent = tranSent + "?";
 					
-					pair = new Pair(sentence, tranSent, "WHAT");
-					pairs.add(pair);
+					generate(tranSent, "WHICH", "ApposReplacer");
 				}
 			}
 		}
-		
-
-		log.info("============== MrsReplacer Generation -- ApposReplacer==============");
-		
-		genFromParse();
-
 	}
 
 }

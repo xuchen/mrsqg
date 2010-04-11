@@ -20,34 +20,32 @@ import com.googlecode.mrsqg.nlp.LKB;
  * @author Xuchen Yao
  *
  */
-public class WhereReplacer extends MrsReplacer {
+public class WhereReplacer extends Fallback {
 
-	/**
-	 * @param cheap
-	 * @param lkb
-	 * @param pre
-	 * @param list
-	 */
-	public WhereReplacer(Cheap cheap, LKB lkb, Preprocessor pre,
-			ArrayList<MRS> list) {
-		super(cheap, lkb, pre, list);
+
+	public WhereReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
+		super(cheap, lkb, oriPairs);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.googlecode.mrsqg.postprocessing.MrsReplacer#doIt()
-	 */
-	@Override
 	public void doIt() {
 		
-		if (this.origList == null) return;
+		if (this.oriPairs == null) return;
 		
-		String sentence = pre.getSentences()[0];
+		Preprocessor pre = new Preprocessor();
+		String sentence;
 		String tranSent;
-		Pair pair;
 		
 		String inEPvalue = "_IN_P_REL";
+		
+		log.info("============== MrsReplacer Generation -- WhereReplacer==============");
 
-		for (MRS mrs:origList) {
+		for (Pair oriPair:oriPairs) {
+			if (oriPair.getGenOriCand()==null) continue;
+			pre.preprocess(oriPair.getGenOriCand());
+			
+			sentence = pre.getSentences()[0];
+			MRS mrs = oriPair.getOriMrs();
+			
 			for (ElementaryPredication ep:mrs.getEps()) {
 				if (ep.getTypeName().equals(inEPvalue)) {
 					int cfrom = ep.getCfrom();
@@ -91,18 +89,11 @@ public class WhereReplacer extends MrsReplacer {
 						tranSent = tranSent.substring(0, tranSent.length()-1) + "?";
 					else tranSent = tranSent + "?";
 					
-					pair = new Pair(sentence, tranSent, "WHERE");
-					pairs.add(pair);
+					generate(tranSent, "WHAT", "WhereReplacer");
+
 				}
 			}
 		}
-		
-
-		log.info("============== MrsReplacer Generation -- WhereReplacer==============");
-		
-		genFromParse();
-		
-
 	}
 
 }

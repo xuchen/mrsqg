@@ -31,7 +31,7 @@ public abstract class MrsDecomposer {
 			decomposedList = decompose(decomposedList);
 		}
 		
-		//outList.addAll(inList);
+		outList.addAll(inList);
 		
 		return outList;
 	}

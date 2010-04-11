@@ -225,7 +225,7 @@ NIL
 		}
 		
 		//System.out.println(genList);
-		return genList;
+		return genList.size()==0 ? null : genList;
 	}
 	
 	/**
@@ -299,7 +299,7 @@ LKB(6):
 		
 
 
-		return genList;
+		return genList.size()==0 ? null : genList;
 	}
 	
 	/**

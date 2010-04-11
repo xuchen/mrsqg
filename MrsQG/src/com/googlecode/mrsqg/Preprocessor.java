@@ -46,6 +46,7 @@ public class Preprocessor {
 	public String[] getOriginalSentences() {return this.originalSentences;}
 	public 	String[][] getTokens() {return this.tokens;}
 	public String[] getSentences() {return this.sentences;}
+	public String getFirstSent() {return this.sentences[0];}
 	public Term[][] getTerms () {return this.terms;}
 	public int getNumTokens() {return this.tokens[0].length;}
 	
