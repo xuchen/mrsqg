@@ -200,6 +200,9 @@ public class ApposDecomposer extends MrsDecomposer {
 		arg1Mrs.changeFromUnkToNamed();
 		arg2Mrs.changeFromUnkToNamed();
 		
+		arg1Mrs.setDecomposer("Apposition");
+		arg2Mrs.setDecomposer("Apposition");
+		
 		outList.add(arg1Mrs);
 		outList.add(arg2Mrs);
 		

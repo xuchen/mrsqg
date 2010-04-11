@@ -1,5 +1,6 @@
 /**
- * 
+ * Current this class replaces a coordination phrase (indicated by the
+ * _AND_C_REL relation) with "what", and tries to generate from it.
  */
 package com.googlecode.mrsqg.postprocessing;
 
@@ -16,29 +17,31 @@ import com.googlecode.mrsqg.nlp.LKB;
  * @author Xuchen Yao
  *
  */
-public class AndReplacer extends MrsReplacer {
+public class AndReplacer extends Fallback {
 
-	/**
-	 * @param cheap
-	 * @param lkb
-	 * @param pre
-	 * @param list
-	 */
-	public AndReplacer(Cheap cheap, LKB lkb, Preprocessor pre,
-			ArrayList<MRS> list) {
-		super(cheap, lkb, pre, list);
+
+	public AndReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
+		super(cheap, lkb, oriPairs);
 	}
-	
+
 	public void doIt () {
-		if (this.origList == null) return;
+		if (this.oriPairs == null) return;
 		
-		String sentence = pre.getSentences()[0];
+		Preprocessor pre = new Preprocessor();
+		String sentence;
 		String tranSent;
-		Pair pair;
 		
 		String andEPvalue = "_AND_C_REL";
+		
+		log.info("============== Fallback Generation -- AndReplacer==============");
+		
+		for (Pair oriPair:oriPairs) {
+			if (oriPair.getGenOriCand()==null) continue;
+			pre.preprocess(oriPair.getGenOriCand());
+			
+			sentence = pre.getSentences()[0];
+			MRS mrs = oriPair.getOriMrs();
 
-		for (MRS mrs:origList) {
 			for (ElementaryPredication ep:mrs.getEps()) {
 				if (ep.getTypeName().equals(andEPvalue) && 
 						ep.getValueByFeature("L-INDEX") != null &&
@@ -71,17 +74,11 @@ public class AndReplacer extends MrsReplacer {
 						tranSent = tranSent.substring(0, tranSent.length()-1) + "?";
 					else tranSent = tranSent + "?";
 					
-					pair = new Pair(sentence, tranSent, "WHAT");
-					pairs.add(pair);
+					generate(tranSent, "WHAT", "AndReplacer");
+
 				}
 			}
-		}
-		
-
-		log.info("============== MrsReplacer Generation -- AndReplacer==============");
-		
-		genFromParse();
-		
+		}	
 	}
 
 }

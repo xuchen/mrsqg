@@ -1,6 +1,5 @@
 /**
- * Current this class replaces a coordination phrase (indicated by the
- * _AND_C_REL relation) with "what", and tries to generate from it.
+ * 
  */
 package com.googlecode.mrsqg.postprocessing;
 
@@ -10,7 +9,6 @@ import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.Preprocessor;
 import com.googlecode.mrsqg.analysis.Pair;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
@@ -29,7 +27,7 @@ public abstract class MrsReplacer {
 	
 	protected ArrayList<Pair> pairs;
 	
-	public MrsReplacer (Cheap cheap, LKB lkb, Preprocessor pre, ArrayList<MRS> list) {
+	public MrsReplacer (Cheap cheap, LKB lkb, ArrayList<MRS> list) {
 		this.parser = cheap;
 		this.generator = lkb;
 		this.pre = pre;
@@ -51,7 +49,7 @@ public abstract class MrsReplacer {
 //			log.info(fsc);
 			parser.parse(fsc);
 			ArrayList<MRS> mrxList = parser.getParsedMRSlist();
-			p.setTranMrs(mrxList);
+			//p.setTranMrs(mrxList);
 			if (pre.getNumTokens() > 15) {
 				parser.releaseMemory();
 			}
@@ -71,8 +69,8 @@ public abstract class MrsReplacer {
 //					log.info("\nFrom the following MRS:\n");
 //					log.info(mrx);
 //					log.info(m);
-					if (genSents != null)
-						p.getGenSentList().addAll(genSents);
+//					if (genSents != null)
+//						p.getGenSentList().addAll(genSents);
 				}
 			}
 		}

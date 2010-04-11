@@ -26,9 +26,7 @@ public class WhyDecomposer extends MrsDecomposer {
 
 		for (MRS inMrs:inList) {
 
-			ElementaryPredication becauseEP = null;
 			String because = "_because_x_rel";
-			String arg1Hi, arg2Hi, arg1Lo, arg2Lo;
 
 			for (ElementaryPredication ep:inMrs.getEps()) {
 				if (ep.getTypeName().equals(because)) {

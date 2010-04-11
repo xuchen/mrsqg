@@ -45,6 +45,12 @@ public class MrsTransformer {
 		this.gen_mrs = new ArrayList<MRS>();
 	}
 	
+	public MrsTransformer (MRS mrs, Preprocessor p) {
+		this.ori_mrs = new MRS(mrs);
+		this.pre = p;
+		this.gen_mrs = new ArrayList<MRS>();
+	}
+	
 	public ArrayList<MRS> transform (boolean print) {
 		ArrayList<MRS> trMrsList;
 		Term[] terms = pre.getTerms()[0];

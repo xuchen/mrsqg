@@ -29,104 +29,79 @@ import com.googlecode.mrsqg.analysis.Pair;
  *
  */
 public class Fallback {
-	private static Logger log = Logger.getLogger(Fallback.class);
-	private Cheap parser;
-	private LKB generator;
-	private Preprocessor pre;
-	
-	protected ArrayList<Pair> pairs;
-	
-	public Fallback (Cheap cheap, LKB lkb, Preprocessor pre) {
+	protected static Logger log = Logger.getLogger(Fallback.class);
+	protected Cheap parser;
+	protected LKB generator;
+
+	protected ArrayList<Pair> genSuccPairs;
+	protected ArrayList<Pair> genFailPairs;
+	protected ArrayList<Pair> oriPairs;
+
+	public Fallback (Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
 		this.parser = cheap;
 		this.generator = lkb;
-		this.pre = pre;
-		this.pairs = new ArrayList<Pair>();
+		this.oriPairs = oriPairs;
+		this.genSuccPairs = new ArrayList<Pair>();
+		this.genFailPairs = new ArrayList<Pair>();
 	}
 	
+	public ArrayList<Pair> getGenSuccPairs () {return genSuccPairs;}
+	public ArrayList<Pair> getGenFailPairs () {return genFailPairs;}
+
 	public void doIt () {
-		Term[] terms = pre.getTerms()[0];
-		String sentence = pre.getSentences()[0];
-		
-		if (terms == null) return;
-		Pair pair;
-		Pair extraPair = null;
-		
-		for (Term term:terms) {
-			for (String neType:term.getNeTypes()) {
-				if (neType.length()==0) {
-					log.error("NE types shouldn't be none: "+term);
-					continue;
-				}
-				String tranSent;
-				extraPair = null;
-				if (neType.equals("NEperson")||neType.equals("NEfirstName")) {
-					tranSent = Fallback.transformSentence(sentence, term, "who");
-					pair = new Pair(sentence, tranSent, "WHO");
-				} else if (neType.equals("NElocation")) {
-					tranSent = Fallback.transformSentence(sentence, term, "where");
-					pair = new Pair(sentence, tranSent, "WHERE");
-				} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
-					tranSent = Fallback.transformSentence(sentence, term, "when");
-					pair = new Pair(sentence, tranSent, "WHEN");
-				} else if (neType.equals("NEnumber")||neType.equals("NEhour")) {
-					tranSent = Fallback.transformSentence(sentence, term, "how many");
-					pair = new Pair(sentence, tranSent, "HOW MANY");
-					tranSent = Fallback.transformSentence(sentence, term, "how much");
-					extraPair = new Pair(sentence, tranSent, "HOW MUCH");
-				} else if (neType.equals("NEcountry")) {
-					tranSent = Fallback.transformSentence(sentence, term, "which country");
-					pair = new Pair(sentence, tranSent, "WHICH");
-				} else {
-					tranSent = Fallback.transformSentence(sentence, term, "what");
-					pair = new Pair(sentence, tranSent, "WHAT");
-				}
-				
-				pairs.add(pair);
-				if (extraPair != null) {
-					pairs.add(extraPair);
-				}
-			}
-		}
+		Preprocessor pre = new Preprocessor();
+
+		if (oriPairs == null) return;
 		
 		log.info("============== Fallback Generation ==============");
 		
-		Preprocessor pre;
-		for (Pair p:this.pairs) {
-			pre = new Preprocessor();
-			String fsc = pre.getFSCbyTerms(p.getTranSent(), true);
-			log.info("Transformed sentence:");
-			log.info(p.getTranSent());
-//			log.info("\nFSC XML from preprocessing:\n");
-//			log.info(fsc);
-			parser.parse(fsc);
-			ArrayList<MRS> mrxList = parser.getParsedMRSlist();
-			p.setTranMrs(mrxList);
-			if (pre.getNumTokens() > 15) {
-				parser.releaseMemory();
-			}
-			if (!parser.isSuccess()) continue;
-			// TODO: add MRS selection here
+		for (Pair oriPair:oriPairs) {
+			if (oriPair.getGenOriCand()==null) continue;
+			pre.preprocess(oriPair.getGenOriCand());
+			
+			Term[] terms = pre.getTerms()[0];
+			String sentence = pre.getSentences()[0];
 
-			if (mrxList != null && this.generator != null) {
-				String mrx;
-				for (MRS m:mrxList) {
-					// generate from original sentence
-					m.changeFromUnkToNamed();
-					mrx = m.toMRXstring();
-					generator.sendMrxToGen(mrx);
-					log.info("\nGenerate from transformed sentence:\n");
-					ArrayList<String> genSents = generator.getGenSentences();
-					log.info(genSents);
-//					log.info("\nFrom the following MRS:\n");
-//					log.info(mrx);
-//					log.info(m);
-					if (genSents != null)
-						p.getGenSentList().addAll(genSents);
+			if (terms == null) continue;
+
+			for (Term term:terms) {
+				for (String neType:term.getNeTypes()) {
+					if (neType.length()==0) {
+						log.error("NE types shouldn't be none: "+term);
+						continue;
+					}
+					String tranSent, extraTranSent=null;
+					String sentType, extraSentType=null;
+					if (neType.equals("NEperson")||neType.equals("NEfirstName")) {
+						tranSent = Fallback.transformSentence(sentence, term, "who");
+						sentType = "WHO";
+					} else if (neType.equals("NElocation")) {
+						tranSent = Fallback.transformSentence(sentence, term, "where");
+						sentType = "WHERE";
+					} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
+						tranSent = Fallback.transformSentence(sentence, term, "when");
+						sentType = "WHEN";
+					} else if (neType.equals("NEnumber")||neType.equals("NEhour")) {
+						tranSent = Fallback.transformSentence(sentence, term, "how many");
+						sentType = "HOW MANY";
+						extraTranSent = Fallback.transformSentence(sentence, term, "how much");
+						extraSentType = "HOW MUCH";
+					} else if (neType.equals("NEcountry")) {
+						tranSent = Fallback.transformSentence(sentence, term, "which country");
+						sentType = "WHICH";
+					} else {
+						tranSent = Fallback.transformSentence(sentence, term, "what");
+						sentType = "WHAT";
+					}
+					
+					generate(tranSent, sentType, "Fallback");
+					if (extraTranSent!=null)
+						generate(extraTranSent, extraSentType, "Fallback");
 				}
 			}
 		}
 	}
-	
+
 	/**
 	 * Replace the term in a sentence with <code>quesWord</code>. For instance,
 	 * "John likes Mary." -> "John likes who?"
@@ -142,6 +117,49 @@ public class Fallback {
 			ret = ret.substring(0, ret.length()-1) + "?";
 		else ret = ret + "?";
 		return ret;
+	}
+	
+	protected void generate (String tranSent, String sentType, String source) {
+		Preprocessor pre = new Preprocessor();
+		
+		String fsc = pre.getFSCbyTerms(tranSent, true);
+		log.info("Fallback sentence:");
+		log.info(tranSent);
+
+		parser.parse(fsc);
+		ArrayList<MRS> mrxList = parser.getParsedMRSlist();
+		boolean success = parser.isSuccess();
+
+		if (pre.getNumTokens() > 15) {
+			parser.releaseMemory();
+		}
+		if (!success) return;
+
+		if (mrxList != null && this.generator != null) {
+			String mrx;
+			for (MRS m:mrxList) {
+				// generate from original sentence
+				m.changeFromUnkToNamed();
+				mrx = m.toMRXstring();
+				m.setSentType(sentType);
+				generator.sendMrxToGen(mrx);
+				log.info("\nGenerate from fallback sentence:\n");
+
+				ArrayList<String> genQuesList = generator.getGenSentences();
+				ArrayList<String> genQuesFailedList = null;
+				log.info(genQuesList);
+				
+				// Add to pair list
+				if (!(genQuesList==null && genQuesFailedList==null)) {
+					m.setDecomposer(source);
+					Pair pair = new Pair (m, genQuesList, genQuesFailedList);
+					pair.setTranSent(tranSent);
+					if (genQuesList!=null)	genSuccPairs.add(pair);
+					else genFailPairs.add(pair);
+				}
+			}
+		}
+
 	}
 
 }
