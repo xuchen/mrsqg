@@ -89,7 +89,7 @@ public class WhereReplacer extends Fallback {
 						tranSent = tranSent.substring(0, tranSent.length()-1) + "?";
 					else tranSent = tranSent + "?";
 					
-					generate(tranSent, "WHAT", "WhereReplacer");
+					generate(tranSent, "WHERE", "WhereReplacer");
 
 				}
 			}

@@ -21,6 +21,7 @@ public class PreSelector {
 	
 	public static ArrayList<MRS> doIt (LKB lkb, ArrayList<MRS> origMrsList) {
 		if (lkb == null) return origMrsList;
+		if (origMrsList == null) return null;
 		ArrayList<MRS> list = new ArrayList<MRS>();
 		
 		log.info("Entering PreSelector... Original MRS list size: "+origMrsList.size());
@@ -31,7 +32,7 @@ public class PreSelector {
 			mrx = m.toMRXstring();
 			lkb.sendMrxToGen(mrx);
 			ArrayList<String> genSents = lkb.getGenSentences();
-			if (genSents.size() > 0) list.add(m);
+			if (genSents != null) list.add(m);
 		}
 		
 		log.info("Exiting PreSelector... Selected MRS list size: "+list.size());

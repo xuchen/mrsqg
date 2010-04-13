@@ -139,6 +139,7 @@ public class MrsTransformer {
 					lo = loEP.getLabel();
 					// hiEP should be found through a qeq relation
 					hi = MRS.getHiLabelFromHconsList(lo, q_mrs.getHcons());
+					if (hi == null) continue;
 					hiEP = q_mrs.getEPbyFeatAndValue("RSTR", hi).get(0);
 					if (hi==null||hiEP==null) {
 						/*
