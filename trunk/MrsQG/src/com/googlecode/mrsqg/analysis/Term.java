@@ -290,6 +290,9 @@ public class Term implements Serializable {
 		// All has the same POS. Such as "Al Gore", are all NNP.
 		if (posSet.size() == 1) {
 			this.pos_fsc = pos[this.from];
+			// temporarily avoid errors (NN compound) such as invalid predicates: |"_pie chart_nn_rel"|
+			if (this.pos_fsc.equals("NN"))
+				this.pos_fsc = "NNP";
 			return;
 		} else {
 			// we should have used the CollinsHeadFinder in Stanford parser
@@ -300,6 +303,9 @@ public class Term implements Serializable {
 			// Ascending order: NN, NNP, NNPS, NNS
 			Arrays.sort(posL);
 			this.pos_fsc = posL[posL.length-1];
+			// temporarily avoid errors (NN compound) such as invalid predicates: |"_pie chart_nn_rel"|
+			if (this.pos_fsc.equals("NN"))
+				this.pos_fsc = "NNP";
 			log.warn("Warning: different POS in term. Using the last one. "+Arrays.toString(posL));
 			return;
 		}

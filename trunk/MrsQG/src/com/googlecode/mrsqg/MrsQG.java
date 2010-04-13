@@ -112,6 +112,7 @@ public class MrsQG {
 		while (true) {
 			System.out.println("Input: ");
 			String input = readLine().trim();
+			input = input.replaceAll("'", "");
 			if (input.length() == 0) continue;
 			if (input.equalsIgnoreCase("exit")) {
 				exitAll();
@@ -303,6 +304,21 @@ public class MrsQG {
 						if (pairs!=null) quesSuccPairs.addAll(pairs);
 						pairs = apposR.getGenFailPairs();
 						if (pairs!=null) quesFailPairs.addAll(pairs);
+						
+						WhatReplacer whatR = new WhatReplacer (parser, lkb, declSuccPairs);
+						whatR.doIt();
+						pairs = whatR.getGenSuccPairs();
+						if (pairs!=null) quesSuccPairs.addAll(pairs);
+						pairs = whatR.getGenFailPairs();
+						if (pairs!=null) quesFailPairs.addAll(pairs);
+					
+						NumReplacer numR = new NumReplacer (parser, lkb, declSuccPairs);
+						numR.doIt();
+						pairs = numR.getGenSuccPairs();
+						if (pairs!=null) quesSuccPairs.addAll(pairs);
+						pairs = numR.getGenFailPairs();
+						if (pairs!=null) quesFailPairs.addAll(pairs);
+						
 					}
 				}
 				

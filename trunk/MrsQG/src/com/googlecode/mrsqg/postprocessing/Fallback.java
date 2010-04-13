@@ -161,5 +161,15 @@ public class Fallback {
 		}
 
 	}
+	
+	/**
+	 * Change the punctuation in the last to ?
+	 */
+	protected String changeQuestionMark (String tranSent) {
+		if (tranSent.substring(tranSent.length()-1).equals("."))
+			tranSent = tranSent.substring(0, tranSent.length()-1) + "?";
+		else tranSent = tranSent + "?";
+		return tranSent;
+	}
 
 }
