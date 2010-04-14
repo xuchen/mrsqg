@@ -56,8 +56,11 @@ public class Fallback {
 		log.info("============== Fallback Generation ==============");
 		
 		for (Pair oriPair:oriPairs) {
-			if (oriPair.getGenOriCand()==null) continue;
-			pre.preprocess(oriPair.getGenOriCand());
+			if (oriPair.getGenOriCand()!=null) {
+				pre.preprocess(oriPair.getGenOriCand());
+			} else {
+				pre.preprocess(oriPair.getOriSent());
+			}
 			
 			Term[] terms = pre.getTerms()[0];
 			String sentence = pre.getSentences()[0];

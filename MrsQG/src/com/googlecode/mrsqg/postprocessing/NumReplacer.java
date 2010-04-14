@@ -35,8 +35,11 @@ public class NumReplacer extends Fallback {
 		log.info("============== MrsReplacer Generation -- NumReplacer==============");
 
 		for (Pair oriPair:oriPairs) {
-			if (oriPair.getGenOriCand()==null) continue;
-			pre.preprocess(oriPair.getGenOriCand());
+			if (oriPair.getGenOriCand()!=null) {
+				pre.preprocess(oriPair.getGenOriCand());
+			} else {
+				pre.preprocess(oriPair.getOriSent());
+			}
 			
 			//sentence = pre.getSentences()[0];
 			sentence = oriPair.getOriSent();

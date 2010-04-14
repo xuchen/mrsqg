@@ -113,6 +113,7 @@ public class MrsQG {
 			System.out.println("Input: ");
 			String input = readLine().trim();
 			input = input.replaceAll("'", "");
+			input = input.replaceAll("\\(.*?\\)", "");
 			if (input.length() == 0) continue;
 			if (input.equalsIgnoreCase("exit")) {
 				exitAll();
@@ -166,7 +167,12 @@ public class MrsQG {
 				if (p.getNumTokens() > 15) {
 					parser.releaseMemory();
 				}
-				if (!success || mrxList == null) continue;
+				if (!success) continue;
+				
+				if (mrxList == null) {
+					log.warn("LKB didn't generate at all from PET input.");
+					mrxList = origMrsList;
+				}
 
 				// pairs for declarative sentences, could be original, or decomposed.
 				ArrayList<Pair> declSuccPairs = new ArrayList<Pair>();
@@ -275,6 +281,8 @@ public class MrsQG {
 				}
 				
 				if (fallback) {
+					// a second chance on failed sentences.
+					if (declSuccPairs.size() == 0) declSuccPairs = declFailPairs;
 					// fallback
 					if (declSuccPairs.size() != 0) {
 						Fallback planB = new Fallback (parser, lkb, declSuccPairs);
