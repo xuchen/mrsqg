@@ -972,6 +972,73 @@ public class MRS {
 	}
 	
 	/**
+	 * This method returns the range of EPs referred by value, both
+	 * directly or indirectly. For instance, in sentence "John likes green 
+	 * apples and red oranges.", if <code>exceptionEP</code> is "and", and 
+	 * <code>value</code> is R-INDX of <code>exceptionEP</code>, then it
+	 * returns the range of "red oranges".
+	 * @param value a x* value
+	 * @param exceptionEP
+	 * @return a range {cfrom, cto}
+	 */
+	public int[] extractRangeByXValue (String value, ElementaryPredication exceptionEP) {
+		MRS mrs = this;
+		HashSet<String> set = new HashSet<String>();
+		HashSet<String> moreSet = new HashSet<String>();
+		set.add(value);
+
+		if (exceptionEP != null) 
+			mrs.getEps().get(this.getEps().indexOf(exceptionEP)).setFlag(true);
+		int oldSize = 0;
+		
+		// loop recursively to find out all referred EPs.
+		while (oldSize < set.size()) {
+			oldSize = set.size();
+			for (ElementaryPredication ep:mrs.getEps()) {
+				if (ep.getFlag()) continue;
+				for (String v:ep.getAllValueAndLabel()) {
+					if (v.startsWith("h")) {
+						String lo = mrs.getLoLabelFromHconsList(v);
+						if (lo!=null && set.contains(lo)) 
+							set.add(lo);
+					}
+					if (set.contains(v)) {
+						set.add(v);
+						for (String vv:ep.getAllValueAndLabel()) {
+							if (vv.startsWith("h") || vv.startsWith("x")) set.add(vv);
+						}
+					}
+				}
+			}
+		}
+		
+		for (ElementaryPredication ep:mrs.getEps()) {
+			if (ep.getFlag()) continue;
+			boolean flag = true;
+			for (String v:ep.getAllValue()) {
+				if (set.contains(v)) {
+					flag = false;
+					break;
+				}
+			}
+			ep.setFlag(flag);
+		}
+		
+
+		int cfrom=10000, cto=0;
+		for (ElementaryPredication ep:mrs.getEps()) {
+			if (!ep.getFlag()) {
+				if (ep.getCfrom()<cfrom) cfrom = ep.getCfrom();
+				if (ep.getCto() > cto) cto = ep.getCto();
+			}
+		}
+		
+		mrs.setAllFlag(false);
+		if (cto>cfrom) return new int[]{cfrom, cto};
+		else return null;
+	}
+	
+	/**
 	 * Clean up the HCONS list. Any HCONS pairs, such as "h1 qeq h2", whose
 	 * hiLabel and loLabel can't be both found in the EPS, are removed.
 	 */

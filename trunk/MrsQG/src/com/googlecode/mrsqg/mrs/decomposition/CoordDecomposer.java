@@ -54,7 +54,6 @@ public class CoordDecomposer extends MrsDecomposer {
 						// use L-HNDL and R-HNDL to assemble two individual MRS
 						String loLabel = null;
 						String targetLabel = null;
-						ElementaryPredication targetEP = null;
 						// get the loLabel from the HCONS list
 						for (String hiLabel: new String[]{lHndl, rHndl}) {
 							coordEP = ep;
@@ -136,6 +135,21 @@ public class CoordDecomposer extends MrsDecomposer {
 						}
 						break;
 					}
+//					else if (lHndl == null && rHndl == null && 
+//							lEvent != null && rEvent != null) {
+//						int cfrom, cto, andcfrom, andcto;
+//						int[] range = mrs.extractRangeByXValue(lEvent, ep);
+//						cfrom = range[0];
+//						cto = range[1];
+//						andcfrom = ep.getCfrom();
+//						andcto = ep.getCto();
+//						// "John likes green apples and red beans."
+//						// -> "John likes green apples"
+//						
+//						// "John likes green apples and red beans."
+//						// -> "John likes red beans."
+//						
+//					}
 				}
 			}
 		}
