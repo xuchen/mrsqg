@@ -54,16 +54,19 @@ public class Fallback {
 		if (oriPairs == null) return;
 		
 		log.info("============== Fallback Generation ==============");
+		String sentence;
 		
 		for (Pair oriPair:oriPairs) {
 			if (oriPair.getGenOriCand()!=null) {
-				pre.preprocess(oriPair.getGenOriCand());
+				sentence = oriPair.getGenOriCand();
 			} else {
-				pre.preprocess(oriPair.getOriSent());
+				sentence = oriPair.getOriSent();
 			}
 			
+			pre.preprocess(sentence);
+			
 			Term[] terms = pre.getTerms()[0];
-			String sentence = pre.getSentences()[0];
+			//sentence = pre.getSentences()[0];
 
 			if (terms == null) continue;
 

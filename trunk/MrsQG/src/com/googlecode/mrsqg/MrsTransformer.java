@@ -156,8 +156,10 @@ public class MrsTransformer {
 					if (hiIdx == -1) continue;
 					hiEP = eps.get(hiIdx);
 					loEP = eps.get(1-hiIdx);
+				} else if (eps == null || eps.size() == 0) {
+					continue;
 				} else {
-					log.error("the size of eps isn't 1 or 2: "+eps);
+					log.warn("the size of eps isn't 1 or 2: "+eps);
 					continue;
 				}
 

@@ -97,6 +97,7 @@ public class Pair {
 	public String getOriSent () {return this.oriSent;}
 	public void setTranSent (String tranSent) {this.tranSent = tranSent;}
 	public MRS getOriMrs () {return this.oriMrs;}
+	public void setOriMrs(MRS mrs) {this.oriMrs = mrs;}
 	public MRS getQuesMrs () {return this.quesMrs;}
 	public ArrayList<String> getGenQuesList() {return genQuesList;}
 	public ArrayList<String> getGenQuesFailedList() {return genQuesFailedList;}

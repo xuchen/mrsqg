@@ -192,6 +192,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		
 		// Generate _FOR_P_REL
 		ElementaryPredication verbEP = whyMrs.getVerbEP();
+		if (verbEP == null) return null;
 		ElementaryPredication forEP = new ElementaryPredication("_FOR_P_REL", verbEP.getLabel());
 		forEP.addSimpleFvpair("ARG0", "i"+labelStore.get(5));
 		forEP.addFvpair("ARG1", verbEP.getValueVarByFeature("ARG0"));

@@ -30,20 +30,21 @@ public class AndReplacer extends Fallback {
 		Preprocessor pre = new Preprocessor();
 		String sentence;
 		String tranSent;
+		MRS mrs;
 		
 		String andEPvalue = "_AND_C_REL";
 		
 		log.info("============== Fallback Generation -- AndReplacer==============");
-		
+
 		for (Pair oriPair:oriPairs) {
 			if (oriPair.getGenOriCand()!=null) {
-				pre.preprocess(oriPair.getGenOriCand());
+				sentence = oriPair.getGenOriCand();
 			} else {
-				pre.preprocess(oriPair.getOriSent());
+				sentence = oriPair.getOriSent();
+				mrs = oriPair.getOriMrs();
 			}
-			
-			sentence = pre.getSentences()[0];
-			MRS mrs = oriPair.getOriMrs();
+			mrs = oriPair.getOriMrs();
+			pre.preprocess(sentence);
 
 			for (ElementaryPredication ep:mrs.getEps()) {
 				if (ep.getTypeName().equals(andEPvalue) && 
