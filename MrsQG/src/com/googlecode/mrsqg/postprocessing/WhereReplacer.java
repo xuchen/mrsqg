@@ -41,12 +41,12 @@ public class WhereReplacer extends Fallback {
 
 		for (Pair oriPair:oriPairs) {
 			if (oriPair.getGenOriCand()!=null) {
-				pre.preprocess(oriPair.getGenOriCand());
+				sentence = oriPair.getGenOriCand();
 			} else {
-				pre.preprocess(oriPair.getOriSent());
+				sentence = oriPair.getOriSent();
 			}
 			
-			sentence = pre.getSentences()[0];
+			pre.preprocess(sentence);
 			MRS mrs = oriPair.getOriMrs();
 			
 			for (ElementaryPredication ep:mrs.getEps()) {

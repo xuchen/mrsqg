@@ -1122,6 +1122,20 @@ public class MRS {
 				removedList.add(ep);
 			}
 		}
+//		for (ElementaryPredication ep:this.eps) {
+//			if (ep.getFlag() == true) {
+//				removedList.add(ep);
+//				mod = false;
+//				span = ep.getCto() - ep.getCfrom();
+//				// for any EP after ep, reduce its range by span.
+//				for (ElementaryPredication eep:this.eps) {
+//					if (eep==ep) mod=true;
+//					if (mod && eep!=ep && eep.getFlag()==false) {
+//						eep.shiftRange(-span);
+//					}
+//				}
+//			}
+//		}
 		if(this.eps.removeAll(removedList)) {
 			return true;
 		} else {

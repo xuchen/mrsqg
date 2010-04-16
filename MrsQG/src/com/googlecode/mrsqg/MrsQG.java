@@ -112,8 +112,6 @@ public class MrsQG {
 		while (true) {
 			System.out.println("Input: ");
 			String input = readLine().trim();
-			input = input.replaceAll("'", "");
-			input = input.replaceAll("\\(.*?\\)", "");
 			if (input.length() == 0) continue;
 			if (input.equalsIgnoreCase("exit")) {
 				exitAll();
@@ -148,6 +146,8 @@ public class MrsQG {
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
 				input = input.substring(5).trim();
+				input = input.replaceAll("'", "");
+				input = input.replaceAll("\\(.*?\\)", "");
 				
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
@@ -230,7 +230,30 @@ public class MrsQG {
 						
 						if (!(genOriSentList == null && genOriSentFailedList == null)) {
 							Pair pair = new Pair(input, m, genOriSentList, genOriSentFailedList);
-							if (genOriSentList!=null) declSuccPairs.add(pair);
+							if (genOriSentList!=null) {
+								if (pair.getOriMrs().getDecomposer().size()>0 &&
+										pair.getGenOriCand() != null) {
+									/* this oriMrs comes from a decomposer, the
+									 * character position doesn't match the sentence
+									 * any more. So we have to send it to PET and 
+									 * re-generate the MRS
+									 */
+									Preprocessor pp = new Preprocessor();
+									fsc = pp.getFSCbyTerms(pair.getGenOriCand(), true);
+									
+									parser.parse(fsc);
+
+									ArrayList<MRS> regenMrsList = parser.getParsedMRSlist();
+									success = parser.isSuccess();
+									if (pp.getNumTokens() > 15) {
+										parser.releaseMemory();
+									}
+									if (!success) continue;
+									if (regenMrsList!=null && regenMrsList.size()>0)
+										pair.setOriMrs(regenMrsList.get(0));						
+								}
+								declSuccPairs.add(pair);
+							}
 							else declFailPairs.add(pair);
 							
 						} else {

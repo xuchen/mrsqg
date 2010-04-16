@@ -369,6 +369,15 @@ public class ElementaryPredication {
 		return varL;
 	}
 	
+	/**
+	 * Add a value <code>shift</code> to the range.
+	 * @param shift
+	 */
+	public void shiftRange (int shift) {
+		cfrom += shift;
+		cto += shift;
+	}
+	
 	@Override public String toString() {
 //		<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //		<!ATTLIST ep
