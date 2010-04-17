@@ -419,7 +419,7 @@ public class MrsQG {
 			// generate questions based on text			
 			success = runPipe(text);
 			
-			if (!success) return;
+			if (!success) continue;
 
 			// assign generated question back
 			for (int i=0; i<ins.getQuestionTypeList().size(); i++) {
