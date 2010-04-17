@@ -39,7 +39,7 @@ public class Instance {
 	public ArrayList<String> getQuestionTypeList () {return this.questionTypeList;}
 	public ArrayList<String> getGenQuestionList () {return this.genQuestionList;}
 	public void addQuestionType (String type) {this.questionTypeList.add(type);}
-	public void addGenQuestion (String question) {this.questionTypeList.add(question);}
+	public void addGenQuestion (String question) {this.genQuestionList.add(question);}
 	public String getText () {return this.text;}
 	public String getIdNum () {return this.idNum;}
 	public String getIdSource () {return this.idSource;}
