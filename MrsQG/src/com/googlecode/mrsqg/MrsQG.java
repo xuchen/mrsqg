@@ -413,25 +413,31 @@ public class MrsQG {
 		ArrayList<Instance> instanceList = q.getInstanceList();
 		String text, questionType, question;
 		boolean success;
-		for (Instance ins:instanceList) {
-			text = ins.getText();
-
-			// generate questions based on text			
-			success = runPipe(text);
-			
-			if (!success) continue;
-			log.info("runPipe is done");
-
-			// assign generated question back
-			for (int i=0; i<ins.getQuestionTypeList().size(); i++) {
-				questionType = ins.getQuestionTypeList().get(i);
-				// retrieve question according to questionType
-				question = retrieveQuestion(questionType).toString();
-				ins.addGenQuestion(question);
-			}
-		}
 		try {
-		    FileOutputStream fop=new FileOutputStream(testFileOutput);
+			// append
+			FileOutputStream fop=new FileOutputStream(testFileOutput, true);
+			for (Instance ins:instanceList) {
+				text = ins.getText();
+
+				// generate questions based on text			
+				success = runPipe(text);
+
+				if (!success) continue;
+				log.info("runPipe is done");
+
+				// assign generated question back
+				for (int i=0; i<ins.getQuestionTypeList().size(); i++) {
+					questionType = ins.getQuestionTypeList().get(i);
+					// retrieve question according to questionType
+					question = retrieveQuestion(questionType).toString();
+					ins.addGenQuestion(question);
+				}
+				// append incrementally
+				ins.toXML(fop);
+				fop.flush();
+			}
+
+			// write it overall again
 			q.toXML(fop);
 			fop.close();
 		} catch (Exception e) {
