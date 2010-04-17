@@ -42,6 +42,8 @@ public class Pair {
 	/** transformed sentence from fallbacks, such as "John likes who?" */
 	protected String tranSent;
 	
+	private boolean flag = false;
+	
 	
 //	/** MRS list for <code>tranSent</code> */
 //	protected ArrayList<MRS> tranMrsList;
@@ -101,6 +103,8 @@ public class Pair {
 	public MRS getQuesMrs () {return this.quesMrs;}
 	public ArrayList<String> getGenQuesList() {return genQuesList;}
 	public ArrayList<String> getGenQuesFailedList() {return genQuesFailedList;}
+	public boolean getFlag() {return this.flag;}
+	public void setFlag(boolean flag) {this.flag = flag;}
 	
 	public String getGenOriCand() {
 		if (genOriCand != null) return genOriCand;
