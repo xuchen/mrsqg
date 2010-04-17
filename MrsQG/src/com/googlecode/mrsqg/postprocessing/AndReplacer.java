@@ -71,6 +71,8 @@ public class AndReplacer extends Fallback {
 						if (e.getCto()>cto) cto = e.getCto();
 					}
 					
+					if (cfrom>sentence.length() || cto>sentence.length()) continue;
+					
 					tranSent = sentence.substring(0, cfrom);
 					tranSent += "what";
 					tranSent += sentence.substring(cto, sentence.length());
