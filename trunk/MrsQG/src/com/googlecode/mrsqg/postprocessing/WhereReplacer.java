@@ -84,6 +84,8 @@ public class WhereReplacer extends Fallback {
 					
 					mrs.setAllFlag(false);
 
+					if (cfrom<0 || cto<0 || cto > sentence.length())
+						continue;
 					
 					tranSent = sentence.substring(0, cfrom);
 					tranSent += "where";
