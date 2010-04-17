@@ -23,10 +23,6 @@ import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
-import com.googlecode.mrsqg.mrs.HCONS;
-
-
 /**
  * @author Xuchen Yao
  *
@@ -44,6 +40,15 @@ public class QGSTEC2010 {
 	public QGSTEC2010 () {
 		instanceList = new ArrayList<Instance>();
 		parser = new TestXmlParser();
+	}
+	
+	public QGSTEC2010 (File file) {
+		this();
+		this.parser.parse(file);
+	}
+	
+	public ArrayList<Instance> getInstanceList() {
+		return instanceList;
 	}
 	
 	private class TestXmlParser extends DefaultHandler {
@@ -209,12 +214,18 @@ public class QGSTEC2010 {
 				
 				// <question type="how many">
 			    // </question>
-				for (String questionType:ins.getQuestionTypeList()) {
+				ArrayList<String> qTypeList = ins.getQuestionTypeList();
+				ArrayList<String> qList = ins.getGenQuestionList();
+				String questionType, question;
+				for (int i=0; i<qTypeList.size(); i++) {
+					questionType = qTypeList.get(i);
 					atts.clear();
 					atts.addAttribute("", "", "id", "CDATA", questionType);
 					hd.startElement("", "", "question", atts);
-					//tmp = ins.getText();
-					//hd.characters(tmp.toCharArray(), 0, tmp.length());
+					if (i<qList.size()) {
+						question = qList.get(i);
+						hd.characters(question.toCharArray(), 0, tmp.length());
+					}
 					hd.endElement("", "", "question");
 				}
 				
@@ -243,8 +254,7 @@ public class QGSTEC2010 {
 		File file = new File("/home/xcyao/delphin/mrs.xml/QuestionsFromSentences.Test.2010.good.xml");
 		//File file = new File("/tmp/t.xml");
 		//File file = new File("/home/xcyao/delphin/mrs.xml/QuestionsFromSentences.Development.xml");
-		QGSTEC2010 q = new QGSTEC2010();
-		q.parse(file);
+		QGSTEC2010 q = new QGSTEC2010(file);
 		q.toXML(System.out);
 	}
 
