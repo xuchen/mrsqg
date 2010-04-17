@@ -249,7 +249,7 @@ public class QGSTEC2010 {
 	}
 	
 	public static void main(String[] args) {
-		File file = new File("/home/xcyao/delphin/mrs.xml/QuestionsFromSentences.Test.2010.good.xml");
+		File file = new File("/home/xcyao/delphin/mrs.xml/QuestionsFromSentences.Test.2010.small.xml");
 		//File file = new File("/tmp/t.xml");
 		//File file = new File("/home/xcyao/delphin/mrs.xml/QuestionsFromSentences.Development.xml");
 		QGSTEC2010 q = new QGSTEC2010(file);

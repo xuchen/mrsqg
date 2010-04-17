@@ -420,6 +420,7 @@ public class MrsQG {
 			success = runPipe(text);
 			
 			if (!success) continue;
+			log.info("runPipe is done");
 
 			// assign generated question back
 			for (int i=0; i<ins.getQuestionTypeList().size(); i++) {
@@ -691,6 +692,22 @@ public class MrsQG {
 
 			}
 		}
+		// summary
+		log.info("===========Summary of Generated Questions============");
+		log.info("oriSent: "+input);
+		if (quesSuccPairs.size()!=0) {
+			for (Pair pair:quesSuccPairs) {
+				log.info("\n");
+				if (pair.getGenOriCand()!=null) log.info("oriSent: "+pair.getGenOriCand());
+				log.info("SentType: "+pair.getQuesMrs().getSentType());
+				log.info("Decomposer: "+pair.getQuesMrs().getDecomposer());
+				log.info("Question: "+pair.getGenQuesCand());
+				log.info(pair.getGenQuesList());
+			}
+		} else {
+			log.info("No questions generated.");
+		}
+		
 		return true;
 	}
 
