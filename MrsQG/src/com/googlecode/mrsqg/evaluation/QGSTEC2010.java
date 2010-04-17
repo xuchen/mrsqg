@@ -94,12 +94,12 @@ public class QGSTEC2010 {
 		
 		public void startDocument ()
 	    {
-			System.out.println("Start document");
+			//System.out.println("Start document");
 	    }
 		
 		public void endDocument ()
 	    {
-			System.out.println("End document");
+			//System.out.println("End document");
 	    }
 	
 		public void startElement (String uri, String name,
@@ -125,8 +125,6 @@ public class QGSTEC2010 {
 				// <question type="how many">
 				questionType = atts.getValue("type");
 				currentInstance.addQuestionType(questionType);
-			} else {
-				log.error("Unknown element "+qName);
 			}
 			chars = new StringBuilder();
 			stack.push(qName);

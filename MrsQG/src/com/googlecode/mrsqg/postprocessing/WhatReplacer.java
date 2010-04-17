@@ -50,7 +50,8 @@ public class WhatReplacer extends Fallback {
 						int cfrom = ep.getCfrom();
 						int cto = ep.getCto();
 						
-						if (cfrom > sentence.length() || cto > sentence.length()) continue;
+						if (cfrom > sentence.length() || cto > sentence.length() ||
+								cfrom < 0 || cto < 0) continue;
 						
 						tranSent = "what " + sentence.substring(cfrom);
 						tranSent = changeQuestionMark(tranSent);					

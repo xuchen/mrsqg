@@ -18,7 +18,7 @@ public class FvPair {
 	private String rargname = null;
 	private String constant = null;
 	private Var var = null;
-	public String getValue() {return var!=null?var.getLabel():null;}	
+	public String getValue() {return constant==null?(var!=null?var.getLabel():null):constant;}	
 	public String getFeature() {return rargname;}
 
 	public void setFeature (String feat) {rargname = feat;}

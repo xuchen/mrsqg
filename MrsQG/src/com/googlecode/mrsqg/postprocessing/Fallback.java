@@ -118,7 +118,17 @@ public class Fallback {
 	 */
 	public static String transformSentence (String sentence, Term term, String quesWord) {
 		String ret;
-		ret =  sentence.substring(0, term.getCfrom()) + quesWord + sentence.subSequence(term.getCto(), sentence.length());
+		String text = term.getText();
+		int cfrom = term.getCfrom(), cto = term.getCfrom();
+		if (cfrom > sentence.length() ||cto > sentence.length() )
+			return null;
+		if (text.equals((sentence.substring(cfrom, cto)))) {
+			ret =  sentence.substring(0, cfrom) + quesWord + sentence.substring(cto);
+		} else if (sentence.contains(text)){
+			ret = sentence.replaceAll(text, quesWord);
+		} else {
+			ret =  sentence.substring(0, cfrom) + quesWord + sentence.substring(cto);
+		}
 		if (ret.substring(ret.length()-1).equals("."))
 			ret = ret.substring(0, ret.length()-1) + "?";
 		else ret = ret + "?";
@@ -126,6 +136,7 @@ public class Fallback {
 	}
 	
 	protected void generate (String tranSent, String sentType, String source) {
+		if (tranSent == null) return;
 		Preprocessor pre = new Preprocessor();
 		
 		String fsc = pre.getFSCbyTerms(tranSent, true);

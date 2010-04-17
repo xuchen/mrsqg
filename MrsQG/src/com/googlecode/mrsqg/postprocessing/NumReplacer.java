@@ -29,6 +29,7 @@ public class NumReplacer extends Fallback {
 		Preprocessor pre = new Preprocessor();
 		String sentence;
 		String tranSent;
+		String tranSent1;
 		
 		String beEPvalue = "CARD_REL";
 		
@@ -54,11 +55,24 @@ public class NumReplacer extends Fallback {
 					
 					if (cfrom > sentence.length() || cto > sentence.length()) continue;
 					
-					tranSent = sentence.substring(0, cfrom) + "how many ?";					
-					generate(tranSent, "HOW MANY/MUCH", "NumReplacer");
+					String carg = ep.getValueByFeature("CARG");
+					if (carg!=null && carg.equals((sentence.substring(cfrom, cto)))) {
+						tranSent = sentence.substring(0, cfrom) + "how many" + sentence.substring(cto);
+						tranSent1 = sentence.substring(0, cfrom) + "how much" + sentence.substring(cto);
+					} else if (carg!=null && sentence.contains(carg)) {
+						tranSent = sentence.replaceAll(carg, "how many");
+						tranSent1 = sentence.replaceAll(carg, "how much");
+					} else {
+						tranSent = sentence.substring(0, cfrom) + "how many" + sentence.substring(cto);
+						tranSent1 = sentence.substring(0, cfrom) + "how much" + sentence.substring(cto);
+					}
 					
-					tranSent = sentence.substring(0, cfrom) + "how much ?";					
+					tranSent = changeQuestionMark(tranSent);
+					tranSent1 = changeQuestionMark(tranSent1);
+					
 					generate(tranSent, "HOW MANY/MUCH", "NumReplacer");
+									
+					generate(tranSent1, "HOW MANY/MUCH", "NumReplacer");
 					oldEP = ep;
 				}
 			}
