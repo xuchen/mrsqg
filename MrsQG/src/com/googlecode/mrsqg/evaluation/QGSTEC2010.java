@@ -222,7 +222,7 @@ public class QGSTEC2010 {
 					hd.startElement("", "", "question", atts);
 					if (i<qList.size()) {
 						question = qList.get(i);
-						hd.characters(question.toCharArray(), 0, tmp.length());
+						hd.characters(question.toCharArray(), 0, question.length());
 					}
 					hd.endElement("", "", "question");
 				}
