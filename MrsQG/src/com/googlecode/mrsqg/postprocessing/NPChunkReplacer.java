@@ -7,8 +7,6 @@ import java.util.ArrayList;
 
 import com.googlecode.mrsqg.Preprocessor;
 import com.googlecode.mrsqg.analysis.Pair;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
-import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
 import com.googlecode.mrsqg.util.StringUtils;
@@ -17,9 +15,9 @@ import com.googlecode.mrsqg.util.StringUtils;
  * @author Xuchen Yao
  *
  */
-public class ChunkReplacer extends Fallback {
+public class NPChunkReplacer extends Fallback {
 
-	public ChunkReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
+	public NPChunkReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
 		super(cheap, lkb, oriPairs);
 	}
 	
@@ -37,7 +35,7 @@ public class ChunkReplacer extends Fallback {
 		String chunks[];
 		String tokens[];
 		
-		log.info("============== MrsReplacer Generation -- ChunkReplacer==============");
+		log.info("============== MrsReplacer Generation -- NPChunkReplacer==============");
 
 		for (Pair oriPair:oriPairs) {
 			if (oriPair.getGenOriCand()!=null) {
@@ -47,7 +45,7 @@ public class ChunkReplacer extends Fallback {
 			}
 			
 			pre.preprocess(sentence);
-			chunks = pre.getChunks()[0];
+			chunks = pre.getNpChunks()[0];
 			tokens = pre.getTokens()[0];
 			if (chunks==null || chunks.length==0) continue;
 			
@@ -72,8 +70,8 @@ public class ChunkReplacer extends Fallback {
 						tranSent = StringUtils.concatWithSpaces(tokens, 0, startNP) + " what " +
 							StringUtils.concatWithSpaces(tokens, endNP, tokens.length);
 					tranSent = changeQuestionMark(tranSent);		
-					log.info("DEBUG: "+tranSent);
-					generate(tranSent, "WHAT", "ChunkReplacer");
+					log.info("tranSent: "+tranSent);
+					generate(tranSent, "WHAT", "NPChunkReplacer");
 				}
 
 			}

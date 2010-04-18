@@ -135,12 +135,6 @@ public class MrsQG {
 	 */
 	public void commandLine() {
 		Preprocessor p = null;
-		SubordinateDecomposer subordDecomposer = new SubordinateDecomposer();
-		CoordDecomposer coordDecomposer = new CoordDecomposer();
-		ApposDecomposer apposDecomposer = new ApposDecomposer();
-		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
-		WhyDecomposer whyDecomposer = new WhyDecomposer();
-		boolean fallback = true;
 
 		while (true) {
 			System.out.println("Input: ");
@@ -474,11 +468,18 @@ public class MrsQG {
 				pairs = whatR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
 				
-				ChunkReplacer chunkR = new ChunkReplacer (parser, lkb, declSuccPairs);
-				chunkR.doIt();
-				pairs = chunkR.getGenSuccPairs();
+				NPChunkReplacer npChunkR = new NPChunkReplacer (parser, lkb, declSuccPairs);
+				npChunkR.doIt();
+				pairs = npChunkR.getGenSuccPairs();
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
-				pairs = chunkR.getGenFailPairs();
+				pairs = npChunkR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
+				
+				PPChunkReplacer ppChunkR = new PPChunkReplacer (parser, lkb, declSuccPairs);
+				ppChunkR.doIt();
+				pairs = ppChunkR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = ppChunkR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
 
 				NumReplacer numR = new NumReplacer (parser, lkb, declSuccPairs);
