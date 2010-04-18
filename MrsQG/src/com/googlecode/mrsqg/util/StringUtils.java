@@ -122,6 +122,16 @@ public class StringUtils {
 		return s;
 	}
 	
+	public static String concatWithSpaces (String[] tokens, int start, int end) {
+		if (tokens==null || start>=tokens.length || end >= tokens.length) return null;
+		
+		String s = tokens[start];
+		for (int i=start+1; i<end; i++) {
+			s += " " + tokens[i];
+		}
+		return s;
+	}
+	
 	/**
 	 * Concatenates an array of strings, using tabs as delimiters.
 	 * 
@@ -517,4 +527,5 @@ public class StringUtils {
 		else
 			return LevenshteinDistance.compute(s1, s2);
 	}
+
 }
