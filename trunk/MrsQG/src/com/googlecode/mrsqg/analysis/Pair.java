@@ -134,10 +134,14 @@ public class Pair {
 		String sentType = this.quesMrs.getSentType();
 		ArrayList<String> preferred = new ArrayList<String>();
 		
+		if (sentType.startsWith("HOW ")) sentType = "HOW";
+		
 		if (!sentType.equals("Y/N")) {
 			// prefer the one which has the question word in the front
+			// as well as having a ? at the end
 			for (String s:genQuesList) {
-				if (s.toUpperCase().startsWith(sentType))
+				if (s.toUpperCase().startsWith(sentType) &&
+						s.endsWith("?"))
 					preferred.add(s);
 			}
 		}
@@ -162,6 +166,10 @@ public class Pair {
 			// to increase the evaluation grade for variety
 			int lowest, oldLowest = 0;
 			for (String s:shortest) {
+				
+				// some questions don't have the correct question word
+				// e.g. WHICH -> 'what place' / 'which place'
+				if (!s.toUpperCase().contains(sentType)) continue;
 
 				lowest = StringUtils.getLevenshteinDistance(oriSent, s);
 				if (lowest > oldLowest)
