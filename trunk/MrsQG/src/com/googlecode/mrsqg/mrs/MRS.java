@@ -738,6 +738,62 @@ public class MRS {
 	}
 	
 	/**
+	 * This is used to check whether there are any basic_yofc_rel to prevent the following error:
+	 * Warning: invalid predicates: |basic_yofc_rel("1980")|, |basic_yofc_rel("1982")|.
+	 * 
+	 * The above is usually caused by:
+	 * 
+          [ _in_p_temp_rel<0:1>
+            LBL: h3
+            ARG0: e4
+            ARG1: e2
+            ARG2: x6 [ x PERS: 3 NUM: SG IND: + ] ]
+          [ proper_q_rel<1:2>
+            LBL: h7
+            ARG0: x6
+            RSTR: h9
+            BODY: h8 ]
+          [ basic_yofc_rel<1:2>
+            LBL: h10
+            ARG0: x6
+            ARG1: u11
+            CARG: "1999" ]
+            
+     * One solution is to change to:
+          [ _in_p_rel<0:1>
+            LBL: h3
+            ARG0: e4
+            ARG1: e2
+            ARG2: x6 [ x PERS: 3 NUM: SG ] ]
+          [ number_q_rel<1:2>
+            LBL: h7
+            ARG0: x6
+            RSTR: h9
+            BODY: h8 ]
+          [ card_rel<1:2>
+            LBL: h10
+            ARG0: x6
+            ARG1: i11 [ i PERS: 3 NUM: PL ]
+            CARG: "1999" ]
+	 */
+	public void preventInvalidPredicate () {
+		String ep1Orig="_IN_P_TEMP_REL", ep1Dest="_IN_P_REL";
+		String ep2Orig="PROPER_Q_REL", ep2Dest="NUMBER_Q_REL";
+		String ep3Orig="BASIC_YOFC_REL", ep3Dest="CARD_REL";
+		
+		for (int i=2;i<eps.size();i++) {
+			ElementaryPredication ep = eps.get(i);
+			if (eps.get(i).getTypeName().equals(ep3Orig) &&
+					eps.get(i-1).getTypeName().equals(ep2Orig) &&
+					eps.get(i-2).getTypeName().equals(ep1Orig)) {
+				eps.get(i).setTypeName(ep3Dest);
+				eps.get(i-1).setTypeName(ep2Dest);
+				eps.get(i-2).setTypeName(ep1Dest);
+			}
+		}
+	}
+	
+	/**
 	 * Get all the extra pairs in this MRS. Extra pairs are sth. like: [TENSE: PRES] 
 	 * encoded in XML: <extrapair><path>TENSE</path><value>PRES</value></extrapair>
 	 * @return an ArrayList of all extra pairs
