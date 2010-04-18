@@ -35,6 +35,7 @@ public class Preprocessor {
 	private String[] originalSentences;
 	private String[][] tokens;
 	private String[][] pos;
+	private String[][] npChunks;
 	private String[][] chunks;
 	private String[] sentences;
 	private String[][][] nes;
@@ -50,7 +51,9 @@ public class Preprocessor {
 	public String getFirstSent() {return this.sentences[0];}
 	public Term[][] getTerms () {return this.terms;}
 	public int getNumTokens() {return this.tokens[0].length;}
+	public String[][] getNpChunks() {return this.npChunks;}
 	public String[][] getChunks() {return this.chunks;}
+	public String[][] getPos() {return this.pos;}
 	
 	public boolean preprocess (String sents) {
 		log.info("Preprocessing");
@@ -62,6 +65,7 @@ public class Preprocessor {
 		String original;
 		this.tokens = new String[countOfSents][];
 		this.pos = new String[countOfSents][];
+		this.npChunks = new String[countOfSents][];
 		this.chunks = new String[countOfSents][];
 		this.sentences = new String[countOfSents];
 		for (int i = 0; i < countOfSents; i++) {
@@ -71,7 +75,7 @@ public class Preprocessor {
 			tokens[i] = OpenNLP.tokenize(original);
 			pos[i] = OpenNLP.tagPos(tokens[i]);
 			chunks[i] = OpenNLP.tagChunks(tokens[i], pos[i]);
-			chunks[i] = OpenNLP.joinNounPhrases(tokens[i], chunks[i]);
+			npChunks[i] = OpenNLP.joinNounPhrases(tokens[i], chunks[i]);
 //			log.info("NP chunks: ");
 //			for (int j=0; j<chunks[i].length; j++) {
 //				log.info(chunks[i][j]);
@@ -97,6 +101,7 @@ public class Preprocessor {
 				}
 			}
 		}		
+
 		return true;
 	}
 	
