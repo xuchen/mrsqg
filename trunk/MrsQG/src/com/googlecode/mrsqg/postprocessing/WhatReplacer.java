@@ -31,7 +31,7 @@ public class WhatReplacer extends Fallback {
 			String sentence;
 			String tranSent;
 			
-			String beEPvalue = "_BE_V_ID_REL";
+			String verbEPvalue = "_V_";
 			
 			log.info("============== MrsReplacer Generation -- WhatReplacer==============");
 	
@@ -46,7 +46,7 @@ public class WhatReplacer extends Fallback {
 				MRS mrs = oriPair.getOriMrs();
 				
 				for (ElementaryPredication ep:mrs.getEps()) {
-					if (ep.getTypeName().equals(beEPvalue)) {
+					if (ep.getTypeName().toUpperCase().contains(verbEPvalue)) {
 						int cfrom = ep.getCfrom();
 						int cto = ep.getCto();
 						
