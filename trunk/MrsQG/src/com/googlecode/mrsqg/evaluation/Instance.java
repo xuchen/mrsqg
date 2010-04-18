@@ -39,6 +39,8 @@ public class Instance {
 	 */
 	protected ArrayList<String> genQuestionList;
 	
+	private ArrayList<String> candidatesList;
+	
 	public void setIdNum (String idNum) {this.idNum = idNum;}
 	public void setIdSource (String idSource) {this.idSource= idSource;}
 	public void setSource (String source) {this.source = source;}
@@ -51,10 +53,12 @@ public class Instance {
 	public String getIdNum () {return this.idNum;}
 	public String getIdSource () {return this.idSource;}
 	public String getSource () {return this.source;}
+	public void addToCandidatesList (String s) {this.candidatesList.add(s);}
 	
 	public Instance () {
 		this.questionTypeList = new ArrayList<String>();
 		this.genQuestionList = new ArrayList<String>();
+		this.candidatesList = new ArrayList<String>();
 	}
 	
 	public void toXML(OutputStream os) {
@@ -119,7 +123,15 @@ public class Instance {
 						hd.characters(question.toCharArray(), 0, question.length());
 					}
 					hd.endElement("", "", "question");
+					if (i%2==0 && candidatesList!=null && i/2<candidatesList.size()) {
+						atts.clear();
+						hd.startElement("", "", "questions", atts);
+						question = candidatesList.get(0);
+						hd.characters(question.toCharArray(), 0, question.length());
+						hd.endElement("", "", "questions");
+					}
 				}
+				
 				
 				hd.endElement("", "", "instance");
 

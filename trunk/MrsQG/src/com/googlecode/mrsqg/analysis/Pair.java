@@ -42,6 +42,9 @@ public class Pair {
 	/** transformed sentence from fallbacks, such as "John likes who?" */
 	protected String tranSent;
 	
+	/** if tranSent fails to parse, still store it with a "failedType" */
+	protected String failedType = null;
+	
 	private boolean flag = false;
 	
 	
@@ -93,6 +96,11 @@ public class Pair {
 		this.genQuesFailedList =genQuesFailedList; 
 	}
 	
+	public Pair (String tranSent, String failedType) {
+		this.tranSent = tranSent;
+		this.failedType = failedType; 
+	}
+	
 	public String getTranSent () { return this.tranSent;}
 	//public void setTranMrs (ArrayList<MRS> list) { this.tranMrsList = list;}
 	//public ArrayList<String> getGenSentList () {return this.genSentList;}
@@ -103,6 +111,7 @@ public class Pair {
 	public MRS getQuesMrs () {return this.quesMrs;}
 	public ArrayList<String> getGenQuesList() {return genQuesList;}
 	public ArrayList<String> getGenQuesFailedList() {return genQuesFailedList;}
+	public String getFailedType() {return failedType;}
 	public boolean getFlag() {return this.flag;}
 	public void setFlag(boolean flag) {this.flag = flag;}
 	

@@ -25,6 +25,7 @@ import com.googlecode.mrsqg.nlp.*;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
 import com.googlecode.mrsqg.postprocessing.*;
+import com.googlecode.mrsqg.util.StringUtils;
 
 
 public class MrsQG {
@@ -189,6 +190,7 @@ public class MrsQG {
 
 		ArrayList<Instance> instanceList = QGSTEC2010processor.getInstanceList();
 		String text, questionType, question;
+		ArrayList <String> quesList;
 		boolean success;
 		try {
 			// append
@@ -204,10 +206,15 @@ public class MrsQG {
 
 				// assign generated question back
 				for (int i=0; i<ins.getQuestionTypeList().size(); i++) {
+					if (i%2==0) continue;
 					questionType = ins.getQuestionTypeList().get(i);
 					// retrieve question according to questionType
-					question = retrieveQuestion(questionType).toString();
-					ins.addGenQuestion(question);
+					quesList = retrieveQuestion(questionType, text);
+					if (quesList!=null) {
+						ins.addGenQuestion(quesList.get(0));
+						ins.addGenQuestion(quesList.get(1));
+						ins.addToCandidatesList(quesList.toString());
+					}
 				}
 				// append incrementally
 				ins.toXML(fop);
@@ -222,11 +229,12 @@ public class MrsQG {
 		}
 	}
 	
-	public ArrayList<String> retrieveQuestion (String type) {
+	public ArrayList<String> retrieveQuestion (String type, String original) {
 		String question="";
 		if (type.equals("yes/no")) type="y/n";
 		type = type.toUpperCase();
-		ArrayList<String> succList = new ArrayList<String>(); 
+		ArrayList<String> succList = new ArrayList<String>();
+		ArrayList<String> twoList = new ArrayList<String>();
 		ArrayList<Pair> pairs = new ArrayList<Pair>(); 
 		if (quesSuccPairs.size() != 0) {
 			for (Pair p:quesSuccPairs) {
@@ -243,8 +251,8 @@ public class MrsQG {
 		if (succList.size() > 1)
 			return succList;
 		
-		// try to pull out a sentence from fallbacks
-		if (quesFailPairs.size() != 0) {
+		// try to pull out a sentence from fallbacks that can generate
+		if (succList.size() == 0 && quesFailPairs.size() != 0) {
 			for (Pair p:quesFailPairs) {
 				if (!p.getFlag() && p.getQuesMrs().getSentType().startsWith(type)) {
 					question = p.getTranSent();
@@ -256,6 +264,46 @@ public class MrsQG {
 			}
 		}
 		
+		// try to pull out sentences from fallbacks that can't parse
+		if (succList.size() == 0) {
+			if (quesFailPairs.size() != 0) {
+				for (Pair p:quesFailPairs) {
+					if (!p.getFlag() && p.getFailedType() != null && p.getFailedType().startsWith(type)) {
+						question = p.getTranSent();
+						if (!succList.contains(question)) {
+							succList.add(question);
+							pairs.add(p);
+						}
+					}
+				}
+			}
+		}
+		
+		if (succList.size() > 1) {
+			String q1=succList.get(0), q2=q1;
+			// the first one is the most similar with the original sentence
+			int min, oldMin=10000;
+			for (String s:succList) {
+				min = StringUtils.getLevenshteinDistance(original, s);
+				if (min < oldMin)
+					q1 = s;
+			}
+			// the second one is the most different with the first one
+			int max, oldMax=0;
+			for (String s:succList) {
+				max = StringUtils.getLevenshteinDistance(q1, s);
+				if (max > oldMax)
+					q2 = s;
+			}
+			succList.remove(q1);
+			if (!q1.equals(q2) && succList.contains(q2))
+				succList.remove(q2);
+			succList.add(0, q2);
+			succList.add(0, q1);
+		} else if (succList.size() == 1) {
+			succList.add(0, succList.get(0));
+		}
+
 		// return it anyway no matter how many entries it contains
 		return succList;
 	}
