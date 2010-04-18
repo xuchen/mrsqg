@@ -75,6 +75,8 @@ public class MrsQG {
 	private ArrayList<Pair> quesSuccPairs;
 	// pairs for not successfully generated questions
 	private ArrayList<Pair> quesFailPairs;
+	
+	private QGSTEC2010 QGSTEC2010processor;
 
 	/**
 	 * @return	a timestamp String for logging
@@ -410,8 +412,8 @@ public class MrsQG {
 	}
 
 	public void runTest() {
-		QGSTEC2010 q = new QGSTEC2010(testFileInput);
-		ArrayList<Instance> instanceList = q.getInstanceList();
+
+		ArrayList<Instance> instanceList = QGSTEC2010processor.getInstanceList();
 		String text, questionType, question;
 		boolean success;
 		try {
@@ -439,7 +441,7 @@ public class MrsQG {
 			}
 
 			// write it overall again
-			q.toXML(fop);
+			QGSTEC2010processor.toXML(fop);
 			fop.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -760,6 +762,7 @@ public class MrsQG {
 			runTest = true;
 			testFileInput = new File(prop.getProperty("testFileInput"));
 			testFileOutput = new File(prop.getProperty("testFileOutput"));
+			QGSTEC2010processor = new QGSTEC2010(testFileInput);
 		}
 
 		// init the cheap parser
