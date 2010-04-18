@@ -177,7 +177,8 @@ public class MrsQG {
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
 				input = input.substring(5).trim();
-				input = input.replaceAll("'", "");
+				if (!(input.indexOf("'") == input.lastIndexOf("'")))
+					input = input.replaceAll("'", "");
 				input = input.replaceAll("\\(.*?\\)", "");
 
 				// pre-processing, get the output FSC XML in a string fsc
@@ -485,7 +486,9 @@ public class MrsQG {
 
 	private boolean runPipe(String input) {
 		input = input.trim();
-		input = input.replaceAll("'", "");
+
+		if (!(input.indexOf("'") == input.lastIndexOf("'")))
+			input = input.replaceAll("'", "");
 		input = input.replaceAll("\\(.*?\\)", "");
 
 		SubordinateDecomposer subordDecomposer = new SubordinateDecomposer();
