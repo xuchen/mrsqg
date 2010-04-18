@@ -28,7 +28,6 @@ public class PreSelector {
 		String mrx;
 		for (MRS m:origMrsList) {
 			// generate from original sentence
-			m.preventInvalidPredicate();
 			m.changeFromUnkToNamed();
 			mrx = m.toMRXstring();
 			lkb.sendMrxToGen(mrx);
