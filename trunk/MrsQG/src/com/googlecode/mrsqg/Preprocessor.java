@@ -62,6 +62,7 @@ public class Preprocessor {
 		String original;
 		this.tokens = new String[countOfSents][];
 		this.pos = new String[countOfSents][];
+		this.chunks = new String[countOfSents][];
 		this.sentences = new String[countOfSents];
 		for (int i = 0; i < countOfSents; i++) {
 			original = originalSentences[i];
