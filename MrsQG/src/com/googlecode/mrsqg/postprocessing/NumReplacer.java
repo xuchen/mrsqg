@@ -57,14 +57,14 @@ public class NumReplacer extends Fallback {
 					
 					String carg = ep.getValueByFeature("CARG");
 					if (carg!=null && carg.equals((sentence.substring(cfrom, cto)))) {
-						tranSent = sentence.substring(0, cfrom) + "how many" + sentence.substring(cto);
-						tranSent1 = sentence.substring(0, cfrom) + "how much" + sentence.substring(cto);
+						tranSent = sentence.substring(0, cfrom) + "how many " + sentence.substring(cto);
+						tranSent1 = sentence.substring(0, cfrom) + "how much " + sentence.substring(cto);
 					} else if (carg!=null && sentence.contains(carg)) {
-						tranSent = sentence.replaceAll(carg, "how many");
-						tranSent1 = sentence.replaceAll(carg, "how much");
+						tranSent = sentence.replaceAll(carg, "how many ");
+						tranSent1 = sentence.replaceAll(carg, "how much ");
 					} else {
-						tranSent = sentence.substring(0, cfrom) + "how many" + sentence.substring(cto);
-						tranSent1 = sentence.substring(0, cfrom) + "how much" + sentence.substring(cto);
+						tranSent = sentence.substring(0, cfrom) + "how many " + sentence.substring(cto);
+						tranSent1 = sentence.substring(0, cfrom) + "how much " + sentence.substring(cto);
 					}
 					
 					tranSent = changeQuestionMark(tranSent);
