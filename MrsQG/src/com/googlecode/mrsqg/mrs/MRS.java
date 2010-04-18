@@ -533,6 +533,7 @@ public class MRS {
 		// the main event of this MRS
 		String event = this.getIndex();
 		ArrayList<ElementaryPredication> eventEPS = this.getEPbyFeatAndValue("ARG0", event);
+		if (eventEPS == null) return null;
 		for (ElementaryPredication ep:eventEPS) {
 			if (ep.getTypeName().contains("_modal_")) {
 				// it could be that a modal verb, such as 'can'/'must',

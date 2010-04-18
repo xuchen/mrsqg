@@ -83,7 +83,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 				}
 
 				// otherArg doesn't really exist, this verb is intransitive
-				if (otherArg != null && mrs.getEPbyFeatAndValue("ARG0", otherArg).size() == 0) {
+				if (otherArg != null && mrs.getEPbyFeatAndValue("ARG0", otherArg) == null) {
 					otherArg = null;
 				}
 
@@ -141,6 +141,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 
 				// set the lowEP of oneArg to a different label
 				ArrayList<ElementaryPredication> argList = mrs.getEPbyFeatAndValue("ARG0", oneArg);
+				if (argList == null) continue;
 				if (argList.size() == 1 && argList.get(0).getLabel().equals(verbEP.getLabel())) {
 					argList.get(0).setLabel("h"+mrs.generateUnusedLabel(1).get(0));
 				} else if (argList.size() == 2) {
