@@ -1371,6 +1371,7 @@ public class MRS {
 	 */
 	public void parse(File file) {
 		this.parser.parse(file);
+		preventInvalidPredicate();
 		buildCoref();
 	}
 	
@@ -1381,6 +1382,7 @@ public class MRS {
 	 */
 	public void parseString(String str) {
 		this.parser.parseString(str);
+		preventInvalidPredicate();
 		buildCoref();
 	}
 	
