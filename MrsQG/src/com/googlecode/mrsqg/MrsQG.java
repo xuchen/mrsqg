@@ -210,7 +210,7 @@ public class MrsQG {
 					questionType = ins.getQuestionTypeList().get(i);
 					// retrieve question according to questionType
 					quesList = retrieveQuestion(questionType, text);
-					if (quesList!=null) {
+					if (quesList!=null&&quesList.size()!=0) {
 						ins.addGenQuestion(quesList.get(0));
 						ins.addGenQuestion(quesList.get(1));
 						ins.addToCandidatesList(quesList.toString());
