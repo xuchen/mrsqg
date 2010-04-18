@@ -66,6 +66,7 @@ public class Instance {
 
 		of.setIndenting(true);
 		of.setIndent(1);
+		//of.setLineWidth(72);
 
 //		FileOutputStream fos = null;
 //		try {
@@ -123,7 +124,7 @@ public class Instance {
 						hd.characters(question.toCharArray(), 0, question.length());
 					}
 					hd.endElement("", "", "question");
-					if (i%2==0 && candidatesList!=null && i/2<candidatesList.size()) {
+					if (i%2==1 && candidatesList!=null && i/2<candidatesList.size()) {
 						atts.clear();
 						hd.startElement("", "", "questions", atts);
 						question = candidatesList.get(0);
