@@ -80,19 +80,19 @@ public class Fallback {
 					String sentType, extraSentType=null;
 					if (neType.equals("NEperson")||neType.equals("NEfirstName")) {
 						tranSent = Fallback.transformSentence(sentence, term, "who");
-						if (term.getPos().endsWith("S")) {
-							tranSent1 = "Who are "+term.toString()+"?";
+						if (term.getPosFSC().endsWith("S")) {
+							tranSent1 = "Who are "+term.getText()+"?";
 						} else {
-							tranSent1 = "Who is "+term.toString()+"?";
+							tranSent1 = "Who is "+term.getText()+"?";
 						}
 						sentType = "WHO";
 					} else if (neType.equals("NElocation")) {
 						tranSent = Fallback.transformSentence(sentence, term, "where");
 						sentType = "WHERE";
-						if (term.getPos().endsWith("S")) {
-							tranSent1 = "Where are "+term.toString()+"?";
+						if (term.getPosFSC().endsWith("S")) {
+							tranSent1 = "Where are "+term.getText()+"?";
 						} else {
-							tranSent1 = "Where is "+term.toString()+"?";
+							tranSent1 = "Where is "+term.getText()+"?";
 						}
 					} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
 						tranSent = Fallback.transformSentence(sentence, term, "when");
@@ -162,7 +162,11 @@ public class Fallback {
 		if (pre.getNumTokens() > 15) {
 			parser.releaseMemory();
 		}
-		if (!success) return;
+		if (!success) {
+			Pair pair = new Pair (tranSent, sentType);
+			genFailPairs.add(pair);
+			return;
+		}
 
 		if (mrxList != null && this.generator != null) {
 			String mrx;
