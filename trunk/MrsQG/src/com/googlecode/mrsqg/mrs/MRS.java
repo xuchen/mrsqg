@@ -507,7 +507,7 @@ public class MRS {
 				}
 			}
 		}
-		return list;
+		return list.size()==0?null:list;
 	}
 	
 	/**
