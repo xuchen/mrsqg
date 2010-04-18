@@ -72,10 +72,10 @@ public class Preprocessor {
 			pos[i] = OpenNLP.tagPos(tokens[i]);
 			chunks[i] = OpenNLP.tagChunks(tokens[i], pos[i]);
 			chunks[i] = OpenNLP.joinNounPhrases(tokens[i], chunks[i]);
-			log.info("NP chunks: ");
-			for (int j=0; j<chunks[i].length; j++) {
-				log.info(chunks[i][j]);
-			}
+//			log.info("NP chunks: ");
+//			for (int j=0; j<chunks[i].length; j++) {
+//				log.info(chunks[i][j]);
+//			}
 			// temporarily avoid errors such as invalid predicates: |"_thermoplastics_nns_rel"|
 			for (int j=0; j<pos[i].length; j++) {
 				if (pos[i][j].equals("NNS")) pos[i][j] = "NNPS";
@@ -96,8 +96,7 @@ public class Preprocessor {
 					log.info(this.terms[i][j]+"  ");
 				}
 			}
-		}
-		
+		}		
 		return true;
 	}
 	
