@@ -350,6 +350,12 @@ public class OpenNLP {
 		unJoinablePrepositions.add("who");
 	}
 	
+	/**
+	 * John NP with PP to get a larger chunk.
+	 * @param tokens
+	 * @param chunkTags
+	 * @return
+	 */
 	public static String[] joinNounPhrases(String[] tokens, String[] chunkTags) {
 		if (chunkTags.length < 2) return chunkTags;
 		
@@ -367,4 +373,5 @@ public class OpenNLP {
 		
 		return newChunkTags;
 	}
+	
 }
