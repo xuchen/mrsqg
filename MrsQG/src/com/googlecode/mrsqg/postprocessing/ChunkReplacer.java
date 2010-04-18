@@ -60,6 +60,8 @@ public class ChunkReplacer extends Fallback {
 				if (chunkTag.equals(B_NP)) {
 					startNP = i;
 					inNP = true;
+				} else if (chunkTag.equals(I_NP)) {
+					inNP = true;
 				} else if ((inNP && !(chunkTag.equals(B_NP)||chunkTag.equals(I_NP)))
 						|| (i==chunks.length-1 && chunkTag.contains(NP))) {
 					endNP = i;

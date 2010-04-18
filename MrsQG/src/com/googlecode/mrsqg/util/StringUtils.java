@@ -123,7 +123,7 @@ public class StringUtils {
 	}
 	
 	public static String concatWithSpaces (String[] tokens, int start, int end) {
-		if (tokens==null || start>=tokens.length || end >= tokens.length) return null;
+		if (tokens==null || start>tokens.length || end > tokens.length) return null;
 		
 		String s = tokens[start];
 		for (int i=start+1; i<end; i++) {
