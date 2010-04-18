@@ -35,6 +35,7 @@ public class Preprocessor {
 	private String[] originalSentences;
 	private String[][] tokens;
 	private String[][] pos;
+	private String[][] chunks;
 	private String[] sentences;
 	private String[][][] nes;
 	//private ArrayList<String>[] to;
@@ -49,6 +50,7 @@ public class Preprocessor {
 	public String getFirstSent() {return this.sentences[0];}
 	public Term[][] getTerms () {return this.terms;}
 	public int getNumTokens() {return this.tokens[0].length;}
+	public String[][] getChunks() {return this.chunks;}
 	
 	public boolean preprocess (String sents) {
 		log.info("Preprocessing");
@@ -67,6 +69,11 @@ public class Preprocessor {
 			//tokens[i] = NETagger.tokenize(original);
 			tokens[i] = OpenNLP.tokenize(original);
 			pos[i] = OpenNLP.tagPos(tokens[i]);
+			chunks[i] = OpenNLP.tagChunks(tokens[i], pos[i]);
+			log.info("NP chunks: ");
+			for (int j=0; j<chunks[i].length; j++) {
+				log.info(chunks[i][j]);
+			}
 			// temporarily avoid errors such as invalid predicates: |"_thermoplastics_nns_rel"|
 			for (int j=0; j<pos[i].length; j++) {
 				if (pos[i][j].equals("NNS")) pos[i][j] = "NNPS";
