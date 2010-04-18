@@ -76,14 +76,24 @@ public class Fallback {
 						log.error("NE types shouldn't be none: "+term);
 						continue;
 					}
-					String tranSent, extraTranSent=null;
+					String tranSent, tranSent1=null, extraTranSent=null;
 					String sentType, extraSentType=null;
 					if (neType.equals("NEperson")||neType.equals("NEfirstName")) {
 						tranSent = Fallback.transformSentence(sentence, term, "who");
+						if (term.getPos().endsWith("S")) {
+							tranSent1 = "Who are "+term.toString()+"?";
+						} else {
+							tranSent1 = "Who is "+term.toString()+"?";
+						}
 						sentType = "WHO";
 					} else if (neType.equals("NElocation")) {
 						tranSent = Fallback.transformSentence(sentence, term, "where");
 						sentType = "WHERE";
+						if (term.getPos().endsWith("S")) {
+							tranSent1 = "Where are "+term.toString()+"?";
+						} else {
+							tranSent1 = "Where is "+term.toString()+"?";
+						}
 					} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
 						tranSent = Fallback.transformSentence(sentence, term, "when");
 						sentType = "WHEN";
@@ -101,6 +111,8 @@ public class Fallback {
 					}
 					
 					generate(tranSent, sentType, "Fallback");
+					if (tranSent1!=null)
+						generate(tranSent1, sentType, "Fallback");
 					if (extraTranSent!=null)
 						generate(extraTranSent, extraSentType, "Fallback");
 				}
