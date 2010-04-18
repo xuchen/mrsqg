@@ -140,7 +140,9 @@ public class MrsTransformer {
 					// hiEP should be found through a qeq relation
 					hi = MRS.getHiLabelFromHconsList(lo, q_mrs.getHcons());
 					if (hi == null) continue;
-					hiEP = q_mrs.getEPbyFeatAndValue("RSTR", hi).get(0);
+					ArrayList<ElementaryPredication> rstr = q_mrs.getEPbyFeatAndValue("RSTR", hi);
+					if (rstr==null) continue;
+					hiEP = rstr.get(0);
 					if (hi==null||hiEP==null) {
 						/*
 						 * It seems in a well-formed MRS, eps.size() is always 2.
