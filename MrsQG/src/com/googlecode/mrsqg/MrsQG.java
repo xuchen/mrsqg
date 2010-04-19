@@ -171,6 +171,37 @@ public class MrsQG {
 					parser.releaseMemory();
 				}
 				//if (!parser.isSuccess()) continue;
+			} else if (input.startsWith("pg: ")) {
+				input = input.substring(3).trim();
+				// pre-processing, get the output FSC XML in a string fsc
+				p = new Preprocessor();
+				String fsc = p.getFSCbyTerms(input, true);
+				//log.info("\nFSC XML from preprocessing:\n");
+				//log.info(fsc);
+
+				// parsing fsc with cheap
+				if (parser == null) continue;
+				parser.parse(fsc);
+				// the number of MRS in the list depends on 
+				// the option "-results=" in cheap.
+				// Usually it's 3.
+				ArrayList<MRS> origMrsList = parser.getParsedMRSlist();
+				boolean success = parser.isSuccess();
+				if (p.getNumTokens() > 15) {
+					parser.releaseMemory();
+				}
+				if (!success) continue;
+				String mrx;
+				if (origMrsList==null||origMrsList.size()==0) continue;
+				log.info("Sending PET output to LKB...");
+				for (MRS m:origMrsList) {
+					// generate from original sentence
+					m.changeFromUnkToNamed();
+					mrx = m.toMRXstring();
+					lkb.sendMrxToGen(mrx);
+					log.info(lkb.getGenSentences());
+				}
+				
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
 				input = input.substring(5).trim();
