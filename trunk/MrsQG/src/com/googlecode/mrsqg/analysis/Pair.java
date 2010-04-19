@@ -173,7 +173,9 @@ public class Pair {
 		} else {
 			// find out the one that's most different to oriSent
 			// to increase the evaluation grade for variety
-			int lowest, oldLowest = 0;
+			// new strategy: find out most similar one
+
+			int lowest, oldLowest = 10000;
 			for (String s:shortest) {
 				
 				// some questions don't have the correct question word
@@ -181,7 +183,7 @@ public class Pair {
 				if (!s.toUpperCase().contains(sentType)) continue;
 
 				lowest = StringUtils.getLevenshteinDistance(oriSent, s);
-				if (lowest > oldLowest)
+				if (lowest < oldLowest)
 					genQuesCand = s;
 			}
 		}
