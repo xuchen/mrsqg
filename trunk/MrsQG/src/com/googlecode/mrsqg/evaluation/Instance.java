@@ -121,7 +121,8 @@ public class Instance {
 					hd.startElement("", "", "question", atts);
 					if (i<genQuestionList.size()) {
 						question = genQuestionList.get(i);
-						hd.characters(question.toCharArray(), 0, question.length());
+						if (question != null && question.length() != 0)
+							hd.characters(question.toCharArray(), 0, question.length());
 					}
 					hd.endElement("", "", "question");
 					if (i%2==1 && candidatesList!=null && i/2<candidatesList.size()) {
