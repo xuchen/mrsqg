@@ -149,7 +149,7 @@ public class Pair {
 			// prefer the one which has the question word in the front
 			// as well as having a ? at the end
 			for (String s:genQuesList) {
-				if (s.toUpperCase().startsWith(sentType) &&
+				if (//s.toUpperCase().startsWith(sentType) &&
 						s.endsWith("?"))
 					preferred.add(s);
 			}
