@@ -463,7 +463,7 @@ public class MRS {
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
-				if (f.getRargname().equals(feat) && f.getVar().getLabel().equals(value)) {
+				if (f.getRargname().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(f);
 				}
 			}
@@ -482,7 +482,7 @@ public class MRS {
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
-				if (f.getVar().getLabel().equals(value)) {
+				if (f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(f);
 				}
 			}
@@ -502,7 +502,7 @@ public class MRS {
 		ArrayList<ElementaryPredication> list = new ArrayList<ElementaryPredication>();
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
-				if (f.getRargname().equals(feat) && f.getVar().getLabel().equals(value)) {
+				if (f.getRargname().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(ep);
 				}
 			}
