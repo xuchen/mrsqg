@@ -280,9 +280,6 @@ public class MrsQG {
 			}
 		}
 		
-		if (succList.size() > 1)
-			return succList;
-		
 		// try to pull out a sentence from fallbacks that can generate
 		if (succList.size() == 0 && quesFailPairs.size() != 0) {
 			for (Pair p:quesFailPairs) {
