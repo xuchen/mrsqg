@@ -129,6 +129,7 @@ public class Pair {
 				lowest = StringUtils.getLevenshteinDistance(oriSent, s);
 				if (lowest < oldLowest)
 					genOriCand = s;
+				oldLowest = lowest;
 			}
 		}
 			
@@ -185,6 +186,7 @@ public class Pair {
 				lowest = StringUtils.getLevenshteinDistance(oriSent, s);
 				if (lowest < oldLowest)
 					genQuesCand = s;
+				oldLowest = lowest;
 			}
 		}
 			

@@ -287,6 +287,7 @@ public class MrsQG {
 				min = StringUtils.getLevenshteinDistance(original, s);
 				if (min < oldMin)
 					q1 = s;
+				oldMin = min;
 			}
 			// the second one is the most different with the first one
 			int max, oldMax=0;
@@ -294,6 +295,7 @@ public class MrsQG {
 				max = StringUtils.getLevenshteinDistance(q1, s);
 				if (max > oldMax)
 					q2 = s;
+				oldMax = max;
 			}
 			succList.remove(q1);
 			if (!q1.equals(q2) && succList.contains(q2))
