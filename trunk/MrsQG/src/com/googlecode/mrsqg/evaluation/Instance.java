@@ -128,7 +128,7 @@ public class Instance {
 					if (i%2==1 && candidatesList!=null && i/2<candidatesList.size()) {
 						atts.clear();
 						hd.startElement("", "", "questions", atts);
-						question = candidatesList.get(0);
+						question = candidatesList.get(i/2);
 						hd.characters(question.toCharArray(), 0, question.length());
 						hd.endElement("", "", "questions");
 					}
