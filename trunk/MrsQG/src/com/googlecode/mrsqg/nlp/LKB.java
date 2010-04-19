@@ -84,6 +84,9 @@ public class LKB {
 		// load script and generate index for the generator
 		if (!quicktest) {
 			sendInput(scriptCmd+genCmd);
+			// increase the number of edges to have a better chance of generation
+			// if you have enough memory
+			// (setq *maximum-number-of-edges* 10000)
 		}
 		
 		// output LKB loading message

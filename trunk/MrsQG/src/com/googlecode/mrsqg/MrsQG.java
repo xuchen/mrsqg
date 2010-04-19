@@ -193,6 +193,7 @@ public class MrsQG {
 				if (!success) continue;
 				String mrx;
 				if (origMrsList==null||origMrsList.size()==0) continue;
+				log.info("Number of PET parses: "+origMrsList.size());
 				log.info("Sending PET output to LKB...");
 				for (MRS m:origMrsList) {
 					// generate from original sentence
