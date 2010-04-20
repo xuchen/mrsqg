@@ -127,9 +127,10 @@ public class Pair {
 			int lowest, oldLowest = 10000;
 			for (String s:shortest) {
 				lowest = StringUtils.getLevenshteinDistance(oriSent, s);
-				if (lowest < oldLowest)
+				if (lowest < oldLowest) {
 					genOriCand = s;
-				oldLowest = lowest;
+					oldLowest = lowest;
+				}
 			}
 		}
 			
@@ -181,12 +182,13 @@ public class Pair {
 				
 				// some questions don't have the correct question word
 				// e.g. WHICH -> 'what place' / 'which place'
-				if (!s.toUpperCase().contains(sentType)) continue;
+				if (!sentType.equals("Y/N") && !s.toUpperCase().contains(sentType)) continue;
 
 				lowest = StringUtils.getLevenshteinDistance(oriSent, s);
-				if (lowest < oldLowest)
+				if (lowest < oldLowest) {
 					genQuesCand = s;
-				oldLowest = lowest;
+					oldLowest = lowest;
+				}
 			}
 		}
 			

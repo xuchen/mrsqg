@@ -93,8 +93,10 @@ public class MrsQG {
 		// initialize MrsQG and start command line interface
 		MrsQG HelloLady = new MrsQG();;
 		try {
-			if (HelloLady.getRunTest())
+			if (HelloLady.getRunTest()) {
 				HelloLady.runTest();
+				HelloLady.exitAll();
+			}
 			else
 				HelloLady.commandLine();
 		} catch (Exception e) {
@@ -318,17 +320,20 @@ public class MrsQG {
 			int min, oldMin=10000;
 			for (String s:succList) {
 				min = StringUtils.getLevenshteinDistance(original, s);
-				if (min < oldMin)
+				if (min < oldMin) {
 					q1 = s;
-				oldMin = min;
+					oldMin = min;
+				}
 			}
 			// the second one is the most different with the first one
 			int max, oldMax=0;
+			// debug here! sometimes it didn't find out the most different one
 			for (String s:succList) {
 				max = StringUtils.getLevenshteinDistance(q1, s);
-				if (max > oldMax)
+				if (max > oldMax) {
 					q2 = s;
-				oldMax = max;
+					oldMax = max;
+				}
 			}
 			succList.remove(q1);
 			if (!q1.equals(q2) && succList!=null && succList.size()>0 && succList.contains(q2))
