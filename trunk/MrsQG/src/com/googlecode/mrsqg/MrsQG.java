@@ -246,6 +246,10 @@ public class MrsQG {
 						ins.addGenQuestion(quesList.get(0));
 						ins.addGenQuestion(quesList.get(1));
 						ins.addToCandidatesList(quesList.toString());
+					} else {
+						ins.addGenQuestion("");
+						ins.addGenQuestion("");
+						ins.addToCandidatesList("");
 					}
 				}
 				// append incrementally
@@ -632,17 +636,6 @@ public class MrsQG {
 			QGSTEC2010processor = new QGSTEC2010(testFileInput);
 		}
 
-		// init the cheap parser
-		if (prop.getProperty("runCheapPipeline").equalsIgnoreCase("yes")) {
-			System.out.println("Creating parser...");
-			// Set Cheap to take FSC as input 
-			parser = new Cheap(true);
-
-			if (! parser.isSuccess()) {
-				log.error("cheap is not started properly.");
-			}
-		}
-
 		// init the LKB generator
 		if (prop.getProperty("runLkbPipeline").equalsIgnoreCase("yes")) {
 			System.out.println("Creating LKB...");
@@ -651,6 +644,17 @@ public class MrsQG {
 
 			if (! lkb.isSuccess()) {
 				exitAll();
+			}
+		}
+		
+		// init the cheap parser
+		if (prop.getProperty("runCheapPipeline").equalsIgnoreCase("yes")) {
+			System.out.println("Creating parser...");
+			// Set Cheap to take FSC as input 
+			parser = new Cheap(true);
+
+			if (! parser.isSuccess()) {
+				log.error("cheap is not started properly.");
 			}
 		}
 

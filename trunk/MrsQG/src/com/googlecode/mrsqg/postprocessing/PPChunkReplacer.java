@@ -30,10 +30,11 @@ public class PPChunkReplacer extends Fallback {
 		final String NP = "NP";
 		String sentence, quesWord, targetWord;
 		String tranSent, tranSent1;
+		String tranSentWhere, tranSentWhen;
 		String chunkTag;
 		String chunks[], tokens[], pos[];
 		
-		log.info("============== MrsReplacer Generation -- NPChunkReplacer==============");
+		log.info("============== MrsReplacer Generation -- PPChunkReplacer==============");
 
 		for (Pair oriPair:oriPairs) {
 			if (oriPair.getGenOriCand()!=null) {
@@ -43,7 +44,7 @@ public class PPChunkReplacer extends Fallback {
 			}
 			
 			pre.preprocess(sentence);
-			chunks = pre.getChunks()[0];
+			chunks = pre.getPpChunks()[0];
 			tokens = pre.getTokens()[0];
 			pos = pre.getPos()[0];
 			if (chunks==null || chunks.length==0) continue;
@@ -61,7 +62,7 @@ public class PPChunkReplacer extends Fallback {
 					inPP = true;
 				} else if (inPP && chunkTag.contains(NP)) {
 					inPP = true;
-				} else if ((inPP && chunkTag.equals(END))
+				} else if ((inPP && (chunkTag.equals(END) || !chunkTag.contains("NP")))
 						|| (i==chunks.length-1 && chunkTag.contains(NP))) {
 					endPP = i;
 					inPP = false;
@@ -76,17 +77,32 @@ public class PPChunkReplacer extends Fallback {
 						tranSent = tokens[0]+" "+quesWord+" "+targetWord+StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
 						if (targetWord.equals("place "))
 							tranSent1 = tokens[0]+" which "+targetWord+StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
+						tranSentWhere = "Where " + StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
+						tranSentWhen = "When " + StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
 					} else {
 						tranSent = StringUtils.concatWithSpaces(tokens, 0, startPP) + " " +quesWord+ " " +targetWord+
 							StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
 						if (targetWord.equals("place "))
 							tranSent1 = StringUtils.concatWithSpaces(tokens, 0, startPP) + " which " +targetWord+
 								StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
+						tranSentWhere = StringUtils.concatWithSpaces(tokens, 0, startPP-1) + " where " +
+							StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
+						tranSentWhen = StringUtils.concatWithSpaces(tokens, 0, startPP-1) + " when " +
+							StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
 					}
 					
-					tranSent = changeQuestionMark(tranSent);		
+					tranSent = changeQuestionMark(tranSent);	
 					log.info("tranSent: "+tranSent);
 					generate(tranSent, quesWord.toUpperCase(), "PPChunkReplacer");
+					
+					tranSentWhere = changeQuestionMark(tranSentWhere);	
+					log.info("tranSent: "+tranSentWhere);
+					generate(tranSentWhere, "WHERE", "PPChunkReplacer");
+					
+					tranSentWhen = changeQuestionMark(tranSentWhen);	
+					log.info("tranSent: "+tranSentWhen);
+					generate(tranSentWhen, "WHEN", "PPChunkReplacer");
+					
 					if (tranSent1 != null)
 						generate(tranSent, "WHICH", "PPChunkReplacer");
 				}

@@ -369,6 +369,38 @@ public class OpenNLP {
 				newChunkTags[t - 1] = "I-NP";
 				newChunkTags[t] = "I-NP";
 			} else newChunkTags[t] = chunkTags[t];
+			if (chunkTags[t].equals("O") && tokens[t].length()!=1 && chunkTags[t-1].contains("NP") && 
+					t+1 < chunkTags.length && chunkTags[t+1].contains("NP")) {
+				newChunkTags[t] = "I-NP";
+				if (chunkTags[t+1].equals("B-NP"))
+					newChunkTags[t+1] = "I-NP";
+			}
+		}
+		
+		return newChunkTags;
+	}
+	
+	/**
+	 * John coordination phrases, such as "John and Mary" are tagged as a bigger NP.
+	 * @param tokens
+	 * @param chunkTags
+	 * @return
+	 */
+	public static String[] joinCoordPhrases(String[] tokens, String[] chunkTags) {
+		if (chunkTags.length < 2) return chunkTags;
+		
+		String[] newChunkTags = new String[chunkTags.length];
+		newChunkTags[0] = chunkTags[0];
+		
+		for (int t = 1; t < chunkTags.length; t++) {
+
+			if (chunkTags[t].equals("O") && tokens[t].length()!=1 && chunkTags[t-1].contains("NP") && 
+					t+1 < chunkTags.length && chunkTags[t+1].contains("NP")) {
+				newChunkTags[t] = "I-NP";
+				if (chunkTags[t+1].equals("B-NP"))
+					newChunkTags[t+1] = "I-NP";
+			} else
+				newChunkTags[t] = chunkTags[t];
 		}
 		
 		return newChunkTags;
