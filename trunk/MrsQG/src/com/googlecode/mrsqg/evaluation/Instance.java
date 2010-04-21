@@ -62,7 +62,7 @@ public class Instance {
 	}
 	
 	public void toXML(OutputStream os) {
-		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
+		OutputFormat of = new OutputFormat("XML","UTF-8",true);
 
 		of.setIndenting(true);
 		of.setIndent(1);
