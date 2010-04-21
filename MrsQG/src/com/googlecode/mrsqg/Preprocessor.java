@@ -73,7 +73,7 @@ public class Preprocessor {
 		this.sentences = new String[countOfSents];
 		for (int i = 0; i < countOfSents; i++) {
 			original = originalSentences[i];
-			log.info("Sentence "+i+" :"+original);
+			log.info("Sentence "+i+": "+original);
 			//tokens[i] = NETagger.tokenize(original);
 			tokens[i] = OpenNLP.tokenize(original);
 			pos[i] = OpenNLP.tagPos(tokens[i]);

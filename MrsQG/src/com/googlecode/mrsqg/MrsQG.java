@@ -576,6 +576,14 @@ public class MrsQG {
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
 				pairs = numR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
+				
+				WhyAppender whyR = new WhyAppender (parser, lkb, declSuccPairs);
+				whyR.doIt();
+				pairs = whyR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = whyR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
+				
 
 			}
 		}
