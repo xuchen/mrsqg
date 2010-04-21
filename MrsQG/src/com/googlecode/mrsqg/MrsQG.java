@@ -351,6 +351,7 @@ public class MrsQG {
 	private boolean runPipe(String input) {
 		input = input.trim();
 
+		// TODO: a better way is to check whether ' is in between letters such as "he'll", "won't" 
 		if (!(input.indexOf("'") == input.lastIndexOf("'")))
 			input = input.replaceAll("'", "");
 		input = input.replaceAll("\\(.*?\\)", "");

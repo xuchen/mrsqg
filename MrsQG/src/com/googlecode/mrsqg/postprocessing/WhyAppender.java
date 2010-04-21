@@ -45,6 +45,7 @@ public class WhyAppender extends Fallback {
 			
 			// we can't care which is reash, which is result...
 			MRS whyMrs = WhyDecomposer.constructWhyMrs(mrs);
+			if (whyMrs==null) continue;
 			tranSent = "Why " + sentence;
 			
 			generate(tranSent, "WHY", "WhyAppender");
