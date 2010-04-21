@@ -56,6 +56,7 @@ public class NumReplacer extends Fallback {
 					if (cfrom > sentence.length() || cto > sentence.length()) continue;
 					
 					String carg = ep.getValueByFeature("CARG");
+					//TODO: work more intelligently to determine many/much
 					if (carg!=null && carg.equals((sentence.substring(cfrom, cto)))) {
 						tranSent = sentence.substring(0, cfrom) + "how many " + sentence.substring(cto);
 						tranSent1 = sentence.substring(0, cfrom) + "how much " + sentence.substring(cto);

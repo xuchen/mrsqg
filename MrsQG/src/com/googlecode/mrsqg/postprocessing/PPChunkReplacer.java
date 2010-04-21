@@ -66,6 +66,7 @@ public class PPChunkReplacer extends Fallback {
 						|| (i==chunks.length-1 && chunkTag.contains(NP))) {
 					endPP = i;
 					inPP = false;
+					// TODO: work more to determine according to terms, and add "which" group, especially which person33
 					quesWord = "what";
 					targetWord = "place ";
 					for (int j=startPP; j<endPP; j++) {
