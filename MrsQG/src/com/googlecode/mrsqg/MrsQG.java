@@ -336,7 +336,7 @@ public class MrsQG {
 				}
 			}
 			succList.remove(q1);
-			if (!q1.equals(q2) && succList!=null && succList.size()>0 && succList.contains(q2))
+			if (q1!=null && q2!=null && !q1.equals(q2) && succList!=null && succList.size()>0 && succList.contains(q2))
 				succList.remove(q2);
 			succList.add(0, q2);
 			succList.add(0, q1);
