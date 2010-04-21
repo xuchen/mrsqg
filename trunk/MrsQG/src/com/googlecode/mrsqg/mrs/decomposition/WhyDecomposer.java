@@ -157,9 +157,9 @@ public class WhyDecomposer extends MrsDecomposer {
 	 * Given a result MRS, construct a why MRS from it. For instance: 
 	 * "mice don't like cats" -> "why don't mice like cats?" 
 	 * @param resultMrs
-	 * @return
+	 * @return an MRS for why questions
 	 */
-	protected MRS constructWhyMrs (MRS resultMrs) {
+	public static MRS constructWhyMrs (MRS resultMrs) {
 		/* Construct a why MRS
         [ _for_p_rel<0:1>
           LBL: h3

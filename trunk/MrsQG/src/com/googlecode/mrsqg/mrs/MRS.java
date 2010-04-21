@@ -789,6 +789,9 @@ public class MRS {
 				eps.get(i).setTypeName(ep3Dest);
 				eps.get(i-1).setTypeName(ep2Dest);
 				eps.get(i-2).setTypeName(ep1Dest);
+			} else if (eps.get(i).getTypeName().equals(ep3Orig)) {
+				// change it anyway
+				eps.get(i).setTypeName(ep3Dest);
 			}
 		}
 	}

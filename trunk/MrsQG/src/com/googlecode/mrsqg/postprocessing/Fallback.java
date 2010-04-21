@@ -97,7 +97,7 @@ public class Fallback {
 					} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
 						tranSent = Fallback.transformSentence(sentence, term, "when");
 						sentType = "WHEN";
-					} else if (neType.equals("NEnumber")||neType.equals("NEhour")) {
+					} else if (neType.equals("NEnumber")||neType.equals("NEhour")||neType.contains("NEpercentage")) {
 						tranSent = Fallback.transformSentence(sentence, term, "how many");
 						sentType = "HOW MANY";
 						extraTranSent = Fallback.transformSentence(sentence, term, "how much");
@@ -173,8 +173,8 @@ public class Fallback {
 			for (MRS m:mrxList) {
 				// generate from original sentence
 				m.changeFromUnkToNamed();
-				mrx = m.toMRXstring();
 				m.setSentType(sentType);
+				mrx = m.toMRXstring();
 				generator.sendMrxToGen(mrx);
 				log.info("\nGenerate from fallback sentence:\n");
 

@@ -265,7 +265,7 @@ public class MrsTransformer {
 					log.error("NE types shouldn't be none: "+term);
 				}
 				
-				if (neType.contains("NEnumber")||neType.contains("NEhour")) {
+				if (neType.contains("NEnumber")||neType.contains("NEhour")||neType.contains("NEpercentage")) {
 					q_mrs = new MRS(this.ori_mrs);
 					eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
 					
