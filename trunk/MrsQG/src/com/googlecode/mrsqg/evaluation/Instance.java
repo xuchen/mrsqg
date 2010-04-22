@@ -117,7 +117,7 @@ public class Instance {
 				for (int i=0; i<questionTypeList.size(); i++) {
 					questionType = questionTypeList.get(i);
 					atts.clear();
-					atts.addAttribute("", "", "id", "CDATA", questionType);
+					atts.addAttribute("", "", "type", "CDATA", questionType);
 					hd.startElement("", "", "question", atts);
 					if (i<genQuestionList.size()) {
 						question = genQuestionList.get(i);

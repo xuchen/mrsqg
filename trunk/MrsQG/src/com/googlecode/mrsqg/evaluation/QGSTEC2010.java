@@ -218,7 +218,7 @@ public class QGSTEC2010 {
 				for (int i=0; i<qTypeList.size(); i++) {
 					questionType = qTypeList.get(i);
 					atts.clear();
-					atts.addAttribute("", "", "id", "CDATA", questionType);
+					atts.addAttribute("", "", "type", "CDATA", questionType);
 					hd.startElement("", "", "question", atts);
 					if (i<qList.size()) {
 						question = qList.get(i);
