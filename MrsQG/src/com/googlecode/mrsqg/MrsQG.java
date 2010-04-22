@@ -269,6 +269,7 @@ public class MrsQG {
 	
 	public ArrayList<String> retrieveQuestion (String type, String original) {
 		String question="";
+		if (type == null) return null;
 		if (type.equals("yes/no")) type="y/n";
 		type = type.toUpperCase();
 		ArrayList<String> succList = new ArrayList<String>();
