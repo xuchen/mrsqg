@@ -16,18 +16,18 @@ import com.googlecode.mrsqg.util.StringUtils;
 /**
  * Extracts single- and multi-token terms from a sentence. Multi-token terms are
  * named entities or compound terms found in dictionaries.
- * 
+ *
  * @author Nico Schlaefer
  * @version 2007-05-28
  */
 public class TermExtractor {
 	/** Maximum length of a term in tokens. */
 	private static final int MAX_TERM_LENGTH = 4;
-	
+
 	/**
 	 * Checks if the given term is among the named entities and returns the
 	 * types of the entities that match it.
-	 * 
+	 *
 	 * @param term a term, potentially a named entity
 	 * @param nes named entities
 	 * @return types of matching entities
@@ -38,7 +38,7 @@ public class TermExtractor {
 		List<String> neTypes = new ArrayList<String>();
 		Set<String> neTypesSet = new HashSet<String>();
 		int stanfordStart = NETagger.getStanfordStart();
-		
+
 		for (int neId = 0; neId < nes.length; neId++)
 			for (String ne : nes[neId])
 				if (term.equals(ne)) {
@@ -48,9 +48,9 @@ public class TermExtractor {
 						neTypes.add(neType);
 					break;
 				}
-		
+
 		// NEs for stanford tagger. let's try again
-		// remove all punctuation since Stanford tagger doesn't contain any 
+		// remove all punctuation since Stanford tagger doesn't contain any
 		String[] termNoPunc = term.replaceAll("\\p{Punct}+", "").split("\\s+");
 		for (int neId = stanfordStart; neId < nes.length; neId++) {
 			boolean contain = false;
@@ -71,7 +71,7 @@ public class TermExtractor {
 					neTypes.add(neType);
 			}
 		}
-		
+
 		// disambiguate with the priority of stanford NE tagger
 		// if Jackson is a person, then the following removes NEprovince, NEcapital from neTypes
 		if (neTypes.contains("NEperson")) {
@@ -86,28 +86,28 @@ public class TermExtractor {
 		}
 		return neTypes.toArray(new String[neTypes.size()]);
 	}
-	
+
 	/**
 	 * Extracts named entities from the given sentence.
-	 * 
+	 *
 	 * @param sentence sentence to analyze
 	 * @return named entities in the sentence
 	 */
 	public static String[][] getNes(String sentence) {
 		String[] tokens = NETagger.tokenize(sentence);
 		String[][] nes = NETagger.extractNes(new String[][] {tokens})[0];
-		
+
 		// untokenize named entities
 		for (int i = 0; i < nes.length; i++)
 			for (int j = 0; j < nes[i].length; j++)
 				nes[i][j] = OpenNLP.untokenize(nes[i][j], sentence);
-		
+
 		return nes;
 	}
-	
+
 	/**
 	 * Extracts named entities from the given sentence and context string.
-	 * 
+	 *
 	 * @param sentence sentence to analyze
 	 * @param context context string
 	 * @return named entities in the sentence and context string
@@ -116,10 +116,10 @@ public class TermExtractor {
 		// extract NEs from sentence
 		String[][] sentenceNes = getNes(sentence);
 		if (context == null || context.length() == 0) return sentenceNes;
-		
+
 		// extract NEs from context string
 		String[][] contextNes = getNes(context);
-		
+
 		// merge NEs
 		String[][] nes = new String[sentenceNes.length][];
 		for (int i = 0; i < nes.length; i++) {
@@ -134,24 +134,24 @@ public class TermExtractor {
 		}
 		return nes;
 	}
-	
+
 	/**
 	 * Extracts terms from the given sentence.
-	 * 
+	 *
 	 * @param sentence sentence to analyze
 	 * @param dicts dictionaries with compound terms
 	 * @return terms in the sentence
 	 */
 	public static Term[] getTerms(String sentence, Dictionary[] dicts) {
 		String[][] nes = getNes(sentence);
-		
+
 		return getTerms(sentence, nes, dicts);
 	}
-	
+
 	/**
 	 * Extracts terms from the given sentence, reusing named entities that have
 	 * been extracted before.
-	 * 
+	 *
 	 * @param sentence sentence to analyze
 	 * @param nes named entities in the sentence
 	 * @param dicts dictionaries with compound terms
@@ -161,7 +161,7 @@ public class TermExtractor {
 			Dictionary[] dicts) {
 		// extract tokens
 		String[] tokens = OpenNLP.tokenize(sentence);
-		// the start position (in characters) of each token 
+		// the start position (in characters) of each token
 		int[] tokenStart = new int[tokens.length];
 		for (int i=0, offset=0; i<tokens.length; i++) {
 			tokenStart[i] = offset;
@@ -171,20 +171,21 @@ public class TermExtractor {
 		// tag part of speech
 		String[] pos = OpenNLP.tagPos(tokens);
 		// temporarily avoid errors such as invalid predicates: |"_thermoplastics_nns_rel"|
-		for (int j=0; j<pos.length; j++) {
-			if (pos[j].equals("NNS")) pos[j] = "NNPS";
-		}
+		// X. Yao 2010-05-16: Disable it to use the new LKB/logon with generation from unknown words.
+//		for (int j=0; j<pos.length; j++) {
+//			if (pos[j].equals("NNS")) pos[j] = "NNPS";
+//		}
 		// tag phrase chunks
 		String[] chunks = OpenNLP.tagChunks(tokens, pos);
 		// mark tokens as not yet assigned to a term
 		boolean[] assigned = new boolean[tokens.length];
 		Arrays.fill(assigned, false);
-		
+
 		List<Term> termsL = new ArrayList<Term>();
 
 		// normalized terms (do identify duplicates)
 		Set<String> termSet = new HashSet<String>();
-		
+
 		// construct multi-token terms
 		for (int length = MAX_TERM_LENGTH; length > 1; length--)
 			// X. YAO, 2010-3-3.
@@ -202,7 +203,7 @@ public class TermExtractor {
 						continue;
 					}
 				if (skip) continue;
-				
+
 				// get phrase spanning the tokens
 				String text = tokens[id];
 				String untokText;
@@ -210,12 +211,12 @@ public class TermExtractor {
 					text += " " + tokens[id + offset];
 				untokText = text;
 				text = OpenNLP.untokenize(text, sentence);
-				
+
 				// phrase is a duplicate?
 				if (!termSet.add(StringUtils.normalize(text))) continue;
 				// phrase does not contain keywords?
 				if (KeywordExtractor.getKeywords(text).length == 0) continue;
-				
+
 				// phrase is a named entity?
 				// BUG fix: the RegEx tagger will recognize a NEdate, such as "August 29, 1958",
 				// as "August 29 , 1958", thus all tokens in the text should be concatenated with space
@@ -230,7 +231,7 @@ public class TermExtractor {
 						assigned[id + offset] = true;
 					continue;
 				}
-				
+
 				for (Dictionary dict : dicts) {
 					// phrase is not a noun phrase or verb phrase?
 					if (!(chunks[id].endsWith("NP") &&  // look up noun phrases
@@ -238,12 +239,12 @@ public class TermExtractor {
 						!(chunks[id].endsWith("VP") &&  // look up verb phrases
 							chunks[id + length - 1].endsWith("VP"))*/)
 						continue;
-					
+
 					// phrase contains a special characters other than '.'?
 					if (text.matches(".*?[^\\w\\s\\.].*+")) continue;
 					// phrase can be truncated?
 					if (!text.equals(TruncationFilter.truncate(text))) continue;
-					
+
 					// phrase is in the dictionary?
 					if (dict.contains(text)) {
 						// construct term
@@ -257,7 +258,7 @@ public class TermExtractor {
 					}
 				}
 			}
-		
+
 		// construct single-token terms
 		for (int id = 0; id < tokens.length; id++) {
 			// token is part of a multi-token term?
@@ -267,25 +268,25 @@ public class TermExtractor {
 			//thus comment out the following line to have more NEs.
 			// X. Yao. Mar 2, 2010. Uncomment to gain less NEs for FSC output.
 			if (assigned[id]) continue;
-			
+
 			// token is a duplicate?
 			if (!termSet.add(StringUtils.normalize(tokens[id]))) continue;
 			// token does not contain keywords?
 			if (KeywordExtractor.getKeywords(tokens[id]).length == 0) continue;
-			
+
 			// get named entity types and construct term
 			String[] neTypes = getNeTypes(tokens[id], nes);
 			Term t = new Term(tokens[id], pos[id], neTypes, id, id+1, tokenStart);
 			t.setPosFSC(pos);
 			termsL.add(t);
 		}
-		
+
 		return termsL.toArray(new Term[termsL.size()]);
 	}
-	
+
 	/**
 	 * Extracts terms from the given sentence and context string.
-	 * 
+	 *
 	 * @param sentence sentence to analyze
 	 * @param context context string
 	 * @param nes named entities in the sentence and context string
@@ -297,12 +298,12 @@ public class TermExtractor {
 		// extract terms from sentence
 		Term[] sentenceTerms = getTerms(sentence, nes, dicts);
 		if (context == null || context.length() == 0) return sentenceTerms;
-		
+
 		// extract terms from context string
 		Term[] contextTerms = getTerms(context, nes, dicts);
 		if (sentenceTerms.length == 0) return contextTerms;
 		if (contextTerms.length == 0) return sentenceTerms;
-		
+
 		// merge terms, eliminate duplicates
 		List<Term> terms = new ArrayList<Term>();
 		Set<String> termSet = new HashSet<String>();
@@ -314,10 +315,10 @@ public class TermExtractor {
 				terms.add(contextTerm);
 		return terms.toArray(new Term[terms.size()]);
 	}
-	
+
 	/**
 	 * Extracts single-token terms from the given sentence.
-	 * 
+	 *
 	 * @param sentence sentence to analyze
 	 * @return single-token terms in the sentence
 	 */
@@ -326,23 +327,23 @@ public class TermExtractor {
 		String[] tokens = OpenNLP.tokenize(sentence);
 		// tag part of speech
 		String[] pos = OpenNLP.tagPos(tokens);
-		
+
 		// extracted terms
 		ArrayList<Term> terms = new ArrayList<Term>();
 		// normalized terms (do identify duplicates)
 		Set<String> termSet = new HashSet<String>();
-		
+
 		// construct single-token terms
 		for (int id = 0; id < tokens.length; id++) {
 			// token is a duplicate?
 			if (!termSet.add(StringUtils.normalize(tokens[id]))) continue;
 			// token does not contain keywords?
 			if (KeywordExtractor.getKeywords(tokens[id]).length == 0) continue;
-			
+
 			// construct term
 			terms.add(new Term(tokens[id], pos[id]));
 		}
-		
+
 		return terms.toArray(new Term[terms.size()]);
 	}
 }

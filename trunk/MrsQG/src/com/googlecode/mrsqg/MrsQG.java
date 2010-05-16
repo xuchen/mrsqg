@@ -37,7 +37,7 @@ public class MrsQG {
 
 	/**	the DateFormat object used in getTimespamt
 	 */
-	private static SimpleDateFormat timestampFormatter; 
+	private static SimpleDateFormat timestampFormatter;
 
 	/**
 	 * configurations for MrsQG
@@ -68,7 +68,7 @@ public class MrsQG {
 	 * An XML file with results
 	 */
 	private File testFileOutput;
-	
+
 	// pairs for declarative sentences, could be original, or decomposed.
 	private ArrayList<Pair> declSuccPairs;
 	private ArrayList<Pair> declFailPairs;
@@ -76,7 +76,7 @@ public class MrsQG {
 	private ArrayList<Pair> quesSuccPairs;
 	// pairs for not successfully generated questions
 	private ArrayList<Pair> quesFailPairs;
-	
+
 	private QGSTEC2010 QGSTEC2010processor;
 
 	/**
@@ -108,7 +108,7 @@ public class MrsQG {
 
 	/**
 	 * Reads a line from the command prompt.
-	 * 
+	 *
 	 * @return user input
 	 */
 	protected String readLine() {
@@ -133,7 +133,7 @@ public class MrsQG {
 
 	/**
 	 * <p>A command line interface for MrsQG.</p>
-	 * 
+	 *
 	 * <p>The command <code>exit</code> can be used to quit the program.</p>
 	 */
 	public void commandLine() {
@@ -167,6 +167,7 @@ public class MrsQG {
 				// parsing fsc with cheap
 				if (parser == null) continue;
 				parser.parse(fsc);
+				log.info(parser.getParsedMrxString());
 				log.info(parser.getParsedMRSlist());
 
 				if (p.getNumTokens() > 15) {
@@ -184,7 +185,7 @@ public class MrsQG {
 				// parsing fsc with cheap
 				if (parser == null) continue;
 				parser.parse(fsc);
-				// the number of MRS in the list depends on 
+				// the number of MRS in the list depends on
 				// the option "-results=" in cheap.
 				// Usually it's 3.
 				ArrayList<MRS> origMrsList = parser.getParsedMRSlist();
@@ -196,6 +197,7 @@ public class MrsQG {
 				String mrx;
 				if (origMrsList==null||origMrsList.size()==0) continue;
 				log.info("Number of PET parses: "+origMrsList.size());
+				if (lkb==null) continue;
 				log.info("Sending PET output to LKB...");
 				for (MRS m:origMrsList) {
 					// generate from original sentence
@@ -204,12 +206,12 @@ public class MrsQG {
 					lkb.sendMrxToGen(mrx);
 					log.info(lkb.getGenSentences());
 				}
-				
+
 			} else if (input.startsWith("pipe: ")) {
 				// do everything in an automatic pipeline
 				input = input.substring(5).trim();
 
-				// generate questions based on text			
+				// generate questions based on text
 				runPipe(input);
 
 			} else {
@@ -232,7 +234,7 @@ public class MrsQG {
 			for (Instance ins:instanceList) {
 				text = ins.getText();
 
-				// generate questions based on text			
+				// generate questions based on text
 				success = runPipe(text);
 
 				if (!success) continue;
@@ -266,7 +268,7 @@ public class MrsQG {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public ArrayList<String> retrieveQuestion (String type, String original) {
 		String question="";
 		if (type == null) return null;
@@ -274,7 +276,7 @@ public class MrsQG {
 		type = type.toUpperCase();
 		ArrayList<String> succList = new ArrayList<String>();
 		ArrayList<String> twoList = new ArrayList<String>();
-		ArrayList<Pair> pairs = new ArrayList<Pair>(); 
+		ArrayList<Pair> pairs = new ArrayList<Pair>();
 		if (quesSuccPairs.size() != 0) {
 			for (Pair p:quesSuccPairs) {
 				if (!p.getFlag() && p.getQuesMrs().getSentType().startsWith(type)) {
@@ -286,7 +288,7 @@ public class MrsQG {
 				}
 			}
 		}
-		
+
 		// try to pull out a sentence from fallbacks that can generate
 		if (succList.size() == 0 && quesFailPairs.size() != 0) {
 			for (Pair p:quesFailPairs) {
@@ -299,7 +301,7 @@ public class MrsQG {
 				}
 			}
 		}
-		
+
 		// try to pull out sentences from fallbacks that can't parse
 		if (succList.size() == 0) {
 			if (quesFailPairs.size() != 0) {
@@ -314,7 +316,7 @@ public class MrsQG {
 				}
 			}
 		}
-		
+
 		if (succList.size() > 1) {
 			String q1=succList.get(0), q2=q1;
 			// the first one is the most similar with the original sentence
@@ -352,7 +354,7 @@ public class MrsQG {
 	private boolean runPipe(String input) {
 		input = input.trim();
 
-		// TODO: a better way is to check whether ' is in between letters such as "he'll", "won't" 
+		// TODO: a better way is to check whether ' is in between letters such as "he'll", "won't"
 		if (!(input.indexOf("'") == input.lastIndexOf("'")))
 			input = input.replaceAll("'", "");
 		input = input.replaceAll("\\(.*?\\)", "");
@@ -363,7 +365,7 @@ public class MrsQG {
 		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
 		WhyDecomposer whyDecomposer = new WhyDecomposer();
 		boolean fallback = true;
-		
+
 		// pairs for declarative sentences, could be original, or decomposed.
 		declSuccPairs = new ArrayList<Pair>();
 		declFailPairs = new ArrayList<Pair>();
@@ -381,7 +383,7 @@ public class MrsQG {
 		// parsing fsc with cheap
 		if (parser == null) return false;
 		parser.parse(fsc);
-		// the number of MRS in the list depends on 
+		// the number of MRS in the list depends on
 		// the option "-results=" in cheap.
 		// Usually it's 3.
 		ArrayList<MRS> origMrsList = parser.getParsedMRSlist();
@@ -403,7 +405,7 @@ public class MrsQG {
 		//	ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
 		//	ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
 		//	ArrayList<MRS> whyDecomposedMrxList = whyDecomposer.doIt(mrxList);
-		//	
+		//
 		//	if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
 		//	if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
 		//	if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
@@ -450,7 +452,7 @@ public class MrsQG {
 								pair.getGenOriCand() != null) {
 							/* this oriMrs comes from a decomposer, the
 							 * character position doesn't match the sentence
-							 * any more. So we have to send it to PET and 
+							 * any more. So we have to send it to PET and
 							 * re-generate the MRS
 							 */
 							Preprocessor pp = new Preprocessor();
@@ -465,7 +467,7 @@ public class MrsQG {
 							}
 							if (!success) continue;
 							if (regenMrsList!=null && regenMrsList.size()>0)
-								pair.setOriMrs(regenMrsList.get(0));						
+								pair.setOriMrs(regenMrsList.get(0));
 						}
 						declSuccPairs.add(pair);
 					}
@@ -557,14 +559,14 @@ public class MrsQG {
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
 				pairs = whatR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
-				
+
 				NPChunkReplacer npChunkR = new NPChunkReplacer (parser, lkb, declSuccPairs);
 				npChunkR.doIt();
 				pairs = npChunkR.getGenSuccPairs();
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
 				pairs = npChunkR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
-				
+
 				PPChunkReplacer ppChunkR = new PPChunkReplacer (parser, lkb, declSuccPairs);
 				ppChunkR.doIt();
 				pairs = ppChunkR.getGenSuccPairs();
@@ -578,14 +580,14 @@ public class MrsQG {
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
 				pairs = numR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
-				
+
 				WhyAppender whyR = new WhyAppender (parser, lkb, declSuccPairs);
 				whyR.doIt();
 				pairs = whyR.getGenSuccPairs();
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
 				pairs = whyR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
-				
+
 
 			}
 		}
@@ -604,14 +606,14 @@ public class MrsQG {
 		} else {
 			log.info("No questions generated.");
 		}
-		
+
 		return true;
 	}
 
 
 	/**
 	 * <p>Creates a new instance of MrsQG and initializes the system.</p>
-	 * 
+	 *
 	 * <p>For use as a standalone system.</p>
 	 */
 	protected MrsQG() {
@@ -620,9 +622,9 @@ public class MrsQG {
 
 	/**
 	 * <p>Creates a new instance of MrsQG and initializes the system.</p>
-	 * 
+	 *
 	 * <p>For use as an API.</p>
-	 * 
+	 *
 	 * @param dir directory of MrsQG
 	 */
 	public MrsQG(String dir) {
@@ -637,8 +639,8 @@ public class MrsQG {
 
 		// read configuration
 		Properties prop = new Properties();
-		try { 
-			prop.load(new FileInputStream(propertyFile)); 
+		try {
+			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -654,18 +656,18 @@ public class MrsQG {
 		// init the LKB generator
 		if (prop.getProperty("runLkbPipeline").equalsIgnoreCase("yes")) {
 			System.out.println("Creating LKB...");
-			// Set Cheap to take FSC as input 
+			// Set Cheap to take FSC as input
 			lkb = new LKB(false);
 
 			if (! lkb.isSuccess()) {
 				exitAll();
 			}
 		}
-		
+
 		// init the cheap parser
 		if (prop.getProperty("runCheapPipeline").equalsIgnoreCase("yes")) {
 			System.out.println("Creating parser...");
-			// Set Cheap to take FSC as input 
+			// Set Cheap to take FSC as input
 			parser = new Cheap(true);
 
 			if (! parser.isSuccess()) {
@@ -764,21 +766,19 @@ public class MrsQG {
 
 	public static void printUsage() {
 		System.out.println("\nUsage:");
-		System.out.println("\t1. Input the following line:");
-		System.out.println("\t\tpipe: a declrative sentence ending with a full stop.");
+		System.out.println("\t1. a sentence ending with a full stop.");
+		System.out.println("\t\tMrsQG generates the pre-processed FSC in XML. Then you can copy/paste this FSC into cheap to parse.");
+		System.out.println("\t2. pipe: a declrative sentence ending with a full stop.");
 		System.out.println("\t\tMrsQG generates a question through pipelines of PET and LKB.");
-		System.out.println("\t2. Input a declrative sentence at prompt, MrsQG generates the pre-processed FSC in XML.");
-		System.out.println("\t\tThen you can copy/paste this FSC into cheap to parse.");
-		System.out.println("\t3. Input the following line:");
-		System.out.println("\t\tmrx: an declrative MRS XML (MRX) file.");
+		System.out.println("\t3. mrx: an declrative MRS XML (MRX) file.");
 		System.out.println("\t\tMrsQG reads this MRX and transforms it into interrogative MRX.");
 		System.out.println("\t\tThen you can copy/paste the transformed MRX to LKB for generation.");
-		System.out.println("\t4. Input the following line:");
-		System.out.println("\t\tlkb: an LKB command");
+		System.out.println("\t4. lkb: an LKB command");
 		System.out.println("\t\tThen MrsQG serves as a wrapper for LKB. You can talk with LKB interactively through the prompt.");
-		System.out.println("\t5. Input the following line:");
-		System.out.println("\t\tcheap: a sentence");
+		System.out.println("\t5. cheap: a sentence");
 		System.out.println("\t\tThen MrsQG serves as a wrapper for Cheap. You can talk with cheap interactively through the prompt.");
+		System.out.println("\t6. pg: a sentence");
+		System.out.println("\t\tThen MrsQG first parses then generates from the sentence (pg stands for parse-generation).");
 		System.out.println();
 	}
 }
