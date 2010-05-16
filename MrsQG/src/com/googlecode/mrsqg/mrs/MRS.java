@@ -46,16 +46,16 @@ import org.apache.xml.serialize.XMLSerializer;
  * <b>extra value</b>: 3/SG/+<br/>
  *
  * @author Xuchen Yao
- * 
+ *
  *
  */
 public class MRS {
-	
+
 	/*
 	 * !!! WARNING !!!
-	 * Any new field added to this class must also be added to the copy constructor. 
+	 * Any new field added to this class must also be added to the copy constructor.
 	 */
-	
+
 	private static Logger log = Logger.getLogger(MRS.class);
 	// h1
 	private String ltop = "";
@@ -69,15 +69,15 @@ public class MRS {
 	private String sent_type = "PROP";
 	/** which decomposer this MRS comes from. */
 	private ArrayList<String> decomposer = null;
-	
+
 	private ArrayList <ElementaryPredication> eps;
 	private ArrayList<HCONS> hcons;
 	private MrsParser parser = new MrsParser();
-	
+
 	public String getLTOP() {return ltop;}
 	public String getLabelVid() {return label_vid;}
 	public String getIndex() {return index;}
-	public String getIndexVid() {return index_vid;} 
+	public String getIndexVid() {return index_vid;}
 	public String getSentType() {return sent_type;}
 	public ArrayList <ElementaryPredication> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
@@ -93,7 +93,7 @@ public class MRS {
 		this.index_vid = index.substring(1);
 	}
 
-	
+
 	@Override public String toString() {
 		StringBuilder res = new StringBuilder();
 		res.append("\n");
@@ -116,23 +116,23 @@ public class MRS {
 		res.append(">\n");
 		return res.toString();
 	}
-	
+
 	public MRS() {
 		hcons = new ArrayList<HCONS>();
 		eps = new ArrayList<ElementaryPredication>();
 		decomposer = new ArrayList<String>();
 	}
-	
+
 	public MRS(File file) {
 		this();
 		parse(file);
 	}
-	
+
 	public MRS(String mrx) {
 		this();
 		parseString(mrx);
 	}
-	
+
 	/**
 	* Copy constructor.
 	*/
@@ -156,69 +156,69 @@ public class MRS {
 		this.buildCoref();
 	}
 
-	
+
 
 	private class MrsParser extends DefaultHandler {
-		
+
 		private Stack<String> stack;
 		private StringBuilder chars;
 		// whether we are processing in an <ep> element
 		private boolean inEP = false;
 		private ElementaryPredication currentEP = null;
-		
+
 		public MrsParser () {
 			super();
 			this.stack = new Stack<String>();
 			this.chars = new StringBuilder();
 		}
-		
+
 		public void parse(File file) {
 			try {
 				XMLReader xr = XMLReaderFactory.createXMLReader();
 				MrsParser handler = new MrsParser();
 				xr.setContentHandler(handler);
 				xr.setErrorHandler(handler);
-				
+
 				FileReader r = new FileReader(file);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-	
+
 		}
-		
+
 		public void parseString(String str) {
 			try {
 				XMLReader xr = XMLReaderFactory.createXMLReader();
 				MrsParser handler = new MrsParser();
 				xr.setContentHandler(handler);
 				xr.setErrorHandler(handler);
-				
+
 
 				StringReader r = new StringReader(str);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-	
+
 		}
-		
+
 		public void startDocument ()
 	    {
 			//System.out.println("Start document");
 	    }
-		
+
 		public void endDocument ()
 	    {
 			//System.out.println("End document");
 	    }
-	
+
 		public void startElement (String uri, String name,
 				String qName, Attributes atts)
 		{
 			String vid;
 			String parent;
-			
+
 			if (qName.equals("mrs")) {
 				// if stack is not empty, then error
 				if (stack.empty() == false) {
@@ -228,7 +228,7 @@ public class MRS {
 			} else if (qName.equals("label")) {
 				parent = stack.peek();
 				vid = atts.getValue("vid");
-				
+
 				// top element, indicating the LTOP of MRS
 				if (parent.equals("mrs")) {
 					ltop = "h"+vid;
@@ -249,7 +249,7 @@ public class MRS {
 			} else if (qName.equals("var")) {
 				parent = stack.peek();
 				vid = atts.getValue("vid");
-				
+
 				// top element, indicating the INDEX of MRS
 				if (parent.equals("mrs")) {
 					index = "e"+vid;
@@ -279,7 +279,7 @@ public class MRS {
 				}
 			} else if (qName.equals("hcons")) {
 //				;;; <!ELEMENT hcons (hi, lo)>
-//				;;; <!ATTLIST hcons 
+//				;;; <!ATTLIST hcons
 //				;;;          hreln (qeq|lheq|outscopes) #REQUIRED >
 //				;;;
 //				;;; <!ELEMENT hi (var)>
@@ -308,7 +308,7 @@ public class MRS {
 			chars = new StringBuilder();
 			stack.push(qName);
 		}
-		
+
 		public void endElement (String uri, String name, String qName)
 		{
 			if (qName.equals("mrs")) {
@@ -326,29 +326,29 @@ public class MRS {
 			}
 			stack.pop();
 		}
-	
+
 		public void characters (char ch[], int start, int length)
 		{
 			chars.append(ch, start, length);
 		}
 
 	}
-	
+
 	/**
 	 * Return all ElementaryPredication starting from cfrom and ending to cto.
 	 */
 	public ArrayList<ElementaryPredication> getEPS (int cfrom, int cto) {
 		ArrayList<ElementaryPredication> epsList= new ArrayList<ElementaryPredication>();
-		
+
 		for (ElementaryPredication ep:this.eps) {
 			if (ep.getCfrom()==cfrom && ep.getCto()==cto) {
 				epsList.add(ep);
 			}
 		}
-		
+
 		return epsList;
 	}
-	
+
 	/**
 	 * Return a list of EP with a label value <code>label</code>.
 	 * for instance, return all EPs with a label value "h3".
@@ -363,10 +363,10 @@ public class MRS {
 				break;
 			}
 		}
-		
+
 		return retEP.size() == 0? null: retEP;
 	}
-	
+
 	/**
 	 * Return a list of EP elements with a type name <code>name</code>.
 	 * @param name a type name, such as "APPOS_REL"
@@ -382,7 +382,7 @@ public class MRS {
 		}
 		return retEP.size() == 0? null: retEP;
 	}
-	
+
 	/**
 	 * get a list of the feature labels of all EPs
 	 * @return an ArrayList containing all the labels of EPS
@@ -392,10 +392,10 @@ public class MRS {
 		for(ElementaryPredication ep:eps) {
 			list.add(ep.getLabel());
 		}
-		
+
 		return list;
 	}
-	
+
 	/**
 	 * Get a list of the values of all EPs.<p>
 	 * In an EP like: <br/>
@@ -415,23 +415,23 @@ public class MRS {
 				list.add(fp.getValue());
 			}
 		}
-		
+
 		return list;
 	}
-	
+
 	/**
 	 * Get the EP before cfrom and cto. This method is mainly used to
 	 * find out the preposition before a time/location term.
 	 * For instance, "in Germany", one EP is  _IN_P_REL ("in"),
-	 * the other is PROPER_Q_REL ("Germany"), feeding cfrom and cto with 
+	 * the other is PROPER_Q_REL ("Germany"), feeding cfrom and cto with
 	 * those of PROPER_Q_REL returns the _IN_P_TEMP_REL EP.
-	 * 
+	 *
 	 */
 	public ElementaryPredication getEPbefore (int cfrom, int cto) {
 		ElementaryPredication ret = null;
 		ElementaryPredication next = null;
-		
-		// In a well-formed MRS, all EPs are lined up according to 
+
+		// In a well-formed MRS, all EPs are lined up according to
 		// their position in the sentence
 		for (ElementaryPredication ep:this.eps) {
 			if (ep.getCfrom()==cfrom && ep.getCto()==cto) {
@@ -440,7 +440,7 @@ public class MRS {
 			}
 			ret = ep;
 		}
-		
+
 		// extra safety
 		if (ret!=null && next!= null && ret.getCto() >= next.getCfrom()) {
 			log.error("ep1 should be before ep2 in EPS list.");
@@ -448,18 +448,18 @@ public class MRS {
 			log.error("ep2: "+next);
 			ret = null;
 		}
-		
+
 		return ret;
 	}
 	/**
 	 * Find out a list of extra type whose extra feature/value match <code>feat</code> and <code>value</code>.
-	 *  
+	 *
 	 * @param feat the name of extra feature, such as "ARG0"
 	 * @param value the name of extra value, such as "e2"
 	 * @return a list of matching FvPair
 	 */
 	public ArrayList<FvPair> getExtraTypeByFeatAndValue (String feat, String value) {
-		
+
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
@@ -470,15 +470,15 @@ public class MRS {
 		}
 		return list.size() == 0 ? null : list;
 	}
-	
+
 	/**
 	 * Find out a list of extra type whose extra value match <code>value</code>.
-	 *  
+	 *
 	 * @param value the name of extra value, such as "e2"
 	 * @return a list of matching FvPair
 	 */
 	public ArrayList<FvPair> getExtraTypeByValue (String value) {
-		
+
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
 		for (ElementaryPredication ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
@@ -489,10 +489,10 @@ public class MRS {
 		}
 		return list.size() == 0 ? null : list;
 	}
-	
+
 	/**
 	 * find out an EP whose feature/value match <code>feat</code> and <code>value</code>
-	 *  
+	 *
 	 * @param feat feature name, such as "ARG0"
 	 * @param value value name, such as "e2"
 	 * @return an ArrayList of matching EP
@@ -509,7 +509,7 @@ public class MRS {
 		}
 		return list.size()==0?null:list;
 	}
-	
+
 	/**
 	 * Retrieve the same EP as <code>copyEP</code> in <code>copyMrs</code>. This is used when
 	 * the current MRS is a copy of <code>copyEP</code>, then we return the same EP as <code>copyEP</code>
@@ -521,7 +521,7 @@ public class MRS {
 	public ElementaryPredication getEPbyParallelIndex (MRS copyMrs, ElementaryPredication copyEP) {
 		return this.getEps().get(copyMrs.getEps().indexOf(copyEP));
 	}
-	
+
 	/**
 	 * Get the EP of the main verb
 	 * @return an EP representing the main verb in this MRS
@@ -529,7 +529,7 @@ public class MRS {
 	public ElementaryPredication getVerbEP () {
 		ElementaryPredication verbEP = null;
 		ElementaryPredication modalEP = null;
-		
+
 		// the main event of this MRS
 		String event = this.getIndex();
 		ArrayList<ElementaryPredication> eventEPS = this.getEPbyFeatAndValue("ARG0", event);
@@ -543,7 +543,7 @@ public class MRS {
 				verbEP = ep;
 			}
 		}
-		
+
 		if (modalEP != null) {
 			// the modal verb refers to the main verb by a qeq relation
 			String hiLabel = modalEP.getValueByFeature("ARG1");
@@ -555,13 +555,13 @@ public class MRS {
 				log.warn("this MRS contains more than one verbEP?\n"+verbList);
 			}
 		}
-		
+
 		return verbEP;
 	}
-	
+
 	/**
 	 * Change all <code>oldValue</code> values to <code>newValue</code>.
-	 * For instance, change all "x5" to "x6"  
+	 * For instance, change all "x5" to "x6"
 	 * @param oldValue "x5"
 	 * @param newValue "x6"
 	 */
@@ -574,11 +574,11 @@ public class MRS {
 			}
 		}
 	}
-	
+
 	public void addEPtoEPS (ElementaryPredication ep) {
 		if (ep!=null) this.eps.add(ep);
 	}
-	
+
 	/**
 	 * Get the tense of this MRS. in a malformed MRS, it's possible that there's no tense found,
 	 * in this case return "PRES"
@@ -588,21 +588,21 @@ public class MRS {
 		try {
 			return (getExtraTypeByValue(getIndex()).get(0)).getVar().getExtrapair().get("TENSE");
 		} catch (NullPointerException e) {
-			// 
+			//
 			return "PRES";
 		}
 	}
-	
+
 	/**
 	 * Set the tense of this MRS
 	 * @param tense
 	 */
 	public void setTense (String tense) {
 		ArrayList<FvPair> list = getExtraTypeByValue(getIndex());
-		for (FvPair p:list) 
+		for (FvPair p:list)
 			p.getVar().getExtrapair().put("TENSE", tense);
 	}
-	
+
 	/**
 	 * Add a simple HCONS to hcons, such as "h1 qeq h2"
 	 * @param hreln "qeq"
@@ -615,11 +615,11 @@ public class MRS {
 			String lo_vid, String lo_sort) {
 		this.hcons.add(new HCONS(hreln, hi_vid, hi_sort, lo_vid, lo_sort));
 	}
-	
+
 	public void addToHCONSsimple (String hreln, String hi, String lo) {
 		this.hcons.add(new HCONS(hreln, hi, lo));
 	}
-	
+
 	/**
 	 * Given a hiLabel, check the corresponding loLabel in the list.
 	 * For instance, the list contains a "h1 qeq h2" relation, then
@@ -640,9 +640,9 @@ public class MRS {
 		}
 		return loLabel;
 	}
-	
+
 	/**
-	 * Give an EP ArrayList of size 2, determine which is the HiEP, and return the 
+	 * Give an EP ArrayList of size 2, determine which is the HiEP, and return the
 	 * index (0 or 1).
 	 * @param eps an EP ArrayList of size 2
 	 * @param mrs the MRS in which <code>eps</code> comes from
@@ -652,11 +652,11 @@ public class MRS {
 		if (eps.size() != 2) {
 			log.error("EPS size should be exactly 2!\n" + eps);
 		}
-		
+
 		int hiIdx;
 		String hi, lo, rstr;
 		ElementaryPredication hiEP, loEP;
-		
+
 		hiEP = loEP = eps.get(0);
 		hi = lo = eps.get(0).getLabel();
 		rstr = eps.get(1).getValueByFeature("RSTR");
@@ -698,10 +698,10 @@ public class MRS {
 					" with HCONS: "+mrs.getHcons());
 			return -1;
 		}
-		
+
 		return hiIdx;
 	}
-	
+
 	/**
 	 * Given a loLabel, check the corresponding HiLabel in the list.
 	 * For instance, the list contains a "h1 qeq h2" relation, then
@@ -722,7 +722,7 @@ public class MRS {
 		}
 		return hiLabel;
 	}
-	
+
 	/**
 	 * When FSC is input to cheap, NEs are labeled as NAMED_UNK_REL,
 	 * which generates the following error in LKB generation:
@@ -736,13 +736,13 @@ public class MRS {
 			}
 		}
 	}
-	
+
 	/**
 	 * This is used to check whether there are any basic_yofc_rel to prevent the following error:
 	 * Warning: invalid predicates: |basic_yofc_rel("1980")|, |basic_yofc_rel("1982")|.
-	 * 
+	 *
 	 * The above is usually caused by:
-	 * 
+	 *
           [ _in_p_temp_rel<0:1>
             LBL: h3
             ARG0: e4
@@ -758,7 +758,7 @@ public class MRS {
             ARG0: x6
             ARG1: u11
             CARG: "1999" ]
-            
+
      * One solution is to change to:
           [ _in_p_rel<0:1>
             LBL: h3
@@ -780,7 +780,7 @@ public class MRS {
 		String ep1Orig="_IN_P_TEMP_REL", ep1Dest="_IN_P_REL";
 		String ep2Orig="PROPER_Q_REL", ep2Dest="NUMBER_Q_REL";
 		String ep3Orig="BASIC_YOFC_REL", ep3Dest="CARD_REL";
-		
+
 		for (int i=2;i<eps.size();i++) {
 			ElementaryPredication ep = eps.get(i);
 			if (eps.get(i).getTypeName().equals(ep3Orig) &&
@@ -795,9 +795,9 @@ public class MRS {
 			}
 		}
 	}
-	
+
 	/**
-	 * Get all the extra pairs in this MRS. Extra pairs are sth. like: [TENSE: PRES] 
+	 * Get all the extra pairs in this MRS. Extra pairs are sth. like: [TENSE: PRES]
 	 * encoded in XML: <extrapair><path>TENSE</path><value>PRES</value></extrapair>
 	 * @return an ArrayList of all extra pairs
 	 */
@@ -817,7 +817,7 @@ public class MRS {
 
 		return list;
 	}
-	
+
 	/**
 	 * Get a list of FvPair which has value matching <code>value</code>.
 	 * @param value a matching value, such as "x2".
@@ -833,10 +833,10 @@ public class MRS {
 				}
 			}
 		}
-		
+
 		return list;
 	}
-	
+
 	/**
 	 * Set the sentence force of all events variables to "QUES". Theoretically only
 	 * the events of predicates should be set, but practically all of them are set.
@@ -848,7 +848,7 @@ public class MRS {
 			}
 		}
 	}
-	
+
 	/**
 	 * extract a new MRS from mrs, containing only EPs that are indirectly associated with label.
 	 * currently, the label should only be a predicate's label. for instance, an EP looks like:
@@ -860,13 +860,13 @@ public class MRS {
 	 * ]
 	 * then all EPs with x6 and x10 as ARG* (indirectly) are extracted. Those EPs make a new MRS.
 	 * @param label the label value of the predicate, such as "h8"
-	 * @param mrs the original mrs to be extracted from 
-	 * @return a new MRS with only EPs concerning label 
+	 * @param mrs the original mrs to be extracted from
+	 * @return a new MRS with only EPs concerning label
 	 */
 	public static MRS extractByLabelValue (String label, MRS mrs) {
 		MRS extracted = new MRS(mrs);
 		// targetEP is the one with a label as the label in the parameter
-		
+
 		ElementaryPredication targetEP = null;
 		for (ElementaryPredication ep:extracted.getEPbyLabelValue(label)) {
 			if (ep.getArg0().equals(mrs.getIndex())) {
@@ -875,19 +875,19 @@ public class MRS {
 			}
 		}
 		// targetEPS is a list of all EPs that have connections with targetEP
- 
+
 		if (targetEP == null) {
 			log.error("Can't find the EP with a label " + label +" in MRS:\n" + mrs);
 			return null;
 		}
-		
+
 		HashSet<String> argSet = targetEP.getAllARGvalue();
 		HashSet<String> referredLabelSet = extracted.getAllReferredLabelByEP(targetEP);
 		if (argSet.size() <= 1) {
 			log.warn("the EP "+targetEP+" contains less than 2 ARG." +
 					" Decomposition will probably fail.");
 		}
-		
+
 		// suppose targetEP is the main predicate of the sentence,
 		// then the main event would be ARG0 of targetEP.
 		String event = targetEP.getArg0();
@@ -896,11 +896,11 @@ public class MRS {
 		} else {
 			log.error("ARG0 of EP isn't an event: "+targetEP);
 		}
-		
+
 		// Remove all EPs whose ARG0 is not associated with ARG* of targetEP
 		// TODO: this is only the simplest case. A good algorithm should do it
-		// recursively: other relevant EPs might be attached to EPs which are 
-		// not targetEP (Currently also consider the labels of relevant 
+		// recursively: other relevant EPs might be attached to EPs which are
+		// not targetEP (Currently also consider the labels of relevant
 		// EPs who have ARG0 in the argSet of targetEP -- so it's not that simple case).
 		ArrayList<ElementaryPredication> copy = new ArrayList<ElementaryPredication>(extracted.getEps());
 		for (ElementaryPredication ep:copy) {
@@ -910,13 +910,13 @@ public class MRS {
 				}
 			}
 		}
-		
+
 		// clean up HCONS list
 		extracted.cleanHCONS();
-		
+
 		return extracted;
 	}
-	
+
 	/**
 	 * Extract a new MRS from mrs, containing only EPs that are directly associated with label.
 	 * This method is used when the label isn't a predicate's label. for instance, an EP looks like:
@@ -928,33 +928,33 @@ public class MRS {
 	 * ]
 	 * then all EPs with x6 and x10 as ARG0 (directly) are extracted. Those EPs make a new MRS.
 	 * @param targetEP an EP to find references for
-	 * @param mrs the original mrs to be extracted from 
-	 * @return a new MRS with only EPs concerning <code>targetEP</code> 
+	 * @param mrs the original mrs to be extracted from
+	 * @return a new MRS with only EPs concerning <code>targetEP</code>
 	 */
 	public static MRS extractByEPandArg0 (ElementaryPredication targetEP, MRS mrs) {
-		
+
 		if (targetEP == null) {
 			log.error("Can't find the EP " + targetEP +" in MRS:\n" + mrs);
 			return null;
 		}
-		
+
 		MRS extracted = new MRS(mrs);
-		
+
 		HashSet<String> argSet = targetEP.getAllARGvalue();
 		if (argSet.size() <= 1) {
 			log.warn("the EP "+targetEP+" contains less than 2 ARG." +
 					" Decomposition will probably fail.");
 		}
-		
+
 		extracted.markDeletionByEPref(targetEP);
 
 		extracted.removeEPbyFlag();
 		// clean up HCONS list
 		extracted.cleanHCONS();
-		
+
 		return extracted;
 	}
-	
+
 	/**
 	 * This method returns a new MRS containing all EPs referred by label, both
 	 * directly or indirectly. The new MRS doesn't contain any EPs referred by
@@ -971,10 +971,10 @@ public class MRS {
 		set.add(label);
 		String loLabel = mrs.getLoLabelFromHconsList(label);
 		if (loLabel!=null) set.add(loLabel);
-		if (exceptionEP != null) 
+		if (exceptionEP != null)
 			mrs.getEps().get(this.getEps().indexOf(exceptionEP)).setFlag(true);
 		int oldSize = 0;
-		
+
 		// get all h* and x* referred by label and loLabel
 		for (String l:set) {
 			ArrayList<ElementaryPredication> list = mrs.getEPbyLabelValue(l);
@@ -990,7 +990,7 @@ public class MRS {
 			}
 		}
 		set.addAll(moreSet);
-		
+
 		// loop recursively to find out all referred EPs.
 		while (oldSize < set.size()) {
 			oldSize = set.size();
@@ -999,7 +999,7 @@ public class MRS {
 				for (String v:ep.getAllValueAndLabel()) {
 					if (v.startsWith("h")) {
 						String lo = mrs.getLoLabelFromHconsList(v);
-						if (lo!=null && set.contains(lo)) 
+						if (lo!=null && set.contains(lo))
 							set.add(lo);
 					}
 					if (set.contains(v)) {
@@ -1011,7 +1011,7 @@ public class MRS {
 				}
 			}
 		}
-		
+
 		for (ElementaryPredication ep:mrs.getEps()) {
 			if (ep.getFlag()) continue;
 			boolean flag = true;
@@ -1023,18 +1023,18 @@ public class MRS {
 			}
 			ep.setFlag(flag);
 		}
-		
+
 		if (mrs.removeEPbyFlag()) {
 			mrs.cleanHCONS();
 			mrs.buildCoref();
 			return mrs;
 		} else return null;
 	}
-	
+
 	/**
 	 * This method returns the range of EPs referred by value, both
-	 * directly or indirectly. For instance, in sentence "John likes green 
-	 * apples and red oranges.", if <code>exceptionEP</code> is "and", and 
+	 * directly or indirectly. For instance, in sentence "John likes green
+	 * apples and red oranges.", if <code>exceptionEP</code> is "and", and
 	 * <code>value</code> is R-INDX of <code>exceptionEP</code>, then it
 	 * returns the range of "red oranges".
 	 * @param value a x* value
@@ -1047,10 +1047,10 @@ public class MRS {
 		HashSet<String> moreSet = new HashSet<String>();
 		set.add(value);
 
-		if (exceptionEP != null) 
+		if (exceptionEP != null)
 			mrs.getEps().get(this.getEps().indexOf(exceptionEP)).setFlag(true);
 		int oldSize = 0;
-		
+
 		// loop recursively to find out all referred EPs.
 		while (oldSize < set.size()) {
 			oldSize = set.size();
@@ -1059,7 +1059,7 @@ public class MRS {
 				for (String v:ep.getAllValueAndLabel()) {
 					if (v.startsWith("h")) {
 						String lo = mrs.getLoLabelFromHconsList(v);
-						if (lo!=null && set.contains(lo)) 
+						if (lo!=null && set.contains(lo))
 							set.add(lo);
 					}
 					if (set.contains(v)) {
@@ -1071,7 +1071,7 @@ public class MRS {
 				}
 			}
 		}
-		
+
 		for (ElementaryPredication ep:mrs.getEps()) {
 			if (ep.getFlag()) continue;
 			boolean flag = true;
@@ -1083,7 +1083,7 @@ public class MRS {
 			}
 			ep.setFlag(flag);
 		}
-		
+
 
 		int cfrom=10000, cto=0;
 		for (ElementaryPredication ep:mrs.getEps()) {
@@ -1092,12 +1092,12 @@ public class MRS {
 				if (ep.getCto() > cto) cto = ep.getCto();
 			}
 		}
-		
+
 		mrs.setAllFlag(false);
 		if (cto>cfrom) return new int[]{cfrom, cto};
 		else return null;
 	}
-	
+
 	/**
 	 * Clean up the HCONS list. Any HCONS pairs, such as "h1 qeq h2", whose
 	 * hiLabel and loLabel can't be both found in the EPS, are removed.
@@ -1105,7 +1105,7 @@ public class MRS {
 	public void cleanHCONS () {
 		ArrayList<String> labelList = this.getEPSfeatList();
 		ArrayList<String> handleList = this.getEPSvalueList();
-		ArrayList<HCONS> hcopy = new ArrayList<HCONS>(this.getHcons()); 
+		ArrayList<HCONS> hcopy = new ArrayList<HCONS>(this.getHcons());
 		for (HCONS h:hcopy) {
 			if (!handleList.contains(h.getHi()) || !labelList.contains(h.getLo())) {
 				if (!this.removeHCONS(h)) {
@@ -1114,19 +1114,19 @@ public class MRS {
 			}
 		}
 	}
-	
+
 	/**
 	 * This method retrieves the labels
 	 * of all EPs which are referred by the ARG0 values of ep.
-	 * @param ep An EP which has ARG* entries 
+	 * @param ep An EP which has ARG* entries
 	 * @return a HashSet of labels referred by the ARG0 of this ep
 	 */
 	public HashSet<String> getAllReferredLabelByEP (ElementaryPredication ep) {
 		HashSet<String> labelSet = new HashSet<String>();
-		
+
 		labelSet.add(ep.getLabel());
 		HashSet<String> argList = ep.getAllARGvalue();
-		
+
 		for (ElementaryPredication e:getEps()) {
 			if (e==ep) continue;
 			for (String label:argList) {
@@ -1136,19 +1136,19 @@ public class MRS {
 				}
 			}
 		}
-		
+
 		return labelSet;
 	}
-	
+
 	/**
-	 * Mark deletion of one EP by judging its ARG0 doesn't refer to 
+	 * Mark deletion of one EP by judging its ARG0 doesn't refer to
 	 * any ARG* values of <code>ep</code>
 	 * @param ep An EP which has ARG* entries
 	 */
 	public void markDeletionByEPref (ElementaryPredication ep) {
 
 		HashSet<String> argList = ep.getAllARGvalue();
-		
+
 		for (ElementaryPredication e:getEps()) {
 			if (e==ep) continue;
 			if (!argList.contains(e.getArg0())) {
@@ -1156,21 +1156,21 @@ public class MRS {
 			}
 		}
 	}
-	
+
 	/**
 	 * remove <code>ep</code> from the EPS list
 	 * @param ep the ep to be removed
 	 * @return success status
 	 */
 	public boolean removeEP (ElementaryPredication ep) {
-		
+
 		if (eps.remove(ep)==false) {
 			log.error("Can't remove ep:\n"+ep+"\nfrom EPS list:\n"+eps);
 			return false;
 		}
 		return true;
 	}
-	
+
 	/**
 	 * remove all EPs whose flag is set to true from the EPS list
 	 * @return a boolean success status
@@ -1207,16 +1207,16 @@ public class MRS {
 		}
 		// the following code contains a bug and thus is depreciated.
 //		ArrayList<ElementaryPredication> concurrentList = new ArrayList<ElementaryPredication> (this.eps);
-//		
+//
 //		for (ElementaryPredication ep:concurrentList) {
 //			if (ep.getFlag() == true) {
 //				this.eps.remove(concurrentList.indexOf(ep));
 //			}
 //		}
 	}
-	
+
 	/**
-	 * Set the flag of all the EPS to <code>flag</code> 
+	 * Set the flag of all the EPS to <code>flag</code>
 	 * @param flag a boolean value
 	 */
 	public void setAllFlag (boolean flag) {
@@ -1224,7 +1224,7 @@ public class MRS {
 			ep.setFlag(flag);
 		}
 	}
-	
+
 	/**
 	 * remove a <code>list</code> of EP from the EPS list
 	 * @param list an ArrayList of EP
@@ -1239,10 +1239,10 @@ public class MRS {
 				break;
 			}
 		}
-		
+
 		return ret;
 	}
-	
+
 	/**
 	 * remove h from the hcons list
 	 * @param h the HCONS to be removed
@@ -1251,17 +1251,17 @@ public class MRS {
 	public boolean removeHCONS (HCONS h) {
 		return hcons.remove(h);
 	}
-	
+
 	/**
 	 * Generate a list of the index for unused labels.
-	 * 
+	 *
 	 * @param num the number of unused labels to return
 	 * @return an ArrayList containing <code>num</code> members, such as "7", "8", "9", ...
 	 */
 	public ArrayList<String> generateUnusedLabel (int num) {
 		HashSet<Integer> valueSet = new HashSet<Integer>();
 		ArrayList<String> list = new ArrayList<String>();
-		
+
 		// LKB takes index globally, so we count everything under "h/x/e/p..."
 		// http://lists.delph-in.net/archive/developers/2010/001402.html
 		for (ElementaryPredication e:getEps()) {
@@ -1270,17 +1270,17 @@ public class MRS {
 			}
 			valueSet.add(Integer.parseInt(e.getLabel().substring(1)));
 		}
-		
+
 		Integer[] valueArray = (Integer[]) valueSet.toArray(new Integer[]{});
 		Arrays.sort(valueArray);
 		if (valueArray.length == 0) return null;
 		for (int i=valueArray[valueArray.length-1]+1; num>0; i++, num--) {
 			list.add(String.valueOf(i));
 		}
-		
-		return list;				
+
+		return list;
 	}
-	
+
 	/**
 	 * get a string containing an MRX
 	 * @return a one-line string with an <mrs> element
@@ -1291,7 +1291,7 @@ public class MRS {
 		String mrx = os.toString();
 		return mrx;
 	}
-	
+
 	public void toXML(OutputStream os) {
 		OutputFormat of = new OutputFormat("XML","UTF-8",true);
 		// LKB doesn't support properly indented xml files. thus set indentation off.
@@ -1331,20 +1331,20 @@ public class MRS {
 			for (HCONS h: hcons) {
 				h.serializeXML(hd);
 			}
-			
+
 			hd.endElement("", "", "mrs");
-			
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	/**
 	 * This method builds cross references for an MRS representation.
-	 * After reading/parsing an MRX, such arguments (such as "x9) are 
+	 * After reading/parsing an MRX, such arguments (such as "x9) are
 	 * referenced individually. This method make them refer to the same one.
 	 */
 	public void buildCoref() {
@@ -1366,10 +1366,10 @@ public class MRS {
 			}
 		}
 	}
-	
+
 	/**
-	 * This method parses a MRS document in XML, then calls {@link #buildCoref}. 
-	 * 
+	 * This method parses a MRS document in XML, then calls {@link #buildCoref}.
+	 *
 	 * @param file an MRS XML fil
 	 */
 	public void parse(File file) {
@@ -1377,10 +1377,10 @@ public class MRS {
 		preventInvalidPredicate();
 		buildCoref();
 	}
-	
+
 	/**
-	 * This method parses a MRS document in a string, then calls {@link #buildCoref}. 
-	 * 
+	 * This method parses a MRS document in a string, then calls {@link #buildCoref}.
+	 *
 	 * @param str a string containing an MRS structure
 	 */
 	public void parseString(String str) {
@@ -1388,33 +1388,34 @@ public class MRS {
 		preventInvalidPredicate();
 		buildCoref();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Use RegEx to match all <mrs/> in a multiline string
-	 * 
-	 * @param multiline cheap output spreading multilines 
+	 *
+	 * @param multiline cheap output spreading multilines
 	 * @return an array list containing all <mrs/> elements
 	 */
 	public static ArrayList<String> getMrxStringsFromCheap (String multiline) {
+		if (multiline==null) return null;
 		ArrayList<String> list = new ArrayList<String>();
-		
-		Pattern p = Pattern.compile("<mrs>(.*?)<\\/mrs>", 
+
+		Pattern p = Pattern.compile("<mrs>(.*?)<\\/mrs>",
 				Pattern.MULTILINE|Pattern.DOTALL);
 		Matcher m = p.matcher(multiline);
 		while (m.find()) {
 			String mrs = m.group();
 			list.add(mrs);
 		}
-		
+
 		if (list.size()==0) {
 			log.error("Cheap output:");
 			log.error("No parsed MRS from Cheap:\n"+multiline);
 		}
 		return list;
 	}
-	
-	public static void main(String args[]) 
+
+	public static void main(String args[])
 	throws Exception {
 		MRS m = new MRS();
 		for(String file:args) {

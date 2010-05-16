@@ -16,7 +16,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 
 public class LKB {
-	
+
 	private static Logger log = Logger.getLogger(LKB.class);
 	public final String propertyFile = "conf/lkb.properties";
 	private Semaphore outputSem;
@@ -27,18 +27,20 @@ public class LKB {
 	/** whether LKB is loaded successfully */
 	private boolean success = false;
 	private boolean display;
-	
+
 	/**
-	 * LKB constructor 
-	 * @param quicktest true to only load LKB for testing purposes, 
+	 * LKB constructor
+	 * @param quicktest true to only load LKB for testing purposes,
 	 * false to also load ERG and generate index (which takes a while).
 	 */
 	public LKB(boolean quicktest) {
-		String genCmd = "(index-for-generator)";
+		// change to lkb in case logon rather than lkb is used
+        String lkbChange = ":pa lkb\n";
+		String genCmd = "(index-for-generator)\n";
 		Properties prop = new Properties();
 
-		try { 
-			prop.load(new FileInputStream(propertyFile)); 
+		try {
+			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -49,14 +51,14 @@ public class LKB {
 			return;
 		}
 		String scriptCmd = "(read-script-file-aux \""+scriptFile+"\")";
-		
+
 		String lkb = prop.getProperty("lkb");
 		f = new File(lkb);
 		if (!f.exists()) {
 			log.fatal("LKB "+scriptFile+" should exist!");
 			return;
 		}
-		
+
 		if (prop.getProperty("display").equalsIgnoreCase("yes")) {
 			display = true;
 		} else if (prop.getProperty("display").equalsIgnoreCase("no")) {
@@ -67,11 +69,11 @@ public class LKB {
 							"Assuming it's yes");
 			display = true;
 		}
-		
+
 		if (!display) {
 			lkb="DISPLAY=;"+lkb;
 		}
-		
+
 		try {
 			log.info("LKB is starting up, please wait, wait, wait until you see \"Input: \"...\n");
 			String[] cmd = {"/bin/sh","-c",lkb};
@@ -80,25 +82,29 @@ public class LKB {
 			e.printStackTrace();
 			return;
 		}
-		
+
 		// load script and generate index for the generator
 		if (!quicktest) {
+			sendInput(lkbChange);
 			sendInput(scriptCmd+genCmd);
 			// increase the number of edges to have a better chance of generation
 			// if you have enough memory
 			// (setq *maximum-number-of-edges* 10000)
 		}
-		
+
 		// output LKB loading message
 		success = true;
-		// 3 commands were sent: 
+		// 4 commands were sent:
 		// one for LKB itself,
+		// one for lkbChange
 		// one for scriptCmd,
 		// one for genCmd.
 		// Thus 3 threads are needed to retrieve LKB output
 		log.info(getRawOutput());
+		log.info(getRawOutput());
 		if (!quicktest) {
-			String out = getRawOutput()+"\n"+getRawOutput();
+			String out = getRawOutput()+"\n";
+			out += getRawOutput();
 			log.info(out);
 			if (out.contains("select using :continue")) {
 				success = false;
@@ -111,19 +117,19 @@ public class LKB {
 		if (!quicktest && success)
 			log.info("Initializing LKB done. Quite a while, huh?;-)\n");
 	}
-	
+
 	/**
 	 * Whether the parser is started successfully
 	 * @return a boolean status
 	 */
 	public boolean isSuccess () { return success;}
-	
+
 	/**
 	 * Whether LKB is set to show display.
 	 * @return true or false
 	 */
 	public boolean getDisplay () { return display;}
-	
+
 	/**
 	 * Send an input string to LKB
 	 */
@@ -132,7 +138,7 @@ public class LKB {
 		InputWriter in = new InputWriter(input);
 		in.start();
 	}
-	
+
 	/**
 	 * Get result from stdout
 	 * @return the parsing result
@@ -149,7 +155,7 @@ public class LKB {
 		String result = getOutput();
 		return result;
 	}
-	
+
 	/**
 	 * Parse a raw LKB output and return all generated sentences
 	 * @param raw a raw LKB output
@@ -162,7 +168,7 @@ public class LKB {
  		raw = "(\"Who was killed in Gary , Indiana on August 29 , 1958?\"\n" +
 				" \"Who was killed on August 29 , 1958 in Gary , Indiana?\")\n" +
 				"114832\n7517\n1080\n7843\n1049\n444\n726\n";
-				
+
 ("Who was killed in Gary , Indiana on August 29 , 1958?"
  "Who was killed on August 29 , 1958 in Gary , Indiana?")
 114832
@@ -189,20 +195,20 @@ After proper formatting in sendMrsToGen(), it looks like:
 NIL
 */
 		ArrayList<String> genList = new ArrayList<String>();
-		
-		Pattern gen = Pattern.compile("\\(\"(.*)\"\\)\nNIL", 
+
+		Pattern gen = Pattern.compile("\\(\"(.*)\"\\)\nNIL",
 				Pattern.MULTILINE|Pattern.DOTALL);
 
 		Matcher m = gen.matcher(raw);
 		String genStr;
-		
+
 		if (m.find()) {
 			genStr = m.group(1);
 		} else {
 			// for null, it generates:
 			//()
 			//NIL
-			Pattern nil = Pattern.compile("\\(\\)\nNIL", 
+			Pattern nil = Pattern.compile("\\(\\)\nNIL",
 					Pattern.MULTILINE|Pattern.DOTALL);
 			m = nil.matcher(raw);
 			if (m.find()) {
@@ -215,9 +221,9 @@ NIL
 				return null;
 			}
 		}
-		
+
 		String[] list = genStr.split("\", \"");
-		
+
 		if(list==null) {
 			log.warn("No split matching, debug your code!");
 			log.warn("generation String:\n"+genStr);
@@ -226,11 +232,11 @@ NIL
 		for (String s:list) {
 			genList.add(s);
 		}
-		
+
 		//System.out.println(genList);
 		return genList.size()==0 ? null : genList;
 	}
-	
+
 	/**
 	 * Get generated sentences after calling sendMrxToGen
 	 * Warning: this function can only be called once!
@@ -242,7 +248,7 @@ NIL
 		if (raw==null) return null;
 		return parseGen(raw);
 	}
-	
+
 	/**
 	 * In case of a generation failure, send the (print-gen-summary)
 	 * cmd to LKB to get all the excerpts of *gen-chart*
@@ -253,7 +259,7 @@ NIL
 		String raw = getRawOutput();
 		return parseFailedGen(raw);
 	}
-	
+
 	/**
 	 * From the cmd (print-gen-summary) LKB produces output like this:
 LKB(5): (print-gen-summary)
@@ -265,7 +271,7 @@ LKB(5): (print-gen-summary)
 (do)
 
 NIL
-LKB(6): 
+LKB(6):
 
 	 * This function accepts a raw string like above and return the list
 	 * of all strings inside ().
@@ -274,14 +280,14 @@ LKB(6):
 	 */
 	public static ArrayList<String>  parseFailedGen(String raw) {
 		ArrayList<String> genList = new ArrayList<String>();
-		
+
 		// match the whole string
-		Pattern genAll = Pattern.compile("-+.*NIL", 
+		Pattern genAll = Pattern.compile("-+.*NIL",
 				Pattern.MULTILINE|Pattern.DOTALL);
-		
+
 		Matcher mAll = genAll.matcher(raw);
 		String genStr;
-		
+
 		if (mAll.find()) {
 			Pattern gen = Pattern.compile("\\((.*?)\\)\n");
 			Matcher m = gen.matcher(raw);
@@ -299,30 +305,30 @@ LKB(6):
 			log.warn("LKB output:\n"+raw);
 			return null;
 		}
-		
+
 
 
 		return genList.size()==0 ? null : genList;
 	}
-	
+
 	/**
 	 * Send an MRX string to the LKB generator
 	 * @param mrx A string containing an MRS in XML format
 	 */
 	public void sendMrxToGen (String mrx) {
-		// a quote " in an LKB string needs to be escaped 
+		// a quote " in an LKB string needs to be escaped
 		String mrxCmd = mrx.replaceAll("\n","").replaceAll("\"", "\\\\\"");
-		
+
 		// (format t "(~{\"~a\"~^, ~})" list)
 		// oh yeah, this is pain......
 		mrxCmd = "(format t \"(~{\\\"~a\\\"~\\^, ~})\" (lkb::generate-from-mrs (mrs::read-single-mrs-xml-from-string " +
 				"\""+mrxCmd+"\")))";
-		
+
 		sendInput(mrxCmd);
 	}
-	
+
 	/**
-	 * Get result from stderr. It seems LKB doesn't output anything 
+	 * Get result from stderr. It seems LKB doesn't output anything
 	 * to stderr. So using this function will block the whole program.
 	 * @return the parsing result
 	 */
@@ -347,22 +353,22 @@ LKB(6):
 			log.fatal("LKB is not working properly!");
 			return;
 		}
-		
+
 		// force exit
 		sendInput("(excl:exit 0 :no-unwind t :quiet t)\n");
 	}
-	
+
 	public static void main(String args[]) {
-				
+
 		PropertyConfigurator.configure("conf/log4j.properties");
-		boolean quicktest = true;
+		boolean quicktest = false;
 		LKB lkb = new LKB(quicktest);
-		
+
 		if (! lkb.isSuccess()) {
 			log.fatal("LKB was not started properly.");
 			return;
 		}
-		
+
 		while (true) {
 			System.out.println("Input: ");
 			String input = readLine().trim();
@@ -401,9 +407,9 @@ LKB(6):
         private static final  int rightp = (int)')';
         private static final  int space = (int)' ';
         private Pattern prompt;
-        
+
 		public OutputReader() {
-			prompt = Pattern.compile(".*LKB\\(\\d+\\): $", Pattern.MULTILINE|Pattern.DOTALL);
+			prompt = Pattern.compile(".*[LKB|TSNLP]\\(\\d+\\): $", Pattern.MULTILINE|Pattern.DOTALL);
 			try {
 				outputSem = new Semaphore(1);
 				outputSem.acquire();
@@ -423,7 +429,7 @@ LKB(6):
 						.getInputStream()));
 				String buff = new String();
 				String jailbreak=null;
-				
+
                 int c;
 
                 while ((c=isr.read())!=-1){
@@ -434,13 +440,13 @@ LKB(6):
                 	//System.out.println("Output in readline: "+buff);
                 	if (c==space&&ph==colon&&pph==rightp) {
                 		// Jail break!
-                		// When LKB ends its output, it prompts: 
-                		// LKB(1): (with a space in the end) 
+                		// When LKB ends its output, it prompts:
+                		// LKB(1): (with a space in the end)
                 		// for efficiency reasons, we only compare int values first,
                 		// then do a regex match
                 		jailbreak = readBuffer.toString();
                 		Matcher m = prompt.matcher(jailbreak);
-                		if (m.matches()) 
+                		if (m.matches())
                 			break;
                 	}
                 	pph=ph;
@@ -497,7 +503,7 @@ LKB(6):
 			return new String("");
 		}
 	}
-	
+
 
 
 	public String getOutput() {

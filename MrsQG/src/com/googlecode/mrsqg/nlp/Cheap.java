@@ -15,7 +15,7 @@ import com.googlecode.mrsqg.mrs.MRS;
 
 
 public class Cheap {
-	
+
 	private static Logger log = Logger.getLogger(Cheap.class);
 	public final String propertyFile = "conf/cheap.properties";
 	private Semaphore outputSem;
@@ -25,44 +25,49 @@ public class Cheap {
 	private Process p;
 	/** whether cheap is loaded successfully */
 	private boolean success = false;
-	
+
+	/** raw result from cheap */
+	private String result;
+	/** whether <code>result</code> is retrieved */
+	private boolean retrieved;
+
 	/**
-	 * Cheap constructor 
+	 * Cheap constructor
 	 * @param fsc a boolean value indicating weather cheap takes FSC as input format
 	 */
 	public Cheap(boolean fsc) {
 		Properties prop = new Properties();
-		try { 
-			prop.load(new FileInputStream(propertyFile)); 
+		try {
+			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
 			e.printStackTrace();
-		} 
+		}
 		String command;
 		if (fsc) {
 			command = prop.getProperty("cheap");
 		} else {
 			command = prop.getProperty("cheap_test");
 		}
-		
+
 		if (!command.contains("-mrs=mrx")) {
 			log.fatal("the cheap cmd line paramater must contain" +
 					" the -mrs=mrx option! Check your conf/cheap.properties file!");
 		}
-		
+
 		if (fsc) {
 			if (!command.contains("-tok=fsc")) {
 				log.fatal("the cheap cmd line paramater must contain" +
 						" the -tok=fsc option! Check your conf/cheap.properties file!");
 			}
 		}
-		
+
 		try {
 			log.info("Cheap is starting up, please wait...\n ");
 			p = Runtime.getRuntime().exec(command);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		// output cheap loading message
 		try {
 			ErrorReader err = new ErrorReader();
@@ -73,14 +78,15 @@ public class Cheap {
 			e.printStackTrace();
 		}
 		success = true;
+		retrieved = false;
 	}
-	
+
 	/**
 	 * Whether the parser is started successfully
 	 * @return a boolean status
 	 */
 	public boolean isSuccess () { return success;}
-	
+
 	/**
 	 * Parse an input in FSC XML format
 	 */
@@ -91,11 +97,13 @@ public class Cheap {
 		}
 		InputWriter in = new InputWriter(input);
 		in.start();
+		// no function has retrieved the result so far
+		retrieved = false;
 	}
-	
+
 	/**
 	 * Get parsing result
-	 * @return the parsing result
+	 * @return whatever cheap outputs
 	 */
 	public String getParseResult () {
 		if (!success) {
@@ -105,18 +113,20 @@ public class Cheap {
 		// cheap directs all output to stderr
 		//OutputReader out = new OutputReader();
 		//out.start();
-		ErrorReader err = new ErrorReader();
-		err.start();
+		if (!retrieved) {
+			ErrorReader err = new ErrorReader();
+			err.start();
 
-		String result = getError();
+			result = getError();
+			retrieved = true;
+		}
 		return result;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * Retrieve a list of <mrs> elements from the parsing result.
-	 * Warning: Cannot be used simultaneously with getParseResult
-	 * 
+	 *
 	 * @return an ArrayList<String> with each member containing a <mrs> element
 	 */
 	public ArrayList<String> getParsedMrxString () {
@@ -127,21 +137,23 @@ public class Cheap {
 		// cheap directs all output to stderr
 		//OutputReader out = new OutputReader();
 		//out.start();
-		ErrorReader err = new ErrorReader();
-		err.start();
+		if (!retrieved) {
+			ErrorReader err = new ErrorReader();
+			err.start();
 
-		String result = getError();
-		if (result==null) return null;
-		
+			result = getError();
+			retrieved = true;
+			if (result==null) return null;
+		}
+
 		return MRS.getMrxStringsFromCheap(result);
 	}
-	
+
 	/**
 	 * Retrieve a list of MRS objects from the parsing result.
-	 * Warning: Cannot be used simultaneously with getParseResult and getParsedMrxString
-	 * 
+	 *
 	 * @return an ArrayList<MRS> with each member containing an MRS object, or null if none
-	 * 
+	 *
 	 */
 	public ArrayList<MRS> getParsedMRSlist () {
 		ArrayList<String> mrxList = getParsedMrxString();
@@ -152,10 +164,10 @@ public class Cheap {
 			m.parseString(s);
 			list.add(m);
 		}
-		
+
 		return list.size()==0?null:list;
 	}
-	
+
 	/**
 	 * Release some memory by sending a very short sentence to cheap.
 	 * This is usually called after parsing a long sentence (number of tokens > 15).
@@ -208,7 +220,7 @@ public class Cheap {
 		parse(oneShotOneKill);
 		getParseResult();
 	}
-	
+
 	/**
 	 * exit the parser properly
 	 */
@@ -220,16 +232,16 @@ public class Cheap {
 		// a cr makes cheap exit
 		parse("\n");
 	}
-	
+
 	public static void main(String args[]) {
 		PropertyConfigurator.configure("conf/log4j.properties");
 		Cheap parser = new Cheap(false);
-		
+
 		if (! parser.isSuccess()) {
 			log.fatal("cheap is not started properly.");
 			return;
 		}
-		
+
 		while (true) {
 			System.out.println("Input: ");
 			String input = readLine().trim();
@@ -244,7 +256,7 @@ public class Cheap {
 			//System.out.println(parser.getParsedMrxString());
 			System.out.println(parser.getParsedMRSlist());
 		}
-		
+
 	}
 
 	private class InputWriter extends Thread {
@@ -310,10 +322,10 @@ public class Cheap {
 				while ((buff = isr.readLine()) != null) {
 					readBuffer.append(buff+"\n");
 					//System.out.println("Error in readline: "+buff);
-					// Jail Break! 
-					// The other side doesn't close so readLine() will never return null. 
+					// Jail Break!
+					// The other side doesn't close so readLine() will never return null.
 					if (buff.contains("cheap is brutally patched")) break;
-					// finishing loading message:  "92441 types in 10 s" 
+					// finishing loading message:  "92441 types in 10 s"
 					if (buff.contains(" types in ")) {
 						//log.info(readBuffer.toString());
 						break;
@@ -340,7 +352,7 @@ public class Cheap {
 			return new String("");
 		}
 	}
-	
+
 
 
 	public String getOutput() {
@@ -390,10 +402,10 @@ public class Cheap {
 	private Semaphore errorSem;
 	private String error;
 	private Process p;
-	
+
 	public static void main(String args[]) {
 		Cheap e = new Cheap("cat");
-		
+
 	}
 
 	private class InputWriter extends Thread {
