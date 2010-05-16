@@ -168,7 +168,10 @@ public class MrsQG {
 				if (parser == null) continue;
 				parser.parse(fsc);
 				log.info(parser.getParsedMrxString());
-				log.info(parser.getParsedMRSlist());
+				for (MRS mt:parser.getParsedMRSlist()) {
+					log.info(mt.toMRXstring());
+					log.info(mt);
+				}
 
 				if (p.getNumTokens() > 15) {
 					parser.releaseMemory();

@@ -28,6 +28,9 @@ import org.apache.log4j.Logger;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 
+import com.googlecode.mrsqg.nlp.SnowballStemmer;
+import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
+
 /**
  * An MRS representation class.<p>
  * Naming convention: <br/>
@@ -738,6 +741,7 @@ public class MRS {
 	}
 
 	/**
+	 * @deprecated In ERG 1004 this problem is solved.
 	 * This is used to check whether there are any basic_yofc_rel to prevent the following error:
 	 * Warning: invalid predicates: |basic_yofc_rel("1980")|, |basic_yofc_rel("1982")|.
 	 *
@@ -782,7 +786,6 @@ public class MRS {
 		String ep3Orig="BASIC_YOFC_REL", ep3Dest="CARD_REL";
 
 		for (int i=2;i<eps.size();i++) {
-			ElementaryPredication ep = eps.get(i);
 			if (eps.get(i).getTypeName().equals(ep3Orig) &&
 					eps.get(i-1).getTypeName().equals(ep2Orig) &&
 					eps.get(i-2).getTypeName().equals(ep1Orig)) {
@@ -793,6 +796,79 @@ public class MRS {
 				// change it anyway
 				eps.get(i).setTypeName(ep3Dest);
 			}
+		}
+	}
+
+	/**
+	 * Normalize unknown words in an MRS, see erg/lkb/sample.mrs
+	 * or a sample file and *mrs-normalization-heuristics* in
+	 * erg/lkb/mrsglobals.lsp for the rules
+	 */
+	public void normalizeUnknownWords () {
+
+		String typeName;
+
+		// erg/lkb/mrsglobals.lsp
+		// _glimpy/JJ_u_unknown_rel -> _glimpy_a_unknown_rel
+		for (ElementaryPredication ep:eps) {
+			typeName = ep.getTypeName();
+			if (!typeName.contains("_unknown_rel")) continue;
+			if (typeName.contains("/JJ_u"))
+				typeName = typeName.replaceFirst("/JJ_u", "_a");
+			else if (typeName.contains("/JJR_u"))
+				// adjective, comparative
+				typeName = typeName.replaceFirst("/JJR_u", "_a");
+			else if (typeName.contains("/JJS_u"))
+				// adjective, superlative
+				typeName = typeName.replaceFirst("/JJS_u", "_a");
+			else if (typeName.contains("/NN_u"))
+				typeName = typeName.replaceFirst("/NN_u", "_n");
+			else if (typeName.contains("/RB_u"))
+				// adverb
+				typeName = typeName.replaceFirst("/RB_u", "_a");
+			else if (typeName.contains("/FW_u"))
+				// foreign word
+				typeName = typeName.replaceFirst("/FW_u", "_n");
+			else if (typeName.contains("/NNS_u")) {
+				String noun, stem = null;
+				Pattern p = Pattern.compile("_(.+)/(.+?)_.*rel");
+				Matcher m = p.matcher(typeName);
+				if (m.find()) {
+					noun = m.group(1);
+				} else {
+					log.error("Regex didn't find the plural noun from "+typeName);
+					continue;
+				}
+				stem = SnowballStemmer.stem(noun);
+				typeName = "_"+stem+"_n_unknown_rel";
+			} else if (typeName.contains("/VB")) {
+				String verb, stem = null, pos;
+				Pattern p = Pattern.compile("_(.+)/(.+?)_.*rel");
+				Matcher m = p.matcher(typeName);
+				if (m.find()) {
+					verb = m.group(1);
+					pos = m.group(2);
+				} else {
+					log.error("Regex didn't find the verb from "+typeName);
+					continue;
+				}
+				// VB, VBD, VBG, VBN, VBP, VBZ
+				if (pos.equalsIgnoreCase("VB")||pos.equalsIgnoreCase("VBP")) {
+					stem = verb;
+				} else if (pos.equalsIgnoreCase("VBD")||pos.equalsIgnoreCase("VBN")) {
+					// past tense or past participle, IrregularVerbs can only deal with this
+					String[] stems = IrregularVerbs.getInfinitive(verb);
+					if (stems != null) stem = stems[0];
+				}
+				if (stem == null) {
+					// unfortunately we didn't find out the stem of the verb
+					stem = SnowballStemmer.stem(verb);
+				}
+				// construct the typeName, such as _baze_v_rel
+				typeName = "_"+stem+"_v_unknown_rel";
+				// we don't care about its argument, let LKB handle it
+			}
+			ep.setTypeName(typeName);
 		}
 	}
 
@@ -1282,7 +1358,7 @@ public class MRS {
 	}
 
 	/**
-	 * get a string containing an MRX
+	 * output as an MRX String
 	 * @return a one-line string with an <mrs> element
 	 */
 	public String toMRXstring() {
@@ -1374,7 +1450,8 @@ public class MRS {
 	 */
 	public void parse(File file) {
 		this.parser.parse(file);
-		preventInvalidPredicate();
+		//preventInvalidPredicate();
+		normalizeUnknownWords();
 		buildCoref();
 	}
 
@@ -1385,7 +1462,8 @@ public class MRS {
 	 */
 	public void parseString(String str) {
 		this.parser.parseString(str);
-		preventInvalidPredicate();
+		//preventInvalidPredicate();
+		normalizeUnknownWords();
 		buildCoref();
 	}
 
