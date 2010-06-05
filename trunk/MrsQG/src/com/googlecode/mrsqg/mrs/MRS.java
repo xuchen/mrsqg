@@ -75,6 +75,8 @@ public class MRS {
 
 	private ArrayList <ElementaryPredication> eps;
 	private ArrayList<HCONS> hcons;
+	/** Every characteristic variable (see dmrs.pdf) is mapped to an EP.*/
+	private HashMap<String, ElementaryPredication> charVariableMap;
 	private MrsParser parser = new MrsParser();
 
 	public String getLTOP() {return ltop;}
@@ -124,6 +126,7 @@ public class MRS {
 		hcons = new ArrayList<HCONS>();
 		eps = new ArrayList<ElementaryPredication>();
 		decomposer = new ArrayList<String>();
+		charVariableMap = new HashMap<String, ElementaryPredication>();
 	}
 
 	public MRS(File file) {
@@ -156,10 +159,14 @@ public class MRS {
 		for (HCONS h:old.getHcons()) {
 			this.hcons.add(new HCONS(h));
 		}
-		this.buildCoref();
+		this.postprocessing();
 	}
 
-
+	private void postprocessing() {
+		this.buildCoref();
+		this.mapCharacteristicVariables();
+		this.buildDependencies();
+	}
 
 	private class MrsParser extends DefaultHandler {
 
@@ -363,7 +370,6 @@ public class MRS {
 		for (ElementaryPredication ep:eps) {
 			if (ep.getLabel().equals(label)) {
 				retEP.add(ep);
-				break;
 			}
 		}
 
@@ -1102,7 +1108,7 @@ public class MRS {
 
 		if (mrs.removeEPbyFlag()) {
 			mrs.cleanHCONS();
-			mrs.buildCoref();
+			mrs.postprocessing();
 			return mrs;
 		} else return null;
 	}
@@ -1420,7 +1426,7 @@ public class MRS {
 
 	/**
 	 * This method builds cross references for an MRS representation.
-	 * After reading/parsing an MRX, such arguments (such as "x9) are
+	 * After reading/parsing an MRX, the extra type (Var) of some arguments are
 	 * referenced individually. This method make them refer to the same one.
 	 */
 	public void buildCoref() {
@@ -1444,6 +1450,172 @@ public class MRS {
 	}
 
 	/**
+	 * Maps each characteristic variable with an EP, such as:
+	 * "x28" maps with:
+	 * 	"_cat_n_1_rel"<8:9>
+            LBL: h32
+            ARG0: x28 ]
+	 */
+	public void mapCharacteristicVariables () {
+		String arg0;
+		for (ElementaryPredication ep: eps) {
+			arg0 = ep.getArg0();
+			if (!arg0.startsWith("x") && !arg0.startsWith("e")) continue;
+			ArrayList<ElementaryPredication> arg0EPlist = this.getEPbyFeatAndValue("ARG0", arg0);
+			if (arg0EPlist.size()==1) {
+				this.charVariableMap.put(arg0, arg0EPlist.get(0));
+			} else if (arg0EPlist.size()==2) {
+				for (ElementaryPredication charEP: arg0EPlist) {
+					/*
+					 * Multiple EPs can have arg0 as their ARG0. Usually these multiple
+					 * EPs are in a qeq relation.
+					 */
+					/*
+					 * whether this EP is a hiEP in a qeq relation, by
+					 * indicating whether the RSTR feature exists
+					 */
+					boolean isHiEP = false;
+					for (FvPair p:charEP.getFvpair()) {
+						if (p.getFeature().equals("RSTR")) {
+							isHiEP = true;
+							break;
+						}
+					}
+					if (isHiEP) continue;
+					else {
+						this.charVariableMap.put(arg0, charEP);
+						break;
+					}
+				}
+			} else {
+				log.error("arg0EPlist's size isn't 1 or 2, debug your code!");
+				log.error(arg0EPlist);
+			}
+
+		}
+	}
+
+	public void buildDependencies() {
+		/*
+		 * whether this EP is a hiEP in a qeq relation, by
+		 * indicating whether the RSTR feature exists
+		 */
+		String rstr = null;
+		for (ElementaryPredication ep: eps) {
+			rstr = null;
+			for (FvPair p:ep.getFvpair()) {
+				if (p.getFeature().equals("RSTR")) {
+					rstr = p.getValue();
+					break;
+				}
+			}
+			if (rstr == null) {
+				if (ep.getFvpair().size()==1) {
+					/* This EP doesn't govern any other EP
+					    [ _man_n_1_rel<4:7>
+						  LBL: h7
+						  ARG0: x6 [ x PERS: 3 NUM: SG ]
+						]
+					 */
+					continue;
+				} else {
+					String arg0 = ep.getArg0();
+
+					for (FvPair pair:ep.getFvpair()) {
+						String value = pair.getValue();
+						boolean isArgFeature = pair.getFeature().startsWith("ARG");
+						if (value.equals(arg0)) continue;
+						if (pair.getFeature().equals("RSTR")) continue;
+						if (pair.getFeature().equals("BODY")) continue;
+
+						if (value.startsWith("x") || value.startsWith("e")) {
+							if (isArgFeature)
+								this.charVariableMap.get(value).addGovernorByArg(ep);
+							else
+								this.charVariableMap.get(value).addGovernorByNonArg(ep);
+						} else if (value.startsWith("h")) {
+							String loLabel = this.getLoLabelFromHconsList(value);
+							if (loLabel != null) value = loLabel;
+							ArrayList<ElementaryPredication> l = this.getEPbyLabelValue(value);
+							if (l.size() == 1) {
+								if (isArgFeature)
+									l.get(0).addGovernorByArg(ep);
+								else
+									l.get(0).addGovernorByNonArg(ep);
+							} else {
+								ElementaryPredication dEP = getDependentEP(l);
+								if (dEP != null) {
+									if (isArgFeature)
+										dEP.addGovernorByArg(ep);
+									else
+										dEP.addGovernorByNonArg(ep);
+								}
+							}
+						} else {
+						}
+					}
+				}
+
+			} else {
+				/*
+				 *   _THE_Q_REL<0:3>
+					  LBL: h3
+					  ARG0: x6 [ x PERS: 3 NUM: SG ]
+					  RSTR: h5
+					  BODY: h4
+				 */
+				String loLabel = this.getLoLabelFromHconsList(rstr);
+				/*
+				 * find out all EPs with a loLabel. There could be multiple
+				 * ones, but only one should have an x* as ARG0
+				 */
+				ElementaryPredication dEP = getDependentEP(getEPbyLabelValue(loLabel));
+				if (dEP!=null)
+					dEP.addGovernorByNonArg(ep);
+			}
+		}
+	}
+
+	/**
+	 * Find out the dependent EP from a list of EP. Usually this list of EP has the same
+	 * label but all except one governs the dependent EP
+	 * @param list An non-empty ElementaryPredication list
+	 * @return the dependent EP, or null if not found
+	 */
+	private ElementaryPredication getDependentEP (ArrayList<ElementaryPredication> list) {
+		if (list==null||list.size()==0) return null;
+		ElementaryPredication dEP = null;
+		int nGovernor = 0;
+		HashSet<String> valueSet = new HashSet<String>();
+		for (int i=list.size()-1; i>=0; i--) {
+			// usually the last one is the dependent, so we loop backward
+			dEP = list.get(i);
+			valueSet.clear();
+			nGovernor = 0;
+			valueSet.add(dEP.getLabel());
+			valueSet.add(dEP.getArg0());
+			for (ElementaryPredication ep:list) {
+				if (ep==dEP) continue;
+				for (String v:ep.getAllValue()) {
+					if (valueSet.contains(v)) {
+						nGovernor++;
+						break;
+					}
+				}
+			}
+			// all other EPs are the governor of this EP, we found the dependent
+			if (nGovernor == list.size()-1) break;
+		}
+		if (nGovernor == list.size()-1)
+			return dEP;
+		else {
+			log.error("Can't find the dependent EP from:\n"+list);
+			log.error("Debug your code!");
+			return null;
+		}
+	}
+
+	/**
 	 * This method parses a MRS document in XML, then calls {@link #buildCoref}.
 	 *
 	 * @param file an MRS XML fil
@@ -1452,7 +1624,7 @@ public class MRS {
 		this.parser.parse(file);
 		//preventInvalidPredicate();
 		normalizeUnknownWords();
-		buildCoref();
+		postprocessing();
 	}
 
 	/**
@@ -1464,7 +1636,7 @@ public class MRS {
 		this.parser.parseString(str);
 		//preventInvalidPredicate();
 		normalizeUnknownWords();
-		buildCoref();
+		postprocessing();
 	}
 
 	/**

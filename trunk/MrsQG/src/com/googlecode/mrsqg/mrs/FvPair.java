@@ -9,27 +9,27 @@ public class FvPair {
 //	<!ELEMENT fvpair (rargname, (var|constant))>
 //	<!ELEMENT rargname (#PCDATA)>
 //	<!ELEMENT constant (#PCDATA)>
-	
+
 	/*
 	 * !!! WARNING !!!
-	 * Any new field added to this class must also be added to the copy constructor. 
+	 * Any new field added to this class must also be added to the copy constructor.
 	 */
-	
+
 	private String rargname = null;
 	private String constant = null;
 	private Var var = null;
-	public String getValue() {return constant==null?(var!=null?var.getLabel():null):constant;}	
+	public String getValue() {return constant==null?(var!=null?var.getLabel():null):constant;}
 	public String getFeature() {return rargname;}
 
 	public void setFeature (String feat) {rargname = feat;}
-	public String getRargname() {return rargname;}
-	public String getConstant() {return constant;}
+	@Deprecated public String getRargname() {return rargname;}
+	@Deprecated public String getConstant() {return constant;}
 	public Var getVar() {return var;}
 	public void setValue(String v) {if (var!=null) var.setLabel(v);}
 	public void setRargname(String s) {rargname = s;}
 	public void setConstant(String s) {constant = s;}
 	public void setVar(Var v) {var = v;}
-	
+
 	@Override public String toString() {
 		// RSTR: h5
 		// ARG0: x6 [ x PERS: 3 NUM: SG IND: + ]
@@ -38,10 +38,10 @@ public class FvPair {
 		if (var!=null) res.append(var);
 		// CARG: "Al Gore"
 		if (constant!=null) res.append("\""+constant+"\"");
-		
+
 		return res.toString();
 	}
-	
+
 	/**
 	* Copy constructor.
 	*/
@@ -52,10 +52,10 @@ public class FvPair {
 		if (old.getVar()!=null)
 			this.var = new Var(old.getVar());
 	}
-	
+
 	public FvPair() {
 	}
-	
+
 	/**
 	 * a simple constructor, constructs an FvPair such as "RSTR: h9"
 	 * @param rargname "RSTR"
@@ -66,7 +66,7 @@ public class FvPair {
 		this.rargname = rargname;
 		this.var = new Var(vid, sort);
 	}
-	
+
 	/**
 	 * a simple constructor, constructs an FvPair such as "RSTR: h9"
 	 * @param feature "RSTR"
@@ -76,7 +76,7 @@ public class FvPair {
 		this.rargname = feature;
 		this.var = new Var(value);
 	}
-	
+
 	/**
 	 * constructs a complex FvPair such as "ARG0: e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]"
 	 * @param feature "ARG0"
@@ -87,7 +87,7 @@ public class FvPair {
 		this.rargname = feature;
 		this.var = new Var(value, extraPairs);
 	}
-	
+
 	/**
 	 * constructs a complex FvPair from <code>feature</code> and <code>value</code>.
 	 * @param feature a feature String, such as "ARG0".
@@ -97,7 +97,7 @@ public class FvPair {
 		this.rargname = feature;
 		this.var = value;
 	}
-	
+
 	public void serializeXML (ContentHandler hd) {
 		AttributesImpl atts = new AttributesImpl();
 		try {
@@ -107,7 +107,7 @@ public class FvPair {
 			hd.startElement("", "", "rargname", atts);
 			hd.characters(rargname.toCharArray(), 0, rargname.length());
 			hd.endElement("", "", "rargname");
-			
+
 			if (var!=null) {
 				var.serializeXML(hd);
 			} else if (constant != null) {

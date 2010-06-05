@@ -1,5 +1,5 @@
 /**
- * 
+ * pipe: Given that our desires often conflict, it would be impossible for us to live in a society.
  */
 package com.googlecode.mrsqg.mrs.decomposition;
 
@@ -22,7 +22,7 @@ public class SubordinateDecomposer extends MrsDecomposer {
 
 		if (inList == null) return null;
 		String subord = "SUBORD_REL";
-		
+
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
 		for (MRS mrs:inList) {
@@ -31,7 +31,7 @@ public class SubordinateDecomposer extends MrsDecomposer {
 					// only copy when found, for efficiency reasons.
 					MRS subMrs = new MRS(mrs);
 					ElementaryPredication subEP = subMrs.getEps().get(mrs.getEps().indexOf(ep));
-					
+
 					/* in the most simple case, subEP's range covers the whole
 					 * subordinate clause, so remove all.
 					 */

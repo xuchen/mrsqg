@@ -16,17 +16,17 @@ public class ElementaryPredication {
 //	<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //	<!ATTLIST ep
 //	          cfrom CDATA #IMPLIED
-//	          cto   CDATA #IMPLIED 
+//	          cto   CDATA #IMPLIED
 //	          surface   CDATA #IMPLIED
 //	      base      CDATA #IMPLIED >
-	
+
 	/*
 	 * !!! WARNING !!!
-	 * Any new field added to this class must also be added to the copy constructor. 
+	 * Any new field added to this class must also be added to the copy constructor.
 	 */
-	
+
 	private static Logger log = Logger.getLogger(ElementaryPredication.class);
-	
+
 	private int cfrom = -1;
 	private int cto = -1;
 	private String surface = null;
@@ -39,7 +39,14 @@ public class ElementaryPredication {
 	private String label_vid = null;
 	private ArrayList<FvPair> fvpair = null;
 	private FvPair currentFvPair = null;
-	
+	/** A set of EPs which govern the current EP by ARG*. In the theory of a
+	 * A -> B relation, A is called a head and B is its dependent. We call
+	 * A a governor here since "head" is ambiguous if used alone. */
+	private HashSet <ElementaryPredication> governorsByArg = null;
+	/** A set of EPs which govern the current EP by relations other
+	 * than ARG*, such as RSTR */
+	private HashSet<ElementaryPredication> governorsByNonArg = null;
+
 	/**
 	* Copy constructor.
 	*/
@@ -58,31 +65,35 @@ public class ElementaryPredication {
 		for(FvPair p:old.getFvpair()) {
 			this.fvpair.add(new FvPair(p));
 		}
+		governorsByArg = new HashSet<ElementaryPredication>();
+		governorsByNonArg = new HashSet<ElementaryPredication>();
 	}
 
 
 	public ElementaryPredication() {
 		fvpair = new ArrayList<FvPair>();
+		governorsByArg = new HashSet<ElementaryPredication>();
+		governorsByNonArg = new HashSet<ElementaryPredication>();
 	}
-	
+
 	public ElementaryPredication(String typeName, String label) {
 		this();
 		if (StringUtils.containsUppercase(typeName))
 			this.pred = typeName;
-		else 
+		else
 			this.spred = typeName;
 		this.cfrom = 0;
 		this.cto = 0;
-		this.setLabel(label);		
+		this.setLabel(label);
 	}
-	
+
 	/**
 	 * The use of flag purely serves engineering purposes. In decomposition, some EPs are
 	 * needed to be removed after a copy construction. But it's not easy to trace these EPs
-	 * by any sort of equals() methods. So a flag is set to mark these to-be-removed EPs.   
+	 * by any sort of equals() methods. So a flag is set to mark these to-be-removed EPs.
 	 */
 	private boolean flag = false;
-	
+
 	public int getCfrom() {return cfrom;}
 	public int getCto() {return cto;}
 	public String getSurface() {return surface;}
@@ -95,17 +106,34 @@ public class ElementaryPredication {
 	public String getTypeName() {if (pred!=null) return pred; else return spred;};
 	public boolean getFlag () {return flag;}
 	public void setFlag (boolean f) {this.flag = f;}
-	
+
 	public void setPred(String s) {pred=s;}
 	public void setSpred(String s) {spred=s;}
 	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
 	public void setLabel(String s) {label=s; label_vid=s.substring(1);}
 
+	/**
+	 * Add an EP to the set of governors which refer to the current EP by ARG*.
+	 * @param ep An EP
+	 */
+	public void addGovernorByArg (ElementaryPredication ep) {
+		governorsByArg.add(ep);
+	}
+
+	/**
+	 * Add an EP to the set of governors which refer to the current EP by relations
+	 * other than ARG*.
+	 * @param ep An EP
+	 */
+	public void addGovernorByNonArg (ElementaryPredication ep) {
+		governorsByNonArg.add(ep);
+	}
+
 	public void setTypeName(String typeName) {
 		if (StringUtils.containsUppercase(typeName)) {
 			this.pred = typeName;
 			this.spred = null;
-		} else { 
+		} else {
 			this.spred = typeName;
 			this.pred = null;
 		}
@@ -120,7 +148,7 @@ public class ElementaryPredication {
      * ARG2: x10
 	 * ]
 	 * then it returns a list containing "e9", "x6" and "x10"
-	 * 
+	 *
 	 * @return a HashSet containing all "ARG*" values
 	 */
 	public HashSet<String> getAllARGvalue() {
@@ -134,7 +162,7 @@ public class ElementaryPredication {
 
 		return set;
 	}
-	
+
 	/**
 	 * Get all values in an EP, such as "x9", "e2", etc.
 	 * @return a HashSet containing all "ARG*" values
@@ -149,8 +177,8 @@ public class ElementaryPredication {
 
 		return set;
 	}
-	
-	
+
+
 	/**
 	 * Get all values and label in an EP, such as "x9", "e2", etc.
 	 * @return a HashSet containing all "ARG*" values
@@ -166,12 +194,12 @@ public class ElementaryPredication {
 
 		return set;
 	}
-	
+
 	/*
 	public ArrayList<String> getAllARGvalue() {
 		// TreeMap guarantees that the map will be in ascending key order
 		// so the returned values are sorted by their keys
-		TreeMap<String, String> map = new TreeMap<String, String>(); 
+		TreeMap<String, String> map = new TreeMap<String, String>();
 		ArrayList<String> list = new ArrayList<String>();
 		for (FvPair fp:fvpair) {
 			if (fp.getRargname().startsWith("ARG")) {
@@ -184,7 +212,7 @@ public class ElementaryPredication {
 		return list;
 	}
 	*/
-	
+
 	/**
 	 * return the ARG0 value of this EP, if any
 	 * @return the ARG0 value, such as "e2", or null if none
@@ -192,26 +220,19 @@ public class ElementaryPredication {
 	public String getArg0() {
 		return getValueByFeature("ARG0");
 	}
-	
-//	/**
-//	 * return the value of rargname
-//	 * @param rargname such as "ARG1".
-//	 * @return a String value, such as "x3".  
-//	 */
-//	public String getValueByRargname (String rargname) {
-//		String value = null;
-//		for (FvPair fp:fvpair) {
-//			if (fp.getRargname().equalsIgnoreCase(rargname)) {
-//				value = fp.getVar().getLabel();
-//				break;
-//			}
-//		}
-//		return value;
-//	}
-	
+
+	/**
+	 * Whether this EP is an EP for verbs, whose type name matches "_v_"
+	 * and ARG0 is an event (with SF:PROP).
+	 * @return a boolean value
+	 */
+	public boolean isVerbEP() {
+		return this.getTypeName().contains("_v_") && this.getArg0().startsWith("e");
+	}
+
 	/**
 	 * Return the value of a feature.
-	 * 
+	 *
 	 * @param s can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
 	 * @return a label, such as "x3", or null if not found
 	 */
@@ -226,7 +247,7 @@ public class ElementaryPredication {
 		}
 		return label;
 	}
-	
+
 	/**
 	 * Return the extra type (Var) of a feature.
 	 * @param feat can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
@@ -243,10 +264,10 @@ public class ElementaryPredication {
 		}
 		return v;
 	}
-	
+
 	/**
 	 * Delete a FvPair with a specific label.
-	 * 
+	 *
 	 * @param s can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
 	 */
 	public void delFvpair(String s) {
@@ -258,10 +279,10 @@ public class ElementaryPredication {
 			}
 		}
 	}
-	
+
 	/**
 	 * add a simple FvPair (such as "RSTR: h9") to this EP
-	 * 
+	 *
 	 * @param rargname "RSTR"
 	 * @param vid "9"
 	 * @param sort "h"
@@ -270,10 +291,10 @@ public class ElementaryPredication {
 		FvPair p = new FvPair(rargname, vid, sort);
 		this.fvpair.add(p);
 	}
-	
+
 	/**
 	 * add a simple FvPair (such as "RSTR: h9") to this EP
-	 * 
+	 *
 	 * @param feature "RSTR"
 	 * @param value "h9"
 	 */
@@ -281,11 +302,11 @@ public class ElementaryPredication {
 		FvPair p = new FvPair(feature, value);
 		this.fvpair.add(p);
 	}
-	
+
 	/**
 	 * add a complex FvPair to this EP.
 	 * For instance, "ARG0: e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]"
-	 * 
+	 *
 	 * @param feature "ARG0"
 	 * @param value "e13"
 	 * @param extraPairs {"SF", "PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"}
@@ -294,7 +315,7 @@ public class ElementaryPredication {
 		FvPair p = new FvPair(feature, value, extraPairs);
 		this.fvpair.add(p);
 	}
-	
+
 	/**
 	 * add a complex FvPair to this EP.
 	 * @param feature a feature string, such as "ARG0".
@@ -304,9 +325,9 @@ public class ElementaryPredication {
 		FvPair p = new FvPair(feature, value);
 		this.fvpair.add(p);
 	}
-	
+
 	/**
-	 * Set the value of a feature. For instance, set the value of 
+	 * Set the value of a feature. For instance, set the value of
 	 * <code>feature</code> "ARG0" to "x3" (a Var).
 	 * @param feature feature's name
 	 * @param value a Var
@@ -319,10 +340,10 @@ public class ElementaryPredication {
 			}
 		}
 	}
-	
+
 	/**
 	 * Keep some extrapair in fvpair and remove all others.
-	 * 
+	 *
 	 * @param fv can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
 	 * @param extra extrapair to be kept, such as {"NUM", "PERS"}
 	 */
@@ -336,26 +357,26 @@ public class ElementaryPredication {
 			}
 		}
 	}
-	
+
 	public void keepFvpair(String[] pairs) {
 		ArrayList<String> list = StringUtils.arrayToArrayList(pairs);
-		ArrayList<FvPair> fvlist = new ArrayList<FvPair>(); 
+		ArrayList<FvPair> fvlist = new ArrayList<FvPair>();
 
 		for (FvPair p:fvpair) {
 			if (!list.contains(p.getFeature())) {
 				fvlist.add(p);
 			}
 		}
-		
+
 		if (!fvpair.removeAll(fvlist)) {
 			log.error("Removing fvlist from fvpair failed!");
 			log.error("fvlist: " + fvlist);
 			log.error("fvpair: " + fvpair);
 		}
 	}
-	
-	
-	
+
+
+
 	/**
 	 * return the Var list in fvpair.
 	 */
@@ -368,7 +389,7 @@ public class ElementaryPredication {
 		}
 		return varL;
 	}
-	
+
 	/**
 	 * Add a value <code>shift</code> to the range.
 	 * @param shift
@@ -377,12 +398,12 @@ public class ElementaryPredication {
 		cfrom += shift;
 		cto += shift;
 	}
-	
+
 	@Override public String toString() {
 //		<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //		<!ATTLIST ep
 //		          cfrom CDATA #IMPLIED
-//		          cto   CDATA #IMPLIED 
+//		          cto   CDATA #IMPLIED
 //		          surface   CDATA #IMPLIED
 //		      base      CDATA #IMPLIED >
 		StringBuilder res = new StringBuilder();
@@ -409,19 +430,19 @@ public class ElementaryPredication {
 		return res.toString();
 	}
 
-	
+
 //	@Override public boolean equals (Object obj) {
 //		ElementaryPredication ep = (ElementaryPredication)obj;
 //		boolean ret = true;
-//		
+//
 //		return ret;
 //	}
-	
+
 	public void processStartElement (String qName, Attributes atts) {
 //		;;; <!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //		;;; <!ATTLIST ep
 //		;;;          cfrom CDATA #IMPLIED
-//		;;;          cto   CDATA #IMPLIED 
+//		;;;          cto   CDATA #IMPLIED
 //		;;;          surface   CDATA #IMPLIED
 //		;;;      base      CDATA #IMPLIED >
 
@@ -448,7 +469,7 @@ public class ElementaryPredication {
 			currentFvPair.getVar().newExtraPair();
 		}
 	}
-	
+
 	public void processEndElement (String qName, String str) {
 		if (qName.equals("pred")) {
 			pred = str;
@@ -463,17 +484,17 @@ public class ElementaryPredication {
 		} else if (qName.equals("constant")) {
 			currentFvPair.setConstant(str);
 		} else if (qName.equals("path")) {
-			currentFvPair.getVar().updatePath(str);			
+			currentFvPair.getVar().updatePath(str);
 		} else if (qName.equals("value")) {
-			currentFvPair.getVar().updateValue(str);			
+			currentFvPair.getVar().updateValue(str);
 		}
 	}
-	
+
 	public void serializeXML (ContentHandler hd) {
 //		<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //		<!ATTLIST ep
 //		          cfrom CDATA #IMPLIED
-//		          cto   CDATA #IMPLIED 
+//		          cto   CDATA #IMPLIED
 //		          surface   CDATA #IMPLIED
 //		      base      CDATA #IMPLIED >
 		AttributesImpl atts = new AttributesImpl();
@@ -486,7 +507,7 @@ public class ElementaryPredication {
 			if (base!=null)
 				atts.addAttribute("", "", "base", "CDATA", base);
 			hd.startElement("", "", "ep", atts);
-			
+
 			if (pred!=null) {
 				//<pred>PROPER_Q_REL</pred>
 				atts.clear();
@@ -500,13 +521,13 @@ public class ElementaryPredication {
 				hd.characters(spred.toCharArray(), 0, spred.length());
 				hd.endElement("", "", "spred");
 			}
-			
+
 			//<label vid='3'/>
 			atts.clear();
 			atts.addAttribute("", "", "vid", "CDATA", label_vid);
 			hd.startElement("", "", "label", atts);
 			hd.endElement("", "", "label");
-			
+
 			//<fvpair>
 			for (FvPair p : fvpair) {
 				p.serializeXML(hd);
@@ -515,6 +536,6 @@ public class ElementaryPredication {
 		} catch (SAXException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 }
