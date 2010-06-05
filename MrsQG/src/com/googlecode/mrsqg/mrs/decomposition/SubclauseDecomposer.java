@@ -48,11 +48,8 @@ public class SubclauseDecomposer extends MrsDecomposer {
 				MRS mrs = null;
 				String oriTense = null;
 				// find out all verb EPs who are not the main verb of the sentence
-				// verb EP: type name matches _v_ and ARG0 is an event (with SF:PROP)
 				// not main verb: ARG0 value isn't the index of this mrs
-				if (ep.getTypeName().contains("_v_") && 
-						ep.getArg0().startsWith("e") && 
-						!ep.getArg0().equals(inMrs.getIndex()) &&
+				if (ep.isVerbEP() && !ep.getArg0().equals(inMrs.getIndex()) &&
 						ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP")) {
 
 					mrs = new MRS(inMrs);
@@ -117,7 +114,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 							continue;
 						}
 						if (eep == verbEP) continue;
-						if ((eep.getTypeName().contains("_v_") || eep.getTypeName().contains("_V_")) && 
+						if ((eep.getTypeName().contains("_v_") || eep.getTypeName().contains("_V_")) &&
 								eep.getCfrom() < verbEP.getCfrom()) {
 							eep.setFlag(true);
 							continue;

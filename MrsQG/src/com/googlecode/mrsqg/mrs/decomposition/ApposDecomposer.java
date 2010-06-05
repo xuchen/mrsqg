@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.googlecode.mrsqg.mrs.decomposition;
 
@@ -11,36 +11,36 @@ import com.googlecode.mrsqg.mrs.ElementaryPredication;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
- * Apposition decomposer. Apposition is a relationship between 
- * two or more words in which the units are grammatically parallel 
- * and have the same referent (e.g. my friend Sue) (Concise Oxford 
+ * Apposition decomposer. Apposition is a relationship between
+ * two or more words in which the units are grammatically parallel
+ * and have the same referent (e.g. my friend Sue) (Concise Oxford
  * English Dictionary).
- * 
- * This class separates the ARG1 (my friend) and ARG2 (Sue) of an 
- * APPOS_REL and generates two sentences with ARG1 and ARG2 individually 
+ *
+ * This class separates the ARG1 (my friend) and ARG2 (Sue) of an
+ * APPOS_REL and generates two sentences with ARG1 and ARG2 individually
  * (My friend is a young. Sue is young. <-= My friend Sue is young.).
  * Then the NER could work better.
- * 
+ *
  * Test sentences:
-pipe: the girl Anna likes the dog Bark.
- * 
+pipe: the girl Anna likes the dog Bart.
+ *
  * @author Xuchen Yao
  *
  */
 public class ApposDecomposer extends MrsDecomposer {
-	
+
 	private static Logger log = Logger.getLogger(ApposDecomposer.class);
-	
+
 	private String apposEPlabel = "APPOS_REL";
 
 	/* (non-Javadoc)
 	 * @see com.googlecode.mrsqg.mrs.decomposition.MrsDecomposer#decompose(java.util.ArrayList)
 	 */
 	public ArrayList<MRS> decompose(ArrayList<MRS> inList) {
-		
+
 		//String[] argList = new String[] {"ARG1", "ARG2"};
 		if (inList == null) return null;
-		
+
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
 		for (MRS mrs:inList) {
@@ -52,20 +52,20 @@ public class ApposDecomposer extends MrsDecomposer {
 				// see warnings in getEPbyTypeName() and getEPbyLabelValue().
 				if (apposEPlabel.equals(typeName)) {
 					// Bingo! Found an apposition EP!
-					
+
 					// PART I: use this apposition to form a short sentence
 					// for instance, "the girl Anna" -> "the girl is Anna."
 					MRS m = assembleApposition2sent(mrs, ep);
 					if (m != null) outList.add(m);
-					
+
 					// PART II: decompose the sentence by the first apposition.
 					// for instance, "the girl Anna likes dogs."
 					// -> "the girl like dogs." && "Anna likes dogs."
 					ArrayList<MRS> l = divideApposition2sent(mrs, ep);
 					if (l != null) outList.addAll(l);
-					
+
 					// this break is used only when this function is called
-					// from the doIt(), which recursively calls decompose(). 
+					// from the doIt(), which recursively calls decompose().
 					break;
 				}
 			}
@@ -73,16 +73,16 @@ public class ApposDecomposer extends MrsDecomposer {
 
 		return outList.size() == 0 ? null : outList;
 	}
-	
+
 	/**
-	 * Use the apposition EP <code>apposEP</code> in <code>mrs</code> to 
+	 * Use the apposition EP <code>apposEP</code> in <code>mrs</code> to
 	 * form a short sentence. For instance, "the girl Anna" -> "the girl is Anna."
 	 * @param mrs an input MRS
 	 * @param apposEP the apposition EP, must be in <code>mrs</code>
 	 * @return a new MRS representing a simple sentence formed by apposition
 	 */
 	public MRS assembleApposition2sent (MRS mrs, ElementaryPredication apposEP) {
-		
+
 		// There's obviously a better way to do this, which I omitted the first time.
 		//MRS apposMrs = MRS.extractByEPandArg0(apposEP, mrs);
 		MRS apposMrs = new MRS(mrs);
@@ -91,7 +91,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		int cto = apposEP.getCto();
 		boolean inside = false;
 		String oriTense = mrs.getTense();
-		
+
 		for (ElementaryPredication ep:apposMrs.getEps()) {
 			// There are some EP without a range <cfrom:cto>, in this case,
 			// if they are covered by the apposEP, don't remove it.
@@ -105,7 +105,7 @@ public class ApposDecomposer extends MrsDecomposer {
 
 		}
 		if (!apposMrs.removeEPbyFlag()) return null;
-		
+
 		// It should contain only 1 EP. We have 3 steps here:
 		// 1. change APPOS_REL to _BE_V_ID_REL
 		// 2. change the main event of sentence to ARG0 of _BE_V_ID_REL
@@ -124,10 +124,10 @@ public class ApposDecomposer extends MrsDecomposer {
 		apposMrs.setDecomposer("Apposition");
 		apposMrs.changeFromUnkToNamed();
 		apposMrs.cleanHCONS();
-		
+
 		return apposMrs;
 	}
-	
+
 	/**
 	 * Decompose the sentence by the first apposition EP <code>ep</code>.
 	 * for instance, "the girl Anna likes dogs."
@@ -151,7 +151,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		MRS arg1Mrs = new MRS(mrs);
 		MRS arg2Mrs = new MRS(mrs);
 		apposEP.setFlag(false);
-		
+
 		int cfrom = apposEP.getCfrom();
 		int cto = apposEP.getCto();
 		ElementaryPredication ep;
@@ -187,25 +187,25 @@ public class ApposDecomposer extends MrsDecomposer {
 				}
 			}
 		}
-		
+
 		if(!arg1Mrs.removeEPbyFlag()) return null;
 		if(!arg2Mrs.removeEPbyFlag()) return null;
-		
+
 		arg1Mrs.changeEPvalue(arg2Value, arg1Value);
 		arg2Mrs.changeEPvalue(arg1Value, arg2Value);
-		
+
 		arg1Mrs.cleanHCONS();
 		arg2Mrs.cleanHCONS();
-		
+
 		arg1Mrs.changeFromUnkToNamed();
 		arg2Mrs.changeFromUnkToNamed();
-		
+
 		arg1Mrs.setDecomposer("Apposition");
 		arg2Mrs.setDecomposer("Apposition");
-		
+
 		outList.add(arg1Mrs);
 		outList.add(arg2Mrs);
-		
+
 		return outList;
 	}
 
