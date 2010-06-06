@@ -1,11 +1,12 @@
 /**
- * pipe: Given that our desires often conflict, it would be impossible for us to live in a society.
+pipe: Given that our desires often conflict, it would be impossible for us to live in a society.
  */
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
 
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.FvPair;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -22,28 +23,34 @@ public class SubordinateDecomposer extends MrsDecomposer {
 
 		if (inList == null) return null;
 		String subord = "SUBORD_REL";
+		String[] args = {"ARG1", "ARG2"};
+		String label;
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
 		for (MRS mrs:inList) {
 			for (ElementaryPredication ep:mrs.getEps()) {
-				if (ep.getTypeName().equals(subord)) {
-					// only copy when found, for efficiency reasons.
-					MRS subMrs = new MRS(mrs);
-					ElementaryPredication subEP = subMrs.getEps().get(mrs.getEps().indexOf(ep));
+				if (ep.getTypeName().toUpperCase().contains(subord)) {
+					// loop through ARG1, ARG2
+					for (String arg:args) {
+						label = null;
+						for (FvPair p:ep.getFvpair()) {
+							if (p.getFeature().equals(arg)) {
+								label = p.getValue();
+								break;
+							}
+						}
+						if (label==null) continue;
 
-					/* in the most simple case, subEP's range covers the whole
-					 * subordinate clause, so remove all.
-					 */
-					for (ElementaryPredication e:subMrs.getEps()) {
-						if (e.getCto() > subEP.getCto()) break;
-						e.setFlag(true);
-					}
-					if (subMrs.removeEPbyFlag()) {
-						subMrs.cleanHCONS();
-						subMrs.setDecomposer("Subordinate");
-						outList.add(subMrs);
-						break;
+						MRS subMrs = new MRS(mrs);
+						ElementaryPredication subEP = subMrs.getEps().get(mrs.getEps().indexOf(ep));
+
+						subMrs.keepDependentEP(label, subEP);
+						if (subMrs.removeEPbyFlag()) {
+							subMrs.cleanHCONS();
+							subMrs.setDecomposer("Subordinate");
+							outList.add(subMrs);
+						}
 					}
 				}
 			}

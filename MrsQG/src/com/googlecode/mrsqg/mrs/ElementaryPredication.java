@@ -47,6 +47,9 @@ public class ElementaryPredication {
 	 * than ARG*, such as RSTR */
 	private HashSet<ElementaryPredication> governorsByNonArg = null;
 
+	private HashSet <ElementaryPredication> dependentsByArg = null;
+	private HashSet<ElementaryPredication> dependentsByNonArg = null;
+
 	/**
 	* Copy constructor.
 	*/
@@ -67,6 +70,8 @@ public class ElementaryPredication {
 		}
 		governorsByArg = new HashSet<ElementaryPredication>();
 		governorsByNonArg = new HashSet<ElementaryPredication>();
+		dependentsByArg = new HashSet<ElementaryPredication>();
+		dependentsByNonArg = new HashSet<ElementaryPredication>();
 	}
 
 
@@ -74,6 +79,8 @@ public class ElementaryPredication {
 		fvpair = new ArrayList<FvPair>();
 		governorsByArg = new HashSet<ElementaryPredication>();
 		governorsByNonArg = new HashSet<ElementaryPredication>();
+		dependentsByArg = new HashSet<ElementaryPredication>();
+		dependentsByNonArg = new HashSet<ElementaryPredication>();
 	}
 
 	public ElementaryPredication(String typeName, String label) {
@@ -112,6 +119,10 @@ public class ElementaryPredication {
 	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
 	public void setLabel(String s) {label=s; label_vid=s.substring(1);}
 
+	public HashSet<ElementaryPredication> getGovernorsByArg () { return governorsByArg;}
+	public HashSet<ElementaryPredication> getGovernorsByNonArg () { return governorsByNonArg;}
+	public HashSet<ElementaryPredication> getDependentsByArg () { return dependentsByArg;}
+	public HashSet<ElementaryPredication> getDependentsByNonArg () { return dependentsByNonArg;}
 	/**
 	 * Add an EP to the set of governors which refer to the current EP by ARG*.
 	 * @param ep An EP
@@ -127,6 +138,36 @@ public class ElementaryPredication {
 	 */
 	public void addGovernorByNonArg (ElementaryPredication ep) {
 		governorsByNonArg.add(ep);
+	}
+
+	/**
+	 * Add an EP to the set of dependents referred by the current EP by ARG*.
+	 * @param ep An EP
+	 */
+	public void addDependentByArg (ElementaryPredication ep) {
+		dependentsByArg.add(ep);
+	}
+
+	/**
+	 * Add an EP to the set of dependents referred by the current EP by relations
+	 * other than ARG*.
+	 * @param ep An EP
+	 */
+	public void addDependentByNonArg (ElementaryPredication ep) {
+		dependentsByNonArg.add(ep);
+	}
+
+	/**
+	 * Return all EPs that are the governor or dependent of this EP
+	 * @return a HashSet of EPs
+	 */
+	public HashSet<ElementaryPredication> getAllConnections() {
+		HashSet<ElementaryPredication> connections = new HashSet<ElementaryPredication>();
+		connections.addAll(governorsByArg);
+		connections.addAll(governorsByNonArg);
+		connections.addAll(dependentsByArg);
+		connections.addAll(dependentsByNonArg);
+		return connections;
 	}
 
 	public void setTypeName(String typeName) {

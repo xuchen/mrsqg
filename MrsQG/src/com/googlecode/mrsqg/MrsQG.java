@@ -356,6 +356,7 @@ public class MrsQG {
 
 	private boolean runPipe(String input) {
 		input = input.trim();
+		boolean usePreSelector = false;
 
 		// TODO: a better way is to check whether ' is in between letters such as "he'll", "won't"
 		if (!(input.indexOf("'") == input.lastIndexOf("'")))
@@ -390,7 +391,9 @@ public class MrsQG {
 		// the option "-results=" in cheap.
 		// Usually it's 3.
 		ArrayList<MRS> origMrsList = parser.getParsedMRSlist();
-		ArrayList<MRS> mrxList = PreSelector.doIt(lkb, origMrsList);
+		ArrayList<MRS> mrxList;
+		if (usePreSelector) mrxList = PreSelector.doIt(lkb, origMrsList);
+		else mrxList = origMrsList;
 		boolean success = parser.isSuccess();
 		if (p.getNumTokens() > 15) {
 			parser.releaseMemory();
@@ -416,10 +419,10 @@ public class MrsQG {
 		//	if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 
 		mrxList = subordDecomposer.doIt(mrxList);
-		mrxList = subDecomposer.doIt(mrxList);
-		mrxList = coordDecomposer.doIt(mrxList);
-		mrxList = apposDecomposer.doIt(mrxList);
-		mrxList = whyDecomposer.doIt(mrxList);
+//		mrxList = subDecomposer.doIt(mrxList);
+//		mrxList = coordDecomposer.doIt(mrxList);
+//		mrxList = apposDecomposer.doIt(mrxList);
+//		mrxList = whyDecomposer.doIt(mrxList);
 
 
 		// generation

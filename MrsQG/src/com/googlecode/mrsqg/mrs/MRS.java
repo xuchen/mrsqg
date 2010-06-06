@@ -159,6 +159,7 @@ public class MRS {
 		for (HCONS h:old.getHcons()) {
 			this.hcons.add(new HCONS(h));
 		}
+		charVariableMap = new HashMap<String, ElementaryPredication>();
 		this.postprocessing();
 	}
 
@@ -1500,9 +1501,11 @@ public class MRS {
 		 * whether this EP is a hiEP in a qeq relation, by
 		 * indicating whether the RSTR feature exists
 		 */
-		String rstr = null;
+		String rstr;
+		ElementaryPredication dEP = null;
 		for (ElementaryPredication ep: eps) {
 			rstr = null;
+			dEP = null;
 			for (FvPair p:ep.getFvpair()) {
 				if (p.getFeature().equals("RSTR")) {
 					rstr = p.getValue();
@@ -1529,29 +1532,27 @@ public class MRS {
 						if (pair.getFeature().equals("BODY")) continue;
 
 						if (value.startsWith("x") || value.startsWith("e")) {
-							if (isArgFeature)
-								this.charVariableMap.get(value).addGovernorByArg(ep);
-							else
-								this.charVariableMap.get(value).addGovernorByNonArg(ep);
+							dEP = this.charVariableMap.get(value);
 						} else if (value.startsWith("h")) {
 							String loLabel = this.getLoLabelFromHconsList(value);
 							if (loLabel != null) value = loLabel;
 							ArrayList<ElementaryPredication> l = this.getEPbyLabelValue(value);
+							if (l==null) continue;
 							if (l.size() == 1) {
-								if (isArgFeature)
-									l.get(0).addGovernorByArg(ep);
-								else
-									l.get(0).addGovernorByNonArg(ep);
+								dEP = l.get(0);
 							} else {
-								ElementaryPredication dEP = getDependentEP(l);
-								if (dEP != null) {
-									if (isArgFeature)
-										dEP.addGovernorByArg(ep);
-									else
-										dEP.addGovernorByNonArg(ep);
-								}
+								dEP = getDependentEP(l);
 							}
 						} else {
+						}
+						if (dEP != null) {
+							if (isArgFeature) {
+								dEP.addGovernorByArg(ep);
+								ep.addDependentByArg(dEP);
+							} else {
+								dEP.addGovernorByNonArg(ep);
+								ep.addDependentByNonArg(dEP);
+							}
 						}
 					}
 				}
@@ -1566,12 +1567,20 @@ public class MRS {
 				 */
 				String loLabel = this.getLoLabelFromHconsList(rstr);
 				/*
-				 * find out all EPs with a loLabel. There could be multiple
-				 * ones, but only one should have an x* as ARG0
+				 * find out all EPs with a loLabel. There could be multiple ones.
+				 * But loEP should have the same range with hiEP
 				 */
-				ElementaryPredication dEP = getDependentEP(getEPbyLabelValue(loLabel));
-				if (dEP!=null)
+				ArrayList<ElementaryPredication> loList = getEPbyLabelValue(loLabel);
+				for (ElementaryPredication eep:loList) {
+					if (eep.getCfrom()==ep.getCfrom() && eep.getCto()==ep.getCto()) {
+						dEP = eep;
+					}
+				}
+				if (dEP==null) dEP = getDependentEP(loList);
+				if (dEP!=null) {
 					dEP.addGovernorByNonArg(ep);
+					ep.addDependentByNonArg(dEP);
+				}
 			}
 		}
 	}
@@ -1612,6 +1621,39 @@ public class MRS {
 			log.error("Can't find the dependent EP from:\n"+list);
 			log.error("Debug your code!");
 			return null;
+		}
+	}
+
+	public void keepDependentEP (String label, ElementaryPredication excepEP) {
+		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
+
+		this.setAllFlag(true);
+
+		// find out all the EPs label governs, these are EPs we'd like to keep
+		if (label.startsWith("h")) {
+			String loLabel = this.getLoLabelFromHconsList(label);
+			if (loLabel != null) label = loLabel;
+			depSet.addAll(this.getEPbyLabelValue(label));
+		} else {
+			depSet.add(this.charVariableMap.get(label));
+		}
+		setAllConnectionsFlag(depSet, excepEP, false);
+	}
+
+	/**
+	 * Set the flag of all connections (governors & dependents) of EP in <code>depSet</code>
+	 * to <code>flag</flag>, with the flag of <code>excepEP</code> unset.
+	 * @param depSet
+	 * @param excepEP
+	 * @param flag
+	 */
+	public static void setAllConnectionsFlag (HashSet<ElementaryPredication> depSet,
+			ElementaryPredication excepEP, boolean flag) {
+		for (ElementaryPredication ep:depSet) {
+			if (ep!=excepEP && ep.getFlag() != flag) {
+				ep.setFlag(false);
+				setAllConnectionsFlag(ep.getAllConnections(), excepEP, flag);
+			}
 		}
 	}
 
