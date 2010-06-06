@@ -1496,6 +1496,9 @@ public class MRS {
 		}
 	}
 
+	/**
+	 * Build dependencies for each EP, find out their governors and dependents.
+	 */
 	public void buildDependencies() {
 		/*
 		 * whether this EP is a hiEP in a qeq relation, by
@@ -1567,12 +1570,13 @@ public class MRS {
 				 */
 				String loLabel = this.getLoLabelFromHconsList(rstr);
 				/*
-				 * find out all EPs with a loLabel. There could be multiple ones.
-				 * But loEP should have the same range with hiEP
+				 * find out all EPs with a loLabel. There could be multiple ones, especially
+				 * in the case of qeq relations. To choose loEP from multiple ones, rule out
+				 * others by the fact that loEP has the same ARG0 with hiEP
 				 */
 				ArrayList<ElementaryPredication> loList = getEPbyLabelValue(loLabel);
 				for (ElementaryPredication eep:loList) {
-					if (eep.getCfrom()==ep.getCfrom() && eep.getCto()==ep.getCto()) {
+					if (eep.getArg0().equals(ep.getArg0())) {
 						dEP = eep;
 					}
 				}
@@ -1624,7 +1628,13 @@ public class MRS {
 		}
 	}
 
-	public void keepDependentEP (String label, ElementaryPredication excepEP) {
+	/**
+	 * Set the flag of all EPs that are related to <code>label</code> to false, all
+	 * other EPs and <code>excepEP</code> are set to true
+	 * @param label a String indicating an EP, starting with an "h" or "x".
+	 * @param excepEP an exception EP, whose flag is always set to true.
+	 */
+	public void keepDependentEPbyLabel (String label, ElementaryPredication excepEP) {
 		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
 
 		this.setAllFlag(true);
@@ -1640,6 +1650,47 @@ public class MRS {
 		setAllConnectionsFlag(depSet, excepEP, false);
 	}
 
+	public void keepDependentEPfromVerbEP (ElementaryPredication vEP) {
+		this.setAllFlag(true);
+		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
+
+		// keep all vEP's governors
+		for (ElementaryPredication ep:vEP.getGovernorsByArg()) {
+			depSet.clear();
+			depSet.add(ep);
+			setAllConnectionsFlag(depSet, vEP, false);
+		}
+		for (ElementaryPredication ep:vEP.getGovernorsByNonArg()) {
+			depSet.clear();
+			depSet.add(ep);
+			setAllConnectionsFlag(depSet, vEP, false);
+		}
+
+		for (ElementaryPredication ep:vEP.getDependentsByNonArg()) {
+			depSet.clear();
+			depSet.add(ep);
+			setAllConnectionsFlag(depSet, vEP, false);
+		}
+
+		for (ElementaryPredication ep:vEP.getDependentsByArg()) {
+			depSet.clear();
+			// keep all dependents EP after vEP
+			if (ep.getCfrom() >= vEP.getCfrom()) {
+				depSet.add(ep);
+				setAllConnectionsFlag(depSet, vEP, false);
+			} else {
+			/*
+			 * For dependents EP before vEP, probably this EP is vEP's
+			 * ARG1 EP, we have to remove any preprosition EP that governs this EP.
+			 */
+				depSet.add(ep);
+				setAllConnectionsFlagExceptPP(depSet, vEP, false);
+			}
+		}
+		vEP.setFlag(false);
+
+	}
+
 	/**
 	 * Set the flag of all connections (governors & dependents) of EP in <code>depSet</code>
 	 * to <code>flag</flag>, with the flag of <code>excepEP</code> unset.
@@ -1650,9 +1701,21 @@ public class MRS {
 	public static void setAllConnectionsFlag (HashSet<ElementaryPredication> depSet,
 			ElementaryPredication excepEP, boolean flag) {
 		for (ElementaryPredication ep:depSet) {
-			if (ep!=excepEP && ep.getFlag() != flag) {
+			if (ep!=excepEP && ep.getFlag() != flag && !ep.getTypeName().equals("PARG_D_REL")) {
 				ep.setFlag(false);
 				setAllConnectionsFlag(ep.getAllConnections(), excepEP, flag);
+			}
+		}
+	}
+
+	public static void setAllConnectionsFlagExceptPP (HashSet<ElementaryPredication> depSet,
+			ElementaryPredication excepEP, boolean flag) {
+		for (ElementaryPredication ep:depSet) {
+			if (ep!=excepEP && ep.getFlag() != flag && !ep.getTypeName().equals("PARG_D_REL")
+					&& !ep.getTypeName().toLowerCase().contains("_p")
+					&& !ep.getTypeName().toLowerCase().contains("_be_v")) {
+				ep.setFlag(false);
+				setAllConnectionsFlagExceptPP(ep.getAllConnections(), excepEP, flag);
 			}
 		}
 	}

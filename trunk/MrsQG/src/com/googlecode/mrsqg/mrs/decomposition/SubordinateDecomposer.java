@@ -45,7 +45,7 @@ public class SubordinateDecomposer extends MrsDecomposer {
 						MRS subMrs = new MRS(mrs);
 						ElementaryPredication subEP = subMrs.getEps().get(mrs.getEps().indexOf(ep));
 
-						subMrs.keepDependentEP(label, subEP);
+						subMrs.keepDependentEPbyLabel(label, subEP);
 						if (subMrs.removeEPbyFlag()) {
 							subMrs.cleanHCONS();
 							subMrs.setDecomposer("Subordinate");
