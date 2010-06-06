@@ -8,6 +8,7 @@ pipe: we live in a society flooded with people.
 pipe: We live in an imposed society.
 pipe: this is the apple eaten by the cat.
 pipe: Given that our desires often conflict, it would be impossible for us to live in a society.
+pipe: There are three ways in which businesses can respond to the green imperative.
  */
 package com.googlecode.mrsqg.mrs.decomposition;
 
@@ -42,7 +43,6 @@ public class SubclauseDecomposer extends MrsDecomposer {
 
 			ElementaryPredication verbEP = null;
 			String oneArg = null;
-			String otherArg = null;
 
 			for (ElementaryPredication ep:inMrs.getEps()) {
 				MRS mrs = null;
@@ -67,108 +67,51 @@ public class SubclauseDecomposer extends MrsDecomposer {
 							break;
 						}
 					}
-				}
 
+					if (verbEP == null) continue;
+					if (mrs == null) continue;
 
-				// find out the other arg
-				if (verbEP == null) continue;
-				if (mrs == null) continue;
-				for (String arg:verbEP.getAllARGvalue()) {
-					if (arg.startsWith("e")) continue;
-					if (arg.equals(oneArg)) continue;
-					else {otherArg = arg; break;}
-				}
+					mrs.keepDependentEPfromVerbEP(verbEP);
 
-				// otherArg doesn't really exist, this verb is intransitive
-				if (otherArg != null && mrs.getEPbyFeatAndValue("ARG0", otherArg) == null) {
-					otherArg = null;
-				}
-
-
-				// the initial set contains otherArg and the label of verbEP.
-				// For all other EPs after verbEP, if they do not refer to the
-				// initial set, then mark them for deletion. otherwise, add
-				// them into the initial set and move on to the next one.
-				HashSet<String> subSet = new HashSet<String>();
-				if (otherArg != null) subSet.add(otherArg);
-				subSet.add(oneArg);
-				subSet.add(verbEP.getLabel());
-				int i = 2;
-				while (i-->0) {
-					// we should have done it recursively, but for the
-					// efficiency of laziness, we do it only twice.;-)
-					ArrayList<ElementaryPredication> noDelList = new ArrayList<ElementaryPredication>();
-					for (ElementaryPredication eep:mrs.getEps()) {
-						if (noDelList.contains(eep)) {
-							eep.setFlag(false);
-							continue;
-						}
-						HashSet<String> epSet;
-						//if (ep.getCto() < verbEP.getCto()) continue;
-						if (eep.getCto() < verbEP.getCto()) {
-							if (subSet.contains(eep.getArg0())) {
-								eep.setFlag(false);
-								// don't delete every EP with the same range of ep
-								noDelList.addAll(mrs.getEPS(eep.getCfrom(), eep.getCto()));
-							} else eep.setFlag(true);
-							continue;
-						}
-						if (eep == verbEP) continue;
-						if ((eep.getTypeName().contains("_v_") || eep.getTypeName().contains("_V_")) &&
-								eep.getCfrom() < verbEP.getCfrom()) {
-							eep.setFlag(true);
-							continue;
-						}
-						epSet = eep.getAllValue();
-						epSet.add(eep.getLabel());
-						boolean flag = true;
-						for (String s:epSet) {
-							if (subSet.contains(s)) {
-								subSet.addAll(epSet);
-								String lo = mrs.getLoLabelFromHconsList(s);
-								if (lo != null) subSet.add(lo);
-								flag = false;
-								break;
+					/*
+					 *  set the lowEP of oneArg (verbEP's ARG1, usually before verbEP) to a different label
+					 */
+					ArrayList<ElementaryPredication> argList = mrs.getEPbyFeatAndValue("ARG0", oneArg);
+					if (argList == null) continue;
+					if (argList.size() == 1 && argList.get(0).getLabel().equals(verbEP.getLabel())) {
+						argList.get(0).setLabel("h"+mrs.generateUnusedLabel(1).get(0));
+					} else if (argList.size() == 2) {
+						int hiEPidx = MRS.determineHiEPindex(argList, mrs);
+						ElementaryPredication hiEP = argList.get(hiEPidx);
+						ElementaryPredication lowEP = argList.get(1-hiEPidx);
+						if (lowEP.getLabel().equals(verbEP.getLabel())) {
+							String oldLowLabel = lowEP.getLabel();
+							// correct the HCONS list
+							String newLowLabel = "h"+mrs.generateUnusedLabel(1).get(0);
+							lowEP.setLabel(newLowLabel);
+							for (HCONS h:mrs.getHcons()) {
+								if (h.getHi().equals(hiEP.getValueByFeature("RSTR")) && h.getLo().equals(oldLowLabel)) {
+									h.getLoVar().setLabel(newLowLabel);
+									break;
+								}
 							}
 						}
-						eep.setFlag(flag);
+					} else {
+						log.error("the size of one arg list of the subclause verb isn't 1 or 2:\n"+argList);
 					}
-				}
 
-
-				// set the lowEP of oneArg to a different label
-				ArrayList<ElementaryPredication> argList = mrs.getEPbyFeatAndValue("ARG0", oneArg);
-				if (argList == null) continue;
-				if (argList.size() == 1 && argList.get(0).getLabel().equals(verbEP.getLabel())) {
-					argList.get(0).setLabel("h"+mrs.generateUnusedLabel(1).get(0));
-				} else if (argList.size() == 2) {
-					int hiEPidx = MRS.determineHiEPindex(argList, mrs);
-					ElementaryPredication hiEP = argList.get(hiEPidx);
-					ElementaryPredication lowEP = argList.get(1-hiEPidx);
-					if (lowEP.getLabel().equals(verbEP.getLabel())) {
-						String oldLowLabel = lowEP.getLabel();
-						// correct the HCONS list
-						String newLowLabel = "h"+mrs.generateUnusedLabel(1).get(0);
-						lowEP.setLabel(newLowLabel);
-						for (HCONS h:mrs.getHcons()) {
-							if (h.getHi().equals(hiEP.getValueByFeature("RSTR")) && h.getLo().equals(oldLowLabel)) {
-								h.getLoVar().setLabel(newLowLabel);
-								break;
-							}
-						}
+					mrs.setIndex(verbEP.getArg0());
+					if (mrs.getTense().equals("UNTENSED"))
+						mrs.setTense(oriTense);
+					if (mrs.removeEPbyFlag()) {
+						mrs.setDecomposer("Subclause");
+						mrs.cleanHCONS();
+						outList.add(mrs);
 					}
-				} else {
-					log.error("the size of one arg list of the subclause verb isn't 1 or 2:\n"+argList);
+
 				}
 
-				mrs.setIndex(verbEP.getArg0());
-				if (mrs.getTense().equals("UNTENSED"))
-					mrs.setTense(oriTense);
-				if (mrs.removeEPbyFlag()) {
-					mrs.setDecomposer("Subclause");
-					mrs.cleanHCONS();
-					outList.add(mrs);
-				}
+
 			}
 		}
 

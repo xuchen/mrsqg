@@ -418,8 +418,8 @@ public class MrsQG {
 		//	if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
 		//	if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 
-		mrxList = subordDecomposer.doIt(mrxList);
-//		mrxList = subDecomposer.doIt(mrxList);
+//		mrxList = subordDecomposer.doIt(mrxList);
+		mrxList = subDecomposer.doIt(mrxList);
 //		mrxList = coordDecomposer.doIt(mrxList);
 //		mrxList = apposDecomposer.doIt(mrxList);
 //		mrxList = whyDecomposer.doIt(mrxList);
