@@ -368,7 +368,7 @@ public class MrsQG {
 		ApposDecomposer apposDecomposer = new ApposDecomposer();
 		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
 		WhyDecomposer whyDecomposer = new WhyDecomposer();
-		boolean fallback = true;
+		boolean fallback = false;
 
 		// pairs for declarative sentences, could be original, or decomposed.
 		declSuccPairs = new ArrayList<Pair>();

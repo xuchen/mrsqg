@@ -1702,8 +1702,10 @@ public class MRS {
 			ElementaryPredication excepEP, boolean flag) {
 		for (ElementaryPredication ep:depSet) {
 			if (ep!=excepEP && ep.getFlag() != flag && !ep.getTypeName().equals("PARG_D_REL")) {
-				ep.setFlag(false);
+				ep.setFlag(flag);
 				setAllConnectionsFlag(ep.getAllConnections(), excepEP, flag);
+			} else if (ep.getTypeName().equals("PARG_D_REL")) {
+				ep.setFlag(flag);
 			}
 		}
 	}
@@ -1714,8 +1716,10 @@ public class MRS {
 			if (ep!=excepEP && ep.getFlag() != flag && !ep.getTypeName().equals("PARG_D_REL")
 					&& !ep.getTypeName().toLowerCase().contains("_p")
 					&& !ep.getTypeName().toLowerCase().contains("_be_v")) {
-				ep.setFlag(false);
+				ep.setFlag(flag);
 				setAllConnectionsFlagExceptPP(ep.getAllConnections(), excepEP, flag);
+			} else if (ep.getTypeName().equals("PARG_D_REL")) {
+				ep.setFlag(flag);
 			}
 		}
 	}
