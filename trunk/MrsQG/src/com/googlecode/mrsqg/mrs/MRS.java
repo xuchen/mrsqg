@@ -1656,26 +1656,21 @@ public class MRS {
 
 		// keep all vEP's governors
 		for (ElementaryPredication ep:vEP.getGovernorsByArg()) {
-			depSet.clear();
 			depSet.add(ep);
-			setAllConnectionsFlag(depSet, vEP, false);
 		}
 		for (ElementaryPredication ep:vEP.getGovernorsByNonArg()) {
-			depSet.clear();
 			depSet.add(ep);
-			setAllConnectionsFlag(depSet, vEP, false);
 		}
 
 		for (ElementaryPredication ep:vEP.getDependentsByNonArg()) {
-			depSet.clear();
 			depSet.add(ep);
-			setAllConnectionsFlag(depSet, vEP, false);
 		}
+		setAllConnectionsFlag(depSet, vEP, false);
 
 		for (ElementaryPredication ep:vEP.getDependentsByArg()) {
 			depSet.clear();
 			// keep all dependents EP after vEP
-			if (ep.getCfrom() >= vEP.getCfrom()) {
+			if (ep.getCfrom() >= vEP.getCfrom() && vEP.getDependentsByArg().size() != 1) {
 				depSet.add(ep);
 				setAllConnectionsFlag(depSet, vEP, false);
 			} else {
