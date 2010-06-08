@@ -196,7 +196,32 @@ public class ElementaryPredication {
 
 		HashSet<String> set = new HashSet<String>();
 		for (FvPair fp:fvpair) {
-			if (fp.getRargname().startsWith("ARG")) {
+			if (fp.getFeature().startsWith("ARG")) {
+				set.add(fp.getVar().getLabel());
+			}
+		}
+
+		return set;
+	}
+
+	/**
+	 * return all "ARG*" except ARG0 values in this EP.
+	 * for instance, an EP looks like:
+	 * [ _like_v_1_rel<5:10>
+  	 * LBL: h8
+  	 * ARG0: e9
+  	 * ARG1: x6
+     * ARG2: x10
+	 * ]
+	 * then it returns a list containing "e9", "x6" and "x10"
+	 *
+	 * @return a HashSet containing all "ARG*" values
+	 */
+	public HashSet<String> getAllARGvalueExceptARG0() {
+
+		HashSet<String> set = new HashSet<String>();
+		for (FvPair fp:fvpair) {
+			if (fp.getFeature().startsWith("ARG") && !fp.getFeature().equals("ARG")) {
 				set.add(fp.getVar().getLabel());
 			}
 		}

@@ -1599,6 +1599,7 @@ public class MRS {
 	private ElementaryPredication getDependentEP (ArrayList<ElementaryPredication> list) {
 		if (list==null||list.size()==0) return null;
 		ElementaryPredication dEP = null;
+
 		int nGovernor = 0;
 		HashSet<String> valueSet = new HashSet<String>();
 		for (int i=list.size()-1; i>=0; i--) {
@@ -1623,10 +1624,52 @@ public class MRS {
 		if (nGovernor == list.size()-1)
 			return dEP;
 		else {
-			log.error("Can't find the dependent EP from:\n"+list);
-			log.error("Debug your code!");
-			return null;
+
+			// first try to build dependencies for the EPs in the list
+			String arg0;
+			HashSet<String> argSet;
+			for (ElementaryPredication ep1:list) {
+				arg0 = ep1.getArg0();
+				for (ElementaryPredication ep2:list) {
+					if (ep2==ep1) continue;
+					argSet = ep2.getAllARGvalueExceptARG0();
+					if (argSet.contains(arg0)) {
+						ep1.addGovernorByArg(ep2);
+						ep2.addDependentByArg(ep1);
+					}
+
+				}
+			}
+
+			dEP = null;
+			for (ElementaryPredication ep:list) {
+				if (getLevelGovernors(ep, 0) == list.size()-1) {
+					dEP = ep;
+					break;
+				}
+			}
+
+			if (dEP!=null) return dEP;
+			else {
+				log.error("Can't find the dependent EP from:\n"+list);
+				log.error("Debug your code!");
+				return null;
+			}
 		}
+	}
+
+	private int getLevelGovernors (ElementaryPredication ep, int level) {
+		HashSet<ElementaryPredication> set = ep.getGovernorsByArg();
+		int max = level, n;
+		ElementaryPredication maxEP;
+		for (ElementaryPredication e:set) {
+			n = getLevelGovernors(e, level+1);
+			if (n > max) {
+				max = n;
+				maxEP = ep;
+			}
+		}
+		return max;
 	}
 
 	/**
@@ -1651,6 +1694,10 @@ public class MRS {
 		setAllConnectionsFlag(depSet, excepEP, false);
 	}
 
+	/**
+	 * Used to extract all dependents from a verb EP. vEP is kept.
+	 * @param vEP
+	 */
 	public void keepDependentEPfromVerbEP (ElementaryPredication vEP) {
 		this.setAllFlag(true);
 		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
@@ -1687,6 +1734,50 @@ public class MRS {
 
 	}
 
+
+	/**
+	 * Used to extract a sentence from a verb EP. vEP is kept.
+	 * @param vEP
+	 * @param excepEP
+	 */
+	public void keepDependentEPandVerbEP (ElementaryPredication vEP, ElementaryPredication excepEP) {
+		this.setAllFlag(true);
+		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
+
+		// keep all vEP's governors
+		for (ElementaryPredication ep:vEP.getGovernorsByArg()) {
+			depSet.add(ep);
+		}
+		for (ElementaryPredication ep:vEP.getGovernorsByNonArg()) {
+			depSet.add(ep);
+		}
+
+		for (ElementaryPredication ep:vEP.getDependentsByNonArg()) {
+			depSet.add(ep);
+		}
+		if (depSet.contains(excepEP)) depSet.remove(excepEP);
+		setAllConnectionsFlag(depSet, vEP, false);
+
+		for (ElementaryPredication ep:vEP.getDependentsByArg()) {
+			depSet.clear();
+			// keep all dependents EP after vEP
+			if (ep.getCfrom() >= vEP.getCfrom() && vEP.getDependentsByArg().size() != 1) {
+				depSet.add(ep);
+				setAllConnectionsFlag(depSet, vEP, false);
+			} else {
+			/*
+			 * For dependents EP before vEP, probably this EP is vEP's
+			 * ARG1 EP, we have to remove any preprosition EP that governs this EP.
+			 */
+				depSet.add(ep);
+				setAllConnectionsFlagExceptPP(depSet, vEP, false);
+			}
+		}
+		excepEP.setFlag(true);
+		vEP.setFlag(false);
+
+	}
+
 	/**
 	 * Set the flag of all connections (governors & dependents) of EP in <code>depSet</code>
 	 * to <code>flag</flag>, with the flag of <code>excepEP</code> unset.
@@ -1711,7 +1802,7 @@ public class MRS {
 		for (ElementaryPredication ep:depSet) {
 			if (ep!=excepEP && ep.getFlag() != flag && !ep.getTypeName().equals("PARG_D_REL")
 					&& !ep.getTypeName().toLowerCase().contains("_p")
-					&& !ep.getTypeName().toLowerCase().contains("_be_v")) {
+					&& !ep.getTypeName().toLowerCase().contains("_v_")) {
 				ep.setFlag(flag);
 				setAllConnectionsFlagExceptPP(ep.getAllConnections(), excepEP, flag);
 			} else if (ep.getTypeName().equals("PARG_D_REL")) {
