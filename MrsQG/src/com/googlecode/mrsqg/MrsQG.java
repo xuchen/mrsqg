@@ -370,7 +370,7 @@ public class MrsQG {
 		ApposDecomposer apposDecomposer = new ApposDecomposer();
 		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
 		WhyDecomposer whyDecomposer = new WhyDecomposer();
-		boolean fallback = true;
+		boolean fallback = false;
 
 		// pairs for declarative sentences, could be original, or decomposed.
 		declSuccPairs = new ArrayList<Pair>();
@@ -422,7 +422,7 @@ public class MrsQG {
 
 //		mrxList = subordDecomposer.doIt(mrxList);
 //		mrxList = subDecomposer.doIt(mrxList);
-//		mrxList = coordDecomposer.doIt(mrxList);
+		mrxList = coordDecomposer.doIt(mrxList);
 //		mrxList = apposDecomposer.doIt(mrxList);
 //		mrxList = whyDecomposer.doIt(mrxList);
 
@@ -540,19 +540,19 @@ public class MrsQG {
 				pairs = planB.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
 
-//				AndReplacer andR = new AndReplacer (parser, lkb, declSuccPairs);
-//				andR.doIt();
-//				pairs = andR.getGenSuccPairs();
-//				if (pairs!=null) quesSuccPairs.addAll(pairs);
-//				pairs = andR.getGenFailPairs();
-//				if (pairs!=null) quesFailPairs.addAll(pairs);
-//
-//				WhereReplacer whereR = new WhereReplacer (parser, lkb, declSuccPairs);
-//				whereR.doIt();
-//				pairs = whereR.getGenSuccPairs();
-//				if (pairs!=null) quesSuccPairs.addAll(pairs);
-//				pairs = whereR.getGenFailPairs();
-//				if (pairs!=null) quesFailPairs.addAll(pairs);
+				AndReplacer andR = new AndReplacer (parser, lkb, declSuccPairs);
+				andR.doIt();
+				pairs = andR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = andR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
+
+				WhereReplacer whereR = new WhereReplacer (parser, lkb, declSuccPairs);
+				whereR.doIt();
+				pairs = whereR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = whereR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
 
 				ApposReplacer apposR = new ApposReplacer (parser, lkb, declSuccPairs);
 				apposR.doIt();
@@ -560,41 +560,41 @@ public class MrsQG {
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
 				pairs = apposR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
-//
-//				WhatReplacer whatR = new WhatReplacer (parser, lkb, declSuccPairs);
-//				whatR.doIt();
-//				pairs = whatR.getGenSuccPairs();
-//				if (pairs!=null) quesSuccPairs.addAll(pairs);
-//				pairs = whatR.getGenFailPairs();
-//				if (pairs!=null) quesFailPairs.addAll(pairs);
-//
-//				NPChunkReplacer npChunkR = new NPChunkReplacer (parser, lkb, declSuccPairs);
-//				npChunkR.doIt();
-//				pairs = npChunkR.getGenSuccPairs();
-//				if (pairs!=null) quesSuccPairs.addAll(pairs);
-//				pairs = npChunkR.getGenFailPairs();
-//				if (pairs!=null) quesFailPairs.addAll(pairs);
-//
-//				PPChunkReplacer ppChunkR = new PPChunkReplacer (parser, lkb, declSuccPairs);
-//				ppChunkR.doIt();
-//				pairs = ppChunkR.getGenSuccPairs();
-//				if (pairs!=null) quesSuccPairs.addAll(pairs);
-//				pairs = ppChunkR.getGenFailPairs();
-//				if (pairs!=null) quesFailPairs.addAll(pairs);
-//
-//				NumReplacer numR = new NumReplacer (parser, lkb, declSuccPairs);
-//				numR.doIt();
-//				pairs = numR.getGenSuccPairs();
-//				if (pairs!=null) quesSuccPairs.addAll(pairs);
-//				pairs = numR.getGenFailPairs();
-//				if (pairs!=null) quesFailPairs.addAll(pairs);
-//
-//				WhyAppender whyR = new WhyAppender (parser, lkb, declSuccPairs);
-//				whyR.doIt();
-//				pairs = whyR.getGenSuccPairs();
-//				if (pairs!=null) quesSuccPairs.addAll(pairs);
-//				pairs = whyR.getGenFailPairs();
-//				if (pairs!=null) quesFailPairs.addAll(pairs);
+
+				WhatReplacer whatR = new WhatReplacer (parser, lkb, declSuccPairs);
+				whatR.doIt();
+				pairs = whatR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = whatR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
+
+				NPChunkReplacer npChunkR = new NPChunkReplacer (parser, lkb, declSuccPairs);
+				npChunkR.doIt();
+				pairs = npChunkR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = npChunkR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
+
+				PPChunkReplacer ppChunkR = new PPChunkReplacer (parser, lkb, declSuccPairs);
+				ppChunkR.doIt();
+				pairs = ppChunkR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = ppChunkR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
+
+				NumReplacer numR = new NumReplacer (parser, lkb, declSuccPairs);
+				numR.doIt();
+				pairs = numR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = numR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
+
+				WhyAppender whyR = new WhyAppender (parser, lkb, declSuccPairs);
+				whyR.doIt();
+				pairs = whyR.getGenSuccPairs();
+				if (pairs!=null) quesSuccPairs.addAll(pairs);
+				pairs = whyR.getGenFailPairs();
+				if (pairs!=null) quesFailPairs.addAll(pairs);
 
 
 			}
