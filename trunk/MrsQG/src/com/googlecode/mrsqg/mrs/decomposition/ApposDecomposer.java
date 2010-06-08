@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
@@ -22,7 +19,74 @@ import com.googlecode.mrsqg.mrs.MRS;
  * Then the NER could work better.
  *
  * Test sentences:
-pipe: the girl Anna likes the dog Bart.
+pipe: the girl Anna likes the dog Bart. (apposition)
+pipe: The accident after Hurricane Katrina did not cause a civilizational collapse. (compound)
+
+LTOP: h1
+INDEX: e2
+RELS: <
+[ APPOS_REL<0:13>
+  LBL: h3
+  ARG0: e4 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG1: x5 [ x PERS: 3 NUM: SG IND: + ]
+  ARG2: x6 [ x PERS: 3 NUM: SG IND: + ]
+]
+[ _THE_Q_REL<0:3>
+  LBL: h7
+  ARG0: x5 [ x PERS: 3 NUM: SG IND: + ]
+  RSTR: h9
+  BODY: h8
+]
+[ _girl_n_1_rel<4:8>
+  LBL: h10
+  ARG0: x5 [ x PERS: 3 NUM: SG IND: + ]
+]
+[ PROPER_Q_REL<9:13>
+  LBL: h11
+  ARG0: x6 [ x PERS: 3 NUM: SG IND: + ]
+  RSTR: h12
+  BODY: h13
+]
+[ NAMED_REL<9:13>
+  LBL: h14
+  ARG0: x6 [ x PERS: 3 NUM: SG IND: + ]
+  CARG: "Anna"
+]
+[ _like_v_1_rel<14:19>
+  LBL: h3
+  ARG0: e2 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG1: x5 [ x PERS: 3 NUM: SG IND: + ]
+  ARG2: x15 [ x PERS: 3 NUM: SG IND: + ]
+]
+[ APPOS_REL<20:34>
+  LBL: h3
+  ARG0: e17 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG1: x15 [ x PERS: 3 NUM: SG IND: + ]
+  ARG2: x16 [ x PERS: 3 NUM: SG IND: + ]
+]
+[ _THE_Q_REL<20:23>
+  LBL: h18
+  ARG0: x15 [ x PERS: 3 NUM: SG IND: + ]
+  RSTR: h20
+  BODY: h19
+]
+[ _dog_n_1_rel<24:27>
+  LBL: h21
+  ARG0: x15 [ x PERS: 3 NUM: SG IND: + ]
+]
+[ PROPER_Q_REL<28:34>
+  LBL: h22
+  ARG0: x16 [ x PERS: 3 NUM: SG IND: + ]
+  RSTR: h23
+  BODY: h24
+]
+[ NAMED_REL<28:34>
+  LBL: h25
+  ARG0: x16 [ x PERS: 3 NUM: SG IND: + ]
+  CARG: "Bart"
+]
+>
+HCONS: < h9 qeq h10 h12 qeq h14 h20 qeq h21 h23 qeq h25 >
  *
  * @author Xuchen Yao
  *
@@ -32,6 +96,7 @@ public class ApposDecomposer extends MrsDecomposer {
 	private static Logger log = Logger.getLogger(ApposDecomposer.class);
 
 	private String apposEPlabel = "APPOS_REL";
+	private String compoundEPlabel = "COMPOUND_NAME_REL";
 
 	/* (non-Javadoc)
 	 * @see com.googlecode.mrsqg.mrs.decomposition.MrsDecomposer#decompose(java.util.ArrayList)
@@ -50,7 +115,7 @@ public class ApposDecomposer extends MrsDecomposer {
 
 				// TODO: VERY IMPORTANT! multiple APPOS_REL!
 				// see warnings in getEPbyTypeName() and getEPbyLabelValue().
-				if (apposEPlabel.equals(typeName)) {
+				if (apposEPlabel.equals(typeName) || compoundEPlabel.equals(typeName)) {
 					// Bingo! Found an apposition EP!
 
 					// PART I: use this apposition to form a short sentence
@@ -123,6 +188,12 @@ public class ApposDecomposer extends MrsDecomposer {
 		//apposMrs.setAllSF2QUES();
 		apposMrs.setDecomposer("Apposition");
 		apposMrs.changeFromUnkToNamed();
+		for (ElementaryPredication ep:apposMrs.getEps()) {
+			if (ep.getPred()!=null && ep.getTypeName().equalsIgnoreCase("UDEF_Q_REL")) {
+				// Hurricane Katrina -> The hurricane is Katrina
+				ep.setTypeName("_THE_Q_REL");
+			}
+		}
 		apposMrs.cleanHCONS();
 
 		return apposMrs;
@@ -170,9 +241,9 @@ public class ApposDecomposer extends MrsDecomposer {
 			else {
 				inside = true;
 				/*
-				 * We want to have a clear cut between arg1 and arg2 in side this apposition.
+				 * We want to have a clear cut between arg1 and arg2 inside this apposition.
 				 * This is a weak judgment: the EP with (ARG0: ARG1value) should be the head
-				 * of the ARG1 phase, it's usually in the last position. So if it's ARG0 value
+				 * of the ARG1 phase, it's usually in the last position. So if its ARG0 value
 				 * matches arg1Value, plus that it's not a hiLabel, then this is the end of
 				 * arg1. Following is Arg2 so set arg2Area = true.
 				 */
