@@ -35,8 +35,8 @@ public class LKB {
 	 */
 	public LKB(boolean quicktest) {
 		// change to lkb in case logon rather than lkb is used
-        String lkbChange = ":pa lkb\n";
-		String genCmd = "(index-for-generator)\n";
+        String lkbChange = ":pa lkb";
+		String genCmd = "(index-for-generator)";
 		Properties prop = new Properties();
 
 		try {
@@ -377,14 +377,14 @@ LKB(6):
 				lkb.exit();
 				System.exit(0);
 			}
-			if (quicktest) {
+//			if (quicktest) {
 				lkb.sendInput(input);
 				System.out.println(lkb.getRawOutput());
-			} else {
-				lkb.sendMrxToGen(input);
-				System.out.println(lkb.getGenSentences());
-				//System.out.println(lkb.getFailedGenSentences());
-			}
+//			} else {
+//				lkb.sendMrxToGen(input);
+//				System.out.println(lkb.getGenSentences());
+//				//System.out.println(lkb.getFailedGenSentences());
+//			}
 		}
 	}
 

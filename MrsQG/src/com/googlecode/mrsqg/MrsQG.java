@@ -168,7 +168,9 @@ public class MrsQG {
 				if (parser == null) continue;
 				parser.parse(fsc);
 				log.info(parser.getParsedMrxString());
-				for (MRS mt:parser.getParsedMRSlist()) {
+				ArrayList<MRS> list = parser.getParsedMRSlist();
+				if (list==null) continue;
+				for (MRS mt:list) {
 					log.info(mt.toMRXstring());
 					log.info(mt);
 				}
@@ -419,9 +421,9 @@ public class MrsQG {
 		//	if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 
 //		mrxList = subordDecomposer.doIt(mrxList);
-		mrxList = subDecomposer.doIt(mrxList);
+//		mrxList = subDecomposer.doIt(mrxList);
 //		mrxList = coordDecomposer.doIt(mrxList);
-//		mrxList = apposDecomposer.doIt(mrxList);
+		mrxList = apposDecomposer.doIt(mrxList);
 //		mrxList = whyDecomposer.doIt(mrxList);
 
 
