@@ -86,6 +86,7 @@ public class MRS {
 	public String getSentType() {return sent_type;}
 	public ArrayList <ElementaryPredication> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
+	public HashMap<String, ElementaryPredication> getCharVariableMap() {return charVariableMap;}
 	public void setSentType (String sentType) {sent_type = sentType;}
 	public void setDecomposer (String p) {decomposer.add(p);}
 	public ArrayList<String> getDecomposer () {return decomposer;}
