@@ -434,7 +434,7 @@ public class ElementaryPredication {
 			}
 		}
 
-		if (!fvpair.removeAll(fvlist)) {
+		if (fvlist.size() != 0 && !fvpair.removeAll(fvlist)) {
 			log.error("Removing fvlist from fvpair failed!");
 			log.error("fvlist: " + fvlist);
 			log.error("fvpair: " + fvpair);
