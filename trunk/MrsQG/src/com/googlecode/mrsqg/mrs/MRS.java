@@ -934,6 +934,15 @@ public class MRS {
 	}
 
 	/**
+	 * Set the sentence force of the main event variables to "QUES".
+	 */
+	public void setSF2QUES() {
+		for (FvPair p: getExtraTypeByValue(getIndex())) {
+			p.getVar().setExtrapairValue("SF", "QUES");
+		}
+	}
+
+	/**
 	 * extract a new MRS from mrs, containing only EPs that are indirectly associated with label.
 	 * currently, the label should only be a predicate's label. for instance, an EP looks like:
 	 * [ _like_v_1_rel<5:10>

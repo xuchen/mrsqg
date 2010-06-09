@@ -185,7 +185,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		// step 3
 		apposEP.getValueVarByFeature("ARG0").setExtrapairValue("TENSE", oriTense);
 		// step 4
-		//apposMrs.setAllSF2QUES();
+		//apposMrs.setSF2QUES();
 		apposMrs.setDecomposer("Apposition");
 		apposMrs.changeFromUnkToNamed();
 		for (ElementaryPredication ep:apposMrs.getEps()) {

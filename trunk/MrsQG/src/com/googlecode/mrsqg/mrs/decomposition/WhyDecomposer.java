@@ -42,24 +42,24 @@ public class WhyDecomposer extends MrsDecomposer {
 				}
 			}
 		}
-		
+
 		return outList.size() == 0 ? null : outList;
 	}
-	
+
 	protected ArrayList<MRS> becauseMiddle(MRS inMrs, ElementaryPredication becauseEP) {
 		MRS reasonMrs = new MRS(inMrs);
 		MRS resultMrs = new MRS(inMrs);
 		ArrayList<MRS> list = new ArrayList<MRS>();
-		
+
 		String resultHi = becauseEP.getValueByFeature("ARG1");
 		String reasonHi = becauseEP.getValueByFeature("ARG2");
 		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
 		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
 		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
-		
-		
+
+
 		boolean beforeBecause = true;
-		
+
 		for (int i=0; i<inMrs.getEps().size(); i++) {
 			if (inMrs.getEps().get(i) == becauseEP) {
 				reasonMrs.getEps().get(i).setFlag(true);
@@ -72,7 +72,7 @@ public class WhyDecomposer extends MrsDecomposer {
 				resultMrs.getEps().get(i).setFlag(true);
 			}
 		}
-		
+
 		// the event index of resultMrs is inherited from the original MRS
 		// we need to find out the event index for the reasonMrs
 		String reasonEvent = null;
@@ -85,16 +85,16 @@ public class WhyDecomposer extends MrsDecomposer {
 				}
 			}
 		}
-		
+
 		if (reasonEvent != null) reasonMrs.setIndex(reasonEvent);
-		
+
 		if (reasonMrs.removeEPbyFlag()) {
 			reasonMrs.cleanHCONS();
 			reasonMrs.setDecomposer("WhyDecomposerReason");
 			reasonMrs.changeFromUnkToNamed();
 			list.add(reasonMrs);
 		}
-		
+
 		if (resultMrs.removeEPbyFlag()) {
 			resultMrs.cleanHCONS();
 			resultMrs.setDecomposer("WhyDecomposerResult");
@@ -105,26 +105,26 @@ public class WhyDecomposer extends MrsDecomposer {
 		MRS whyMrs = constructWhyMrs(resultMrs);
 		if (whyMrs != null)
 			list.add(whyMrs);
-		
+
 		return list.size()==0 ? null : list;
 	}
-	
+
 	protected ArrayList<MRS> becauseFront(MRS inMrs, ElementaryPredication becauseEP) {
 //		MRS reasonMrs = new MRS(inMrs);
 //		MRS resultMrs = new MRS(inMrs);
 		ArrayList<MRS> list = new ArrayList<MRS>();
-		
+
 		String resultHi = becauseEP.getValueByFeature("ARG1");
 		String reasonHi = becauseEP.getValueByFeature("ARG2");
 //		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
 		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
 //		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
-//		
+//
 //		ElementaryPredication cutEP = null;
-		
+
 		MRS reasonMrs = inMrs.extractByLabel(reasonHi, becauseEP);
 		MRS resultMrs = inMrs.extractByLabel(resultHi, becauseEP);
-		
+
 		// the event index of resultMrs is inherited from the original MRS
 		// we need to find out the event index for the reasonMrs
 		String reasonEvent = null;
@@ -137,25 +137,25 @@ public class WhyDecomposer extends MrsDecomposer {
 				}
 			}
 		}
-		
+
 		if (reasonEvent != null) reasonMrs.setIndex(reasonEvent);
-		
+
 		reasonMrs.setDecomposer("WhyDecomposerReason");
 		resultMrs.setDecomposer("WhyDecomposerResult");
-		
+
 		list.add(reasonMrs);
 		list.add(resultMrs);
-		
+
 		MRS whyMrs = constructWhyMrs(resultMrs);
 		if (whyMrs != null)
 			list.add(whyMrs);
-		
+
 		return list.size()==0 ? null : list;
 	}
 
 	/**
-	 * Given a result MRS, construct a why MRS from it. For instance: 
-	 * "mice don't like cats" -> "why don't mice like cats?" 
+	 * Given a result MRS, construct a why MRS from it. For instance:
+	 * "mice don't like cats" -> "why don't mice like cats?"
 	 * @param resultMrs
 	 * @return an MRS for why questions
 	 */
@@ -189,7 +189,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		whyMrs.addEPtoEPS(whichEP);
 		whyMrs.addEPtoEPS(reasonEP);
 		whyMrs.addToHCONSsimple("qeq", "h"+labelStore.get(1), "h"+labelStore.get(3));
-		
+
 		// Generate _FOR_P_REL
 		ElementaryPredication verbEP = whyMrs.getVerbEP();
 		if (verbEP == null) return null;
@@ -197,16 +197,16 @@ public class WhyDecomposer extends MrsDecomposer {
 		forEP.addSimpleFvpair("ARG0", "i"+labelStore.get(5));
 		forEP.addFvpair("ARG1", verbEP.getValueVarByFeature("ARG0"));
 		forEP.addSimpleFvpair("ARG2", arg0);
-		
+
 		whyMrs.addEPtoEPS(forEP);
-		
-		whyMrs.setAllSF2QUES();
+
+		whyMrs.setSF2QUES();
 		whyMrs.setSentType("WHY");
 		whyMrs.setDecomposer("WhyDecomposerWhy");
 		whyMrs.changeFromUnkToNamed();
 		// build cross references?
 		whyMrs.buildCoref();
-		
+
 		return whyMrs;
 	}
 }
