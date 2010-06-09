@@ -100,7 +100,7 @@ public class MrsTransformer {
 //					"can't set SF to QUES! from the following MRS:\n"+q_mrs);
 //		}
 //		if (null != v.getVar()) v.getVar().setExtrapairValue("SF", "QUES");
-		q_mrs.setSF2QUES();
+
 
 		q_mrs.changeFromUnkToNamed();
 		q_mrs.setSentType("Y/N");

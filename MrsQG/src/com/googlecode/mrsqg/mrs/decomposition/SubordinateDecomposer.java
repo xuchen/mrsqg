@@ -5,6 +5,8 @@ package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
 import com.googlecode.mrsqg.mrs.FvPair;
 import com.googlecode.mrsqg.mrs.MRS;
@@ -14,6 +16,8 @@ import com.googlecode.mrsqg.mrs.MRS;
  *
  */
 public class SubordinateDecomposer extends MrsDecomposer {
+
+	private static Logger log = Logger.getLogger(SubordinateDecomposer.class);
 
 	/* (non-Javadoc)
 	 * @see com.googlecode.mrsqg.mrs.decomposition.MrsDecomposer#decompose(java.util.ArrayList)
@@ -46,6 +50,24 @@ public class SubordinateDecomposer extends MrsDecomposer {
 						ElementaryPredication subEP = subMrs.getEps().get(mrs.getEps().indexOf(ep));
 
 						subMrs.keepDependentEPbyLabel(label, subEP);
+
+						//set the index for this EP, have to be verbEP's index
+						ElementaryPredication vEP;
+						if (label.startsWith("h")) {
+							String loLabel = subMrs.getLoLabelFromHconsList(label);
+							if (loLabel != null) label = loLabel;
+							vEP = MRS.getDependentEP(subMrs.getEPbyLabelValue(label));
+						} else {
+							vEP = subMrs.getCharVariableMap().get(label);
+						}
+						if (vEP==null) {
+							log.error("Error: can't find a verb EP from MRS:");
+							log.error(subMrs);
+							log.error("Debug your code!");
+						} else {
+							subMrs.setIndex(vEP.getArg0());
+						}
+
 						if (subMrs.removeEPbyFlag()) {
 							subMrs.cleanHCONS();
 							subMrs.setDecomposer("Subordinate");

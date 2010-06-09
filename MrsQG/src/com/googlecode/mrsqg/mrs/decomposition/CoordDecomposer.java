@@ -49,6 +49,7 @@ public class CoordDecomposer extends MrsDecomposer {
 						cMrs.keepDependentEPandVerbEP(cMrs.getCharVariableMap().get(event), coordEP);
 
 						if (cMrs.removeEPbyFlag()) {
+							cMrs.setIndex(event);
 							cMrs.cleanHCONS();
 							cMrs.changeFromUnkToNamed();
 							cMrs.setDecomposer("Coordination");

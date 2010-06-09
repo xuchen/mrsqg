@@ -1605,7 +1605,7 @@ public class MRS {
 	 * @param list An non-empty ElementaryPredication list
 	 * @return the dependent EP, or null if not found
 	 */
-	private ElementaryPredication getDependentEP (ArrayList<ElementaryPredication> list) {
+	public static ElementaryPredication getDependentEP (ArrayList<ElementaryPredication> list) {
 		if (list==null||list.size()==0) return null;
 		ElementaryPredication dEP = null;
 
@@ -1667,7 +1667,7 @@ public class MRS {
 		}
 	}
 
-	private int getLevelGovernors (ElementaryPredication ep, int level) {
+	public static int getLevelGovernors (ElementaryPredication ep, int level) {
 		HashSet<ElementaryPredication> set = ep.getGovernorsByArg();
 		int max = level, n;
 		ElementaryPredication maxEP;
