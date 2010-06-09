@@ -89,6 +89,21 @@ public class SubclauseDecomposer extends MrsDecomposer {
 							// correct the HCONS list
 							String newLowLabel = "h"+mrs.generateUnusedLabel(1).get(0);
 							lowEP.setLabel(newLowLabel);
+							for (ElementaryPredication cardEP:lowEP.getGovernorsByNonArg()) {
+								if (cardEP.getTypeName().equals("CARD_REL")) {
+									/*
+									 * This is a special case here. For the following sentences:
+									 * This is a deer.
+									 * This is the deer.
+									 * These are three deer.
+									 * There are the three deer.
+									 * _A_Q_REL, _THE_Q_REL all have different labels with _deer_n_1_rel
+									 * but CARD_REL ("three") has the same label with _deer_n_1_rel
+									 * So we have to set a new label as the label of _deer_n_1_rel to CARD_REL
+									 */
+									cardEP.setLabel(newLowLabel);
+								}
+							}
 							for (HCONS h:mrs.getHcons()) {
 								if (h.getHi().equals(hiEP.getValueByFeature("RSTR")) && h.getLo().equals(oldLowLabel)) {
 									h.getLoVar().setLabel(newLowLabel);
