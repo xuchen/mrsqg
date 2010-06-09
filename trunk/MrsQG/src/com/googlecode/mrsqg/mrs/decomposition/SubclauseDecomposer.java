@@ -91,7 +91,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 							lowEP.setLabel(newLowLabel);
 							for (ElementaryPredication cEP:lowEP.getAllConnections()) {
 								if (cEP!=verbEP && cEP.getLabel().equals(oldLowLabel)
-										&& !cEP.getLabel().contains("_D_")) {
+										&& !cEP.getTypeName().contains("_D_")) {
 									/*
 									 * This is a pretty fish eaten by the cat.
 									 * "pretty" and "eaten" have the same label with "fish",
