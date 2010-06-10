@@ -164,7 +164,7 @@ public class MRS {
 		this.postprocessing();
 	}
 
-	private void postprocessing() {
+	public void postprocessing() {
 		this.buildCoref();
 		this.mapCharacteristicVariables();
 		this.buildDependencies();

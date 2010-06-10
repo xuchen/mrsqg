@@ -8,6 +8,8 @@ package com.googlecode.mrsqg.mrs.decomposition;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.apache.log4j.Logger;
+
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
 import com.googlecode.mrsqg.mrs.MRS;
 
@@ -16,6 +18,8 @@ import com.googlecode.mrsqg.mrs.MRS;
  *
  */
 public class WhyDecomposer extends MrsDecomposer {
+
+	private static Logger log = Logger.getLogger(WhyDecomposer.class);
 
 	/* (non-Javadoc)
 	 * @see com.googlecode.mrsqg.mrs.decomposition.MrsDecomposer#decompose(java.util.ArrayList)
@@ -125,23 +129,48 @@ public class WhyDecomposer extends MrsDecomposer {
 //
 //		ElementaryPredication cutEP = null;
 
-		MRS reasonMrs = inMrs.extractByLabel(reasonHi, becauseEP);
-		MRS resultMrs = inMrs.extractByLabel(resultHi, becauseEP);
+		//MRS reasonMrs = inMrs.extractByLabel(reasonHi, becauseEP);
+		//MRS resultMrs = inMrs.extractByLabel(resultHi, becauseEP);
+		MRS reasonMrs = new MRS(inMrs);
+		reasonMrs.keepDependentEPbyLabel(reasonHi, reasonMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
+		MRS resultMrs = new MRS(inMrs);
+		resultMrs.keepDependentEPbyLabel(resultHi, resultMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
+
+		if (reasonMrs.removeEPbyFlag()) {
+			reasonMrs.cleanHCONS();
+			reasonMrs.postprocessing();
+		}
+
+		if (resultMrs.removeEPbyFlag()) {
+			resultMrs.cleanHCONS();
+			resultMrs.postprocessing();
+		}
 
 		// the event index of resultMrs is inherited from the original MRS
 		// we need to find out the event index for the reasonMrs
 		String reasonEvent = null;
-		for (ElementaryPredication ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
-			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
-				String tense = ep.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
-				if (tense != null && !tense.equals("UNTENSED")) {
-					reasonEvent = ep.getArg0();
-					break;
-				}
+		ElementaryPredication vEP = MRS.getDependentEP(reasonMrs.getEPbyLabelValue(reasonLo));
+		if (vEP != null && vEP.getArg0()!=null && vEP.getArg0().startsWith("e")) {
+			String tense = vEP.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
+			if (tense != null && !tense.equals("UNTENSED")) {
+				reasonEvent = vEP.getArg0();
 			}
 		}
+//		for (ElementaryPredication ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
+//			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
+//				String tense = ep.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
+//				if (tense != null && !tense.equals("UNTENSED")) {
+//					reasonEvent = ep.getArg0();
+//					break;
+//				}
+//			}
+//		}
 
 		if (reasonEvent != null) reasonMrs.setIndex(reasonEvent);
+		else {
+			log.error("Can't find the event index from label "+reasonLo+" for MRS:");
+			log.error(reasonMrs);
+		}
 
 		reasonMrs.setDecomposer("WhyDecomposerReason");
 		resultMrs.setDecomposer("WhyDecomposerResult");
