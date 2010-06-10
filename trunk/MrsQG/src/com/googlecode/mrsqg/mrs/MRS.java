@@ -1543,13 +1543,13 @@ public class MRS {
 						if (value.equals(arg0)) continue;
 						if (pair.getFeature().equals("RSTR")) continue;
 						if (pair.getFeature().equals("BODY")) continue;
-
+						ArrayList<ElementaryPredication> l=null;
 						if (value.startsWith("x") || value.startsWith("e")) {
 							dEP = this.charVariableMap.get(value);
 						} else if (value.startsWith("h")) {
 							String loLabel = this.getLoLabelFromHconsList(value);
 							if (loLabel != null) value = loLabel;
-							ArrayList<ElementaryPredication> l = this.getEPbyLabelValue(value);
+							l = this.getEPbyLabelValue(value);
 							if (l==null) continue;
 							if (l.size() == 1) {
 								dEP = l.get(0);
@@ -1660,9 +1660,29 @@ public class MRS {
 
 			if (dEP!=null) return dEP;
 			else {
-				log.error("Can't find the dependent EP from:\n"+list);
-				log.error("Debug your code!");
-				return null;
+				// last chance: check whether this is a /EQ relation
+				boolean shareSameLabel = true;
+				String firstLabel = list.get(0).getLabel();
+				for (int i=1; i<list.size(); i++) {
+					if (!list.get(i).getLabel().equals(firstLabel)) {
+						shareSameLabel = false;
+					}
+				}
+				if (shareSameLabel) {
+					// Bingo, we have a very rare /EQ relation here
+					for (ElementaryPredication e:list) {
+						// every EP has the same equalLabelSet
+						e.addAllEqualLabelSet(list);
+					}
+					// let the last one be the depEP
+					dEP = list.get(list.size()-1);
+				}
+				if (dEP!=null) return dEP;
+				else {
+					log.error("Can't find the dependent EP from:\n"+list);
+					log.error("Debug your code (if this is not a /EQ relation)!");
+					return null;
+				}
 			}
 		}
 	}
@@ -1712,16 +1732,11 @@ public class MRS {
 		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
 
 		// keep all vEP's governors
-		for (ElementaryPredication ep:vEP.getGovernorsByArg()) {
-			depSet.add(ep);
-		}
-		for (ElementaryPredication ep:vEP.getGovernorsByNonArg()) {
-			depSet.add(ep);
-		}
+		depSet.addAll(vEP.getGovernorsByArg());
+		depSet.addAll(vEP.getGovernorsByNonArg());
+		depSet.addAll(vEP.getDependentsByNonArg());
+		depSet.addAll(vEP.getEqualLabelSet());
 
-		for (ElementaryPredication ep:vEP.getDependentsByNonArg()) {
-			depSet.add(ep);
-		}
 		setAllConnectionsFlag(depSet, vEP, false);
 
 		for (ElementaryPredication ep:vEP.getDependentsByArg()) {
@@ -1754,16 +1769,11 @@ public class MRS {
 		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
 
 		// keep all vEP's governors
-		for (ElementaryPredication ep:vEP.getGovernorsByArg()) {
-			depSet.add(ep);
-		}
-		for (ElementaryPredication ep:vEP.getGovernorsByNonArg()) {
-			depSet.add(ep);
-		}
+		depSet.addAll(vEP.getGovernorsByArg());
+		depSet.addAll(vEP.getGovernorsByNonArg());
+		depSet.addAll(vEP.getDependentsByNonArg());
+		depSet.addAll(vEP.getEqualLabelSet());
 
-		for (ElementaryPredication ep:vEP.getDependentsByNonArg()) {
-			depSet.add(ep);
-		}
 		if (depSet.contains(excepEP)) depSet.remove(excepEP);
 		setAllConnectionsFlag(depSet, vEP, false);
 

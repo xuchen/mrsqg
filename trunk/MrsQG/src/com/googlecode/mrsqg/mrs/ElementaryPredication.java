@@ -1,6 +1,7 @@
 package com.googlecode.mrsqg.mrs;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 
 import org.apache.log4j.Logger;
@@ -50,6 +51,9 @@ public class ElementaryPredication {
 	private HashSet <ElementaryPredication> dependentsByArg = null;
 	private HashSet<ElementaryPredication> dependentsByNonArg = null;
 
+	/** the rare /EQ relation as in dmrs.pdf */
+	private HashSet<ElementaryPredication> equalLabelSet = null;
+
 	/**
 	* Copy constructor.
 	*/
@@ -72,6 +76,7 @@ public class ElementaryPredication {
 		governorsByNonArg = new HashSet<ElementaryPredication>();
 		dependentsByArg = new HashSet<ElementaryPredication>();
 		dependentsByNonArg = new HashSet<ElementaryPredication>();
+		equalLabelSet = new HashSet<ElementaryPredication>();
 	}
 
 
@@ -81,6 +86,7 @@ public class ElementaryPredication {
 		governorsByNonArg = new HashSet<ElementaryPredication>();
 		dependentsByArg = new HashSet<ElementaryPredication>();
 		dependentsByNonArg = new HashSet<ElementaryPredication>();
+		equalLabelSet = new HashSet<ElementaryPredication>();
 	}
 
 	public ElementaryPredication(String typeName, String label) {
@@ -123,12 +129,14 @@ public class ElementaryPredication {
 	public HashSet<ElementaryPredication> getGovernorsByNonArg () { return governorsByNonArg;}
 	public HashSet<ElementaryPredication> getDependentsByArg () { return dependentsByArg;}
 	public HashSet<ElementaryPredication> getDependentsByNonArg () { return dependentsByNonArg;}
+	public HashSet<ElementaryPredication> getEqualLabelSet () { return equalLabelSet;}
 	/**
 	 * Add an EP to the set of governors which refer to the current EP by ARG*.
 	 * @param ep An EP
 	 */
 	public void addGovernorByArg (ElementaryPredication ep) {
-		governorsByArg.add(ep);
+		if (ep != this)
+			governorsByArg.add(ep);
 	}
 
 	/**
@@ -137,7 +145,8 @@ public class ElementaryPredication {
 	 * @param ep An EP
 	 */
 	public void addGovernorByNonArg (ElementaryPredication ep) {
-		governorsByNonArg.add(ep);
+		if (ep != this)
+			governorsByNonArg.add(ep);
 	}
 
 	/**
@@ -145,7 +154,8 @@ public class ElementaryPredication {
 	 * @param ep An EP
 	 */
 	public void addDependentByArg (ElementaryPredication ep) {
-		dependentsByArg.add(ep);
+		if (ep != this)
+			dependentsByArg.add(ep);
 	}
 
 	/**
@@ -154,7 +164,30 @@ public class ElementaryPredication {
 	 * @param ep An EP
 	 */
 	public void addDependentByNonArg (ElementaryPredication ep) {
-		dependentsByNonArg.add(ep);
+		if (ep != this)
+			dependentsByNonArg.add(ep);
+	}
+
+	/**
+	 * Add an EP to the set of EPs which have the same label but don't refer each other
+	 * other than ARG*.
+	 * @param ep An EP
+	 */
+	public void addEqualLabelSet (ElementaryPredication ep) {
+		if (ep != this)
+			equalLabelSet.add(ep);
+	}
+
+	/**
+	 * Add an EP set to the set of EPs which have the same label but don't refer each other
+	 * other than ARG*.
+	 * @param ep An EP
+	 */
+	public void addAllEqualLabelSet (Collection<ElementaryPredication> epCollection) {
+		for (ElementaryPredication ep:epCollection) {
+			if (ep != this)
+				equalLabelSet.add(ep);
+		}
 	}
 
 	/**
@@ -167,6 +200,7 @@ public class ElementaryPredication {
 		connections.addAll(governorsByNonArg);
 		connections.addAll(dependentsByArg);
 		connections.addAll(dependentsByNonArg);
+		connections.addAll(equalLabelSet);
 		return connections;
 	}
 

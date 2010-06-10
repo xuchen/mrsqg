@@ -424,7 +424,7 @@ public class MrsQG {
 		mrxList = subDecomposer.doIt(mrxList);
 		mrxList = coordDecomposer.doIt(mrxList);
 		mrxList = apposDecomposer.doIt(mrxList);
-//		mrxList = whyDecomposer.doIt(mrxList);
+		mrxList = whyDecomposer.doIt(mrxList);
 
 
 		// generation
