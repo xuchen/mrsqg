@@ -6,6 +6,7 @@ pipe: Why can't Kitty hear?
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import com.googlecode.mrsqg.mrs.ElementaryPredication;
 import com.googlecode.mrsqg.mrs.MRS;
@@ -24,12 +25,14 @@ public class WhyDecomposer extends MrsDecomposer {
 		if (inList == null) return null;
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
+		HashSet<String> cueTypeNames = new HashSet<String>();
+		cueTypeNames.add("_because_x_rel");
+		cueTypeNames.add("_as_x_subord_rel");
+
 		for (MRS inMrs:inList) {
 
-			String because = "_because_x_rel";
-
 			for (ElementaryPredication ep:inMrs.getEps()) {
-				if (ep.getTypeName().equals(because)) {
+				if (cueTypeNames.contains(ep.getTypeName())) {
 					ArrayList<MRS> l;
 					if (ep.getCfrom() > 0) {
 						l = becauseMiddle (inMrs, ep);
