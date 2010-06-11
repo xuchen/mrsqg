@@ -6,6 +6,7 @@ pipe: Why can't Kitty hear?
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.log4j.Logger;
@@ -21,6 +22,17 @@ public class WhyDecomposer extends MrsDecomposer {
 
 	private static Logger log = Logger.getLogger(WhyDecomposer.class);
 
+	private HashMap<String, Boolean> cueTypeNames;
+
+	public WhyDecomposer() {
+		cueTypeNames = new HashMap<String, Boolean>();
+		cueTypeNames.put("_because_x_rel", true);
+		cueTypeNames.put("_as_x_subord_rel", true);
+		cueTypeNames.put("_in+order+to_x_rel", true);
+		cueTypeNames.put("_DUE+TO_P_REL", true);
+		cueTypeNames.put("_so+that_x_rel", false);
+	}
+
 	/* (non-Javadoc)
 	 * @see com.googlecode.mrsqg.mrs.decomposition.MrsDecomposer#decompose(java.util.ArrayList)
 	 */
@@ -29,21 +41,15 @@ public class WhyDecomposer extends MrsDecomposer {
 		if (inList == null) return null;
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
-		HashSet<String> cueTypeNames = new HashSet<String>();
-		cueTypeNames.add("_because_x_rel");
-		cueTypeNames.add("_as_x_subord_rel");
-		cueTypeNames.add("_in+order+to_x_rel");
-		cueTypeNames.add("_DUE+TO_P_REL");
-
 		for (MRS inMrs:inList) {
 
 			for (ElementaryPredication ep:inMrs.getEps()) {
-				if (cueTypeNames.contains(ep.getTypeName())) {
+				if (cueTypeNames.containsKey(ep.getTypeName())) {
 					ArrayList<MRS> l;
 					if (ep.getCfrom() > 0) {
-						l = becauseFront(inMrs, ep);
+						l = becauseFront(inMrs, ep, cueTypeNames.get(ep.getTypeName()));
 					} else {
-						l = becauseFront(inMrs, ep);
+						l = becauseFront(inMrs, ep, cueTypeNames.get(ep.getTypeName()));
 					}
 					if (l!=null) outList.addAll(l);
 
@@ -55,13 +61,19 @@ public class WhyDecomposer extends MrsDecomposer {
 		return outList.size() == 0 ? null : outList;
 	}
 
-	protected ArrayList<MRS> becauseMiddle(MRS inMrs, ElementaryPredication becauseEP) {
+	@Deprecated protected ArrayList<MRS> becauseMiddle(MRS inMrs, ElementaryPredication becauseEP, boolean exchange) {
 		MRS reasonMrs = new MRS(inMrs);
 		MRS resultMrs = new MRS(inMrs);
 		ArrayList<MRS> list = new ArrayList<MRS>();
+		String resultHi, reasonHi;
 
-		String resultHi = becauseEP.getValueByFeature("ARG1");
-		String reasonHi = becauseEP.getValueByFeature("ARG2");
+		if (exchange) {
+			resultHi = becauseEP.getValueByFeature("ARG1");
+			reasonHi = becauseEP.getValueByFeature("ARG2");
+		} else {
+			resultHi = becauseEP.getValueByFeature("ARG2");
+			reasonHi = becauseEP.getValueByFeature("ARG1");
+		}
 		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
 		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
 		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
@@ -118,13 +130,21 @@ public class WhyDecomposer extends MrsDecomposer {
 		return list.size()==0 ? null : list;
 	}
 
-	protected ArrayList<MRS> becauseFront(MRS inMrs, ElementaryPredication becauseEP) {
+	protected ArrayList<MRS> becauseFront(MRS inMrs, ElementaryPredication becauseEP, boolean exchange) {
 //		MRS reasonMrs = new MRS(inMrs);
 //		MRS resultMrs = new MRS(inMrs);
 		ArrayList<MRS> list = new ArrayList<MRS>();
 
-		String resultHi = becauseEP.getValueByFeature("ARG1");
-		String reasonHi = becauseEP.getValueByFeature("ARG2");
+		String resultHi, reasonHi;
+
+		if (exchange) {
+			resultHi = becauseEP.getValueByFeature("ARG1");
+			reasonHi = becauseEP.getValueByFeature("ARG2");
+		} else {
+			resultHi = becauseEP.getValueByFeature("ARG2");
+			reasonHi = becauseEP.getValueByFeature("ARG1");
+		}
+
 //		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
 		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
 //		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
