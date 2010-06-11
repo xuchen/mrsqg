@@ -55,7 +55,7 @@ public class MrsTransformer {
 		ArrayList<MRS> trMrsList;
 		Term[] terms = pre.getTerms()[0];
 
-		if (ori_mrs.getSentType() != "WHY") {
+		if (ori_mrs.getSentType().equals("WHY")) {
 			/*
 			 * The WhyDecomposer also generates a "WHY" question,
 			 * thus we don't do a transform on a "WHY" question.
