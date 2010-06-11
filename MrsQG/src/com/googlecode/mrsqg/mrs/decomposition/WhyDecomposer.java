@@ -33,6 +33,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		cueTypeNames.add("_because_x_rel");
 		cueTypeNames.add("_as_x_subord_rel");
 		cueTypeNames.add("_in+order+to_x_rel");
+		cueTypeNames.add("_DUE+TO_P_REL");
 
 		for (MRS inMrs:inList) {
 
@@ -40,7 +41,7 @@ public class WhyDecomposer extends MrsDecomposer {
 				if (cueTypeNames.contains(ep.getTypeName())) {
 					ArrayList<MRS> l;
 					if (ep.getCfrom() > 0) {
-						l = becauseMiddle (inMrs, ep);
+						l = becauseFront(inMrs, ep);
 					} else {
 						l = becauseFront(inMrs, ep);
 					}

@@ -143,6 +143,12 @@ public class Pair {
 	 * Why is dating of prehistoric materials particularly crucial to the enterprise?
 	 * -> To the enterprise, why is dating of prehistoric materials particularly crucial?
 	 * should find a way to use this pattern.
+	 *
+	 * TODO:
+	 * pg: This is the water that is red.
+	 * [This is the water, that is red., This is the water, who is red.,
+	 * This is the water, which is red., This is the water that is red.,
+	 * wThis is the water who is red., This is the water which is red.]
 	 */
 	public String getGenQuesCand() {
 		if (genQuesCand != null) return genQuesCand;
