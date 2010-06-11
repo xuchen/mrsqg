@@ -411,7 +411,7 @@ LKB(6):
 		public OutputReader() {
 			prompt = Pattern.compile(".*(LKB|TSNLP)\\(\\d+\\): $", Pattern.MULTILINE|Pattern.DOTALL);
 			try {
-				outputSem = new Semaphore(1);
+				outputSem = new Semaphore(1, true);
 				outputSem.acquire();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
