@@ -937,8 +937,13 @@ public class MRS {
 	 * Set the sentence force of the main event variables to "QUES".
 	 */
 	public void setSF2QUES() {
-		for (FvPair p: getExtraTypeByValue(getIndex())) {
-			p.getVar().setExtrapairValue("SF", "QUES");
+		try {
+			for (FvPair p: getExtraTypeByValue(getIndex())) {
+				p.getVar().setExtrapairValue("SF", "QUES");
+			}
+		} catch (java.lang.NullPointerException e) {
+			e.printStackTrace();
+			log.error("MRS is malformed!");
 		}
 	}
 
