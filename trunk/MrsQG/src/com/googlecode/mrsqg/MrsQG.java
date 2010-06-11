@@ -533,6 +533,9 @@ public class MrsQG {
 			if (declSuccPairs.size() == 0) declSuccPairs = declFailPairs;
 			// fallback
 			if (declSuccPairs.size() != 0) {
+				/*
+				 * TODO: how does Fallbacks over write "WHY" SentType?
+				 */
 				Fallback planB = new Fallback (parser, lkb, declSuccPairs);
 				planB.doIt();
 				ArrayList<Pair> pairs = planB.getGenSuccPairs();
