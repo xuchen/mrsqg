@@ -55,6 +55,15 @@ public class MrsTransformer {
 		ArrayList<MRS> trMrsList;
 		Term[] terms = pre.getTerms()[0];
 
+		if (ori_mrs.getSentType() != "WHY") {
+			/*
+			 * The WhyDecomposer also generates a "WHY" question,
+			 * thus we don't do a transform on a "WHY" question.
+			 */
+			this.gen_mrs.add(ori_mrs);
+			return this.gen_mrs;
+		}
+
 		// generate yes/no question
 		// change SF to "QUES"
 		// e2
