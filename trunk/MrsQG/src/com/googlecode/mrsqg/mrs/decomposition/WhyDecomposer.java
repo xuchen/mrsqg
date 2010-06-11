@@ -32,6 +32,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		HashSet<String> cueTypeNames = new HashSet<String>();
 		cueTypeNames.add("_because_x_rel");
 		cueTypeNames.add("_as_x_subord_rel");
+		cueTypeNames.add("_in+order+to_x_rel");
 
 		for (MRS inMrs:inList) {
 
