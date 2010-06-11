@@ -152,10 +152,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		String reasonEvent = null;
 		ElementaryPredication vEP = MRS.getDependentEP(reasonMrs.getEPbyLabelValue(reasonLo));
 		if (vEP != null && vEP.getArg0()!=null && vEP.getArg0().startsWith("e")) {
-			String tense = vEP.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
-			if (tense != null && !tense.equals("UNTENSED")) {
-				reasonEvent = vEP.getArg0();
-			}
+			reasonEvent = vEP.getArg0();
 		}
 //		for (ElementaryPredication ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
 //			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
