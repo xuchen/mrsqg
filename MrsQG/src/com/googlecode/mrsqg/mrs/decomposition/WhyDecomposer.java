@@ -26,13 +26,13 @@ public class WhyDecomposer extends MrsDecomposer {
 
 	public WhyDecomposer() {
 		cueTypeNames = new HashMap<String, Boolean>();
-		// set it to true if ARG1 is reason and ARG2 is result, otherwise false
+		// set it to true if ARG1 is result and ARG2 is reason, otherwise false
 		cueTypeNames.put("_because_x_rel", true);
 		cueTypeNames.put("_as_x_subord_rel", true);
 		cueTypeNames.put("_in+order+to_x_rel", true);
 		cueTypeNames.put("_DUE+TO_P_REL", true);
 		cueTypeNames.put("_so+that_x_rel", false);
-		cueTypeNames.put("_so_x_rel", true);
+		cueTypeNames.put("_so_x_rel", false);
 		cueTypeNames.put("_BECAUSE+OF_P_REL", true);
 	}
 
