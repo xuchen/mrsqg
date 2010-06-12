@@ -145,7 +145,7 @@ public class WhyDecomposer extends MrsDecomposer {
 			reasonHi = becauseEP.getValueByFeature("ARG1");
 		}
 
-//		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
+		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
 		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
 //		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
 //
@@ -168,27 +168,30 @@ public class WhyDecomposer extends MrsDecomposer {
 			resultMrs.postprocessing();
 		}
 
-		// the event index of resultMrs is inherited from the original MRS
-		// we need to find out the event index for the reasonMrs
-		String reasonEvent = null;
-		ElementaryPredication vEP = MRS.getDependentEP(reasonMrs.getEPbyLabelValue(reasonLo));
-		if (vEP != null && vEP.getArg0()!=null && vEP.getArg0().startsWith("e")) {
-			reasonEvent = vEP.getArg0();
-		}
-//		for (ElementaryPredication ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
-//			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
-//				String tense = ep.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
-//				if (tense != null && !tense.equals("UNTENSED")) {
-//					reasonEvent = ep.getArg0();
-//					break;
-//				}
-//			}
-//		}
-
-		if (reasonEvent != null) reasonMrs.setIndex(reasonEvent);
-		else {
-			log.error("Can't find the event index from label "+reasonLo+" for MRS:");
-			log.error(reasonMrs);
+		if (exchange) {
+			// the event index of resultMrs is inherited from the original MRS
+			// we need to find out the event index for the reasonMrs
+			String reasonEvent = null;
+			ElementaryPredication vEP = MRS.getDependentEP(reasonMrs.getEPbyLabelValue(reasonLo));
+			if (vEP != null && vEP.getArg0()!=null && vEP.getArg0().startsWith("e")) {
+				reasonEvent = vEP.getArg0();
+			}
+			if (reasonEvent != null) reasonMrs.setIndex(reasonEvent);
+			else {
+				log.error("Can't find the event index from label "+reasonLo+" for MRS:");
+				log.error(reasonMrs);
+			}
+		} else {
+			String resultEvent = null;
+			ElementaryPredication vEP = MRS.getDependentEP(resultMrs.getEPbyLabelValue(resultLo));
+			if (vEP != null && vEP.getArg0()!=null && vEP.getArg0().startsWith("e")) {
+				resultEvent = vEP.getArg0();
+			}
+			if (resultEvent != null) resultMrs.setIndex(resultEvent);
+			else {
+				log.error("Can't find the event index from label "+resultLo+" for MRS:");
+				log.error(resultMrs);
+			}
 		}
 
 		reasonMrs.setDecomposer("WhyDecomposerReason");
