@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: modifed from Eclipse auto-generated file,
+		      Don't overwrite it!
+-->
+<project basedir="." default="jar" name="MrsQG">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.5"/>
+    <property name="source" value="1.5"/>
+    <property name="main-class"  value="com.googlecode.mrsqg.MrsQG"/>
+    <path id="MrsQG.classpath">
+        <pathelement location="build"/>
+    	<pathelement location="build/conf"/>
+        <pathelement location="lib/xerces.jar"/>
+        <pathelement location="lib/log4j.jar"/>
+        <pathelement location="lib/opennlp-tools.jar"/>
+        <pathelement location="lib/lingpipe.jar"/>
+        <pathelement location="lib/snowball.jar"/>
+        <pathelement location="lib/maxent.jar"/>
+        <pathelement location="lib/stanford-ner.jar"/>
+        <pathelement location="lib/trove.jar"/>
+        <pathelement location="lib/jwnl.jar"/>
+        <pathelement location="lib/commons-logging.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="build"/>
+        <copy includeemptydirs="false" todir="build">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    	<copy includeemptydirs="false" todir="build/conf">
+    	    <fileset dir="conf"/>
+    	</copy>
+    </target>
+    <target name="clean">
+        <delete dir="build"/>
+    	<delete file="${ant.project.name}.jar"/>
+        <delete file="log/${ant.project.name}.log"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
+            <src path="build"/>
+            <classpath refid="MrsQG.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+        <copy todir="${ant.library.dir}">
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </copy>
+        <unzip dest="${ant.library.dir}">
+            <patternset includes="jdtCompilerAdapter.jar"/>
+            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
+        </unzip>
+    </target>
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
+        <antcall target="build"/>
+    </target>
+    <target name="MrsTransformer">
+        <java classname="com.googlecode.mrsqg.MrsTransformer" failonerror="true" fork="yes">
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+    <target name="LKB">
+        <java classname="com.googlecode.mrsqg.nlp.LKB" failonerror="true" fork="yes">
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+    <target name="CoordDecomposer">
+        <java classname="com.googlecode.mrsqg.mrs.decomposition.CoordDecomposer" failonerror="true" fork="yes">
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+    <target name="MrsQG">
+        <java classname="com.googlecode.mrsqg.MrsQG" failonerror="true" fork="yes">
+            <jvmarg line="-Xmx1500m"/>
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+    <target name="Cheap">
+        <java classname="com.googlecode.mrsqg.nlp.Cheap" failonerror="true" fork="yes">
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+    <target name="QGSTEC2010">
+        <java classname="com.googlecode.mrsqg.evaluation.QGSTEC2010" failonerror="true" fork="yes">
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+    <target name="Preprocessor">
+        <java classname="com.googlecode.mrsqg.Preprocessor" failonerror="true" fork="yes">
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+    <target name="MRS">
+        <java classname="com.googlecode.mrsqg.mrs.MRS" failonerror="true" fork="yes">
+            <arg line="/home/xcyao/delphin/mrs.xml/JohnLikesMary.mrs.xml"/>
+            <classpath refid="MrsQG.classpath"/>
+        </java>
+    </target>
+	<target name="jar" depends="build">
+		<jar destfile="${ant.project.name}.jar" basedir="build">
+			<manifest>
+				<attribute name="Main-Class" value="${main-class}"/>
+			</manifest>
+		</jar>
+	</target>
+	<target name="run" depends="jar">
+		<java fork="true" classname="${main-class}">
+            <jvmarg line="-Xmx1500m"/>
+            <classpath>
+                <path refid="${ant.project.name}.classpath"/>
+                <path location="${ant.project.name}.jar"/>
+            </classpath>
+        </java>
+	</target>
+</project>
