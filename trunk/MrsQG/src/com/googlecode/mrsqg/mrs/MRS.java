@@ -1774,6 +1774,8 @@ public class MRS {
 		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
 
 		// keep all vEP's governors
+		if (vEP==null)
+			return;
 		depSet.addAll(vEP.getGovernorsByArg());
 		depSet.addAll(vEP.getGovernorsByNonArg());
 		depSet.addAll(vEP.getDependentsByNonArg());
