@@ -33,7 +33,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		cueTypeNames.put("_so+that_x_rel", false);
 		cueTypeNames.put("_so_x_rel", false);
 		cueTypeNames.put("_BECAUSE+OF_P_REL", true);
-		cueTypeNames.put("_therefore_x_rel", true);
+		cueTypeNames.put("_therefore_x_rel", false);
 	}
 
 	/* (non-Javadoc)
