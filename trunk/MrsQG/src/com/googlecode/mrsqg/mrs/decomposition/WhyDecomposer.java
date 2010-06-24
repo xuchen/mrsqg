@@ -7,7 +7,6 @@ package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
@@ -34,7 +33,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		cueTypeNames.put("_so+that_x_rel", false);
 		cueTypeNames.put("_so_x_rel", false);
 		cueTypeNames.put("_BECAUSE+OF_P_REL", true);
-		cueTypeNames.put("_therefore_a_1_rel", true);
+		cueTypeNames.put("_therefore_x_rel", true);
 	}
 
 	/* (non-Javadoc)
