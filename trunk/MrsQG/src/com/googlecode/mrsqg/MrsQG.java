@@ -69,6 +69,11 @@ public class MrsQG {
 	 */
 	private File testFileOutput;
 
+	/**
+	 * whether to apply fallbacks to generate as many questions as possible
+	 */
+	private boolean fallback;
+
 	// pairs for declarative sentences, could be original, or decomposed.
 	private ArrayList<Pair> declSuccPairs;
 	private ArrayList<Pair> declFailPairs;
@@ -370,7 +375,6 @@ public class MrsQG {
 		ApposDecomposer apposDecomposer = new ApposDecomposer();
 		SubclauseDecomposer subDecomposer = new SubclauseDecomposer();
 		WhyDecomposer whyDecomposer = new WhyDecomposer();
-		boolean fallback = false;
 
 		// pairs for declarative sentences, could be original, or decomposed.
 		declSuccPairs = new ArrayList<Pair>();
@@ -383,6 +387,7 @@ public class MrsQG {
 		// pre-processing, get the output FSC XML in a string fsc
 		Preprocessor p = new Preprocessor();
 		String fsc = p.getFSCbyTerms(input, true);
+		input = p.getOriginalSentence();
 		//log.info("\nFSC XML from preprocessing:\n");
 		//log.info(fsc);
 
@@ -391,7 +396,6 @@ public class MrsQG {
 		parser.parse(fsc);
 		// the number of MRS in the list depends on
 		// the option "-results=" in cheap.
-		// Usually it's 3.
 		ArrayList<MRS> origMrsList = parser.getParsedMRSlist();
 		ArrayList<MRS> mrxList;
 		if (usePreSelector) mrxList = PreSelector.doIt(lkb, origMrsList);
@@ -406,19 +410,6 @@ public class MrsQG {
 			log.warn("LKB didn't generate at all from PET input.");
 			mrxList = origMrsList;
 		}
-
-		// decomposition
-		//	ArrayList<MRS> subordDecomposedMrxList = subordDecomposer.doIt(mrxList);
-		//	ArrayList<MRS> subDecomposedMrxList = subDecomposer.doIt(mrxList);
-		//	ArrayList<MRS> coordDecomposedMrxList = coordDecomposer.doIt(mrxList);
-		//	ArrayList<MRS> apposDecomposedMrxList = apposDecomposer.doIt(mrxList);
-		//	ArrayList<MRS> whyDecomposedMrxList = whyDecomposer.doIt(mrxList);
-		//
-		//	if (subordDecomposedMrxList!=null) mrxList.addAll(0, subordDecomposedMrxList);
-		//	if (subDecomposedMrxList!=null) mrxList.addAll(0, subDecomposedMrxList);
-		//	if (coordDecomposedMrxList!=null) mrxList.addAll(0, coordDecomposedMrxList);
-		//	if (apposDecomposedMrxList!=null) mrxList.addAll(0, apposDecomposedMrxList);
-		//	if (whyDecomposedMrxList!=null) mrxList.addAll(0, whyDecomposedMrxList);
 
 		mrxList = whyDecomposer.doIt(mrxList);
 		mrxList = subordDecomposer.doIt(mrxList);
@@ -440,7 +431,7 @@ public class MrsQG {
 
 				// generate from original sentence
 				lkb.sendMrxToGen(mrx);
-				log.info("\nGenerate from the original sentence:\n");
+				log.info("\nGenerate from the original/decomposed sentence:\n");
 				ArrayList<String> genOriSentList = lkb.getGenSentences();
 				log.info(genOriSentList);
 				log.info("\nFrom the following MRS:\n");
@@ -493,7 +484,7 @@ public class MrsQG {
 				for (MRS qmrs:trMrsList) {
 					mrx = qmrs.toMRXstring();
 
-					// generate from original sentence
+					// generate from transformed sentence
 					lkb.sendMrxToGen(mrx);
 					log.info("\nGenerated Questions:");
 					ArrayList<String> genQuesList = lkb.getGenSentences();
@@ -530,11 +521,15 @@ public class MrsQG {
 		if (fallback) {
 			// a second chance on failed sentences.
 			if (declSuccPairs.size() == 0) declSuccPairs = declFailPairs;
+			boolean debug = true;
+			if (debug && lkb==null) {
+				Pair pair = new Pair(input, mrxList.get(mrxList.size()-1), null, null);
+				declSuccPairs.clear();
+				declSuccPairs.add(pair);
+			}
 			// fallback
 			if (declSuccPairs.size() != 0) {
-				/*
-				 * TODO: how does Fallbacks over write "WHY" SentType?
-				 */
+
 				Fallback planB = new Fallback (parser, lkb, declSuccPairs);
 				planB.doIt();
 				ArrayList<Pair> pairs = planB.getGenSuccPairs();
@@ -542,7 +537,7 @@ public class MrsQG {
 				pairs = planB.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
 
-				AndReplacer andR = new AndReplacer (parser, lkb, declSuccPairs);
+				CoordReplacer andR = new CoordReplacer (parser, lkb, declSuccPairs);
 				andR.doIt();
 				pairs = andR.getGenSuccPairs();
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
@@ -577,12 +572,12 @@ public class MrsQG {
 				pairs = npChunkR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
 
-				PPChunkReplacer ppChunkR = new PPChunkReplacer (parser, lkb, declSuccPairs);
-				ppChunkR.doIt();
-				pairs = ppChunkR.getGenSuccPairs();
-				if (pairs!=null) quesSuccPairs.addAll(pairs);
-				pairs = ppChunkR.getGenFailPairs();
-				if (pairs!=null) quesFailPairs.addAll(pairs);
+//				PPChunkReplacer ppChunkR = new PPChunkReplacer (parser, lkb, declSuccPairs);
+//				ppChunkR.doIt();
+//				pairs = ppChunkR.getGenSuccPairs();
+//				if (pairs!=null) quesSuccPairs.addAll(pairs);
+//				pairs = ppChunkR.getGenFailPairs();
+//				if (pairs!=null) quesFailPairs.addAll(pairs);
 
 				NumReplacer numR = new NumReplacer (parser, lkb, declSuccPairs);
 				numR.doIt();
@@ -590,13 +585,13 @@ public class MrsQG {
 				if (pairs!=null) quesSuccPairs.addAll(pairs);
 				pairs = numR.getGenFailPairs();
 				if (pairs!=null) quesFailPairs.addAll(pairs);
-
-				WhyAppender whyR = new WhyAppender (parser, lkb, declSuccPairs);
-				whyR.doIt();
-				pairs = whyR.getGenSuccPairs();
-				if (pairs!=null) quesSuccPairs.addAll(pairs);
-				pairs = whyR.getGenFailPairs();
-				if (pairs!=null) quesFailPairs.addAll(pairs);
+//
+//				WhyAppender whyR = new WhyAppender (parser, lkb, declSuccPairs);
+//				whyR.doIt();
+//				pairs = whyR.getGenSuccPairs();
+//				if (pairs!=null) quesSuccPairs.addAll(pairs);
+//				pairs = whyR.getGenFailPairs();
+//				if (pairs!=null) quesFailPairs.addAll(pairs);
 
 
 			}
@@ -661,6 +656,11 @@ public class MrsQG {
 			testFileInput = new File(prop.getProperty("testFileInput"));
 			testFileOutput = new File(prop.getProperty("testFileOutput"));
 			QGSTEC2010processor = new QGSTEC2010(testFileInput);
+		}
+
+		// whether do fallback generation
+		if (prop.getProperty("fallback").equalsIgnoreCase("yes")) {
+			fallback = true;
 		}
 
 		// init the LKB generator

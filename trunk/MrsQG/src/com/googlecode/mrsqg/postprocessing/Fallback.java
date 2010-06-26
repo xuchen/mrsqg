@@ -1,11 +1,11 @@
 /**
  * This is "Plan B" of MrsQG, employing a fallback strategy of re-generation
- * by re-parsing. That is, if MrsQG failed to generate from MrsTransformer, 
+ * by re-parsing. That is, if MrsQG failed to generate from MrsTransformer,
  * then the question word will replace the term in a sentence, and be sent to
  * the parser, finally the parsing result will be sent to the generator for a
  * more natural re-organization of the sentence. A rough example of pipelines:
  * <p>
- * "He has 5 apples." -> "He has how many apples?" -> send to parser 
+ * "He has 5 apples." -> "He has how many apples?" -> send to parser
  * -> get MRS from parser -> send to the generator -> "How many apples does he have?"
  * <p>
  *  However, plan B doesn't always work that well. So needing plan C...
@@ -44,7 +44,7 @@ public class Fallback {
 		this.genSuccPairs = new ArrayList<Pair>();
 		this.genFailPairs = new ArrayList<Pair>();
 	}
-	
+
 	public ArrayList<Pair> getGenSuccPairs () {return genSuccPairs;}
 	public ArrayList<Pair> getGenFailPairs () {return genFailPairs;}
 
@@ -52,19 +52,19 @@ public class Fallback {
 		Preprocessor pre = new Preprocessor();
 
 		if (oriPairs == null) return;
-		
+
 		log.info("============== Fallback Generation ==============");
 		String sentence;
-		
+
 		for (Pair oriPair:oriPairs) {
 			if (oriPair.getGenOriCand()!=null) {
 				sentence = oriPair.getGenOriCand();
 			} else {
 				sentence = oriPair.getOriSent();
 			}
-			
+
 			pre.preprocess(sentence);
-			
+
 			Term[] terms = pre.getTerms()[0];
 			//sentence = pre.getSentences()[0];
 
@@ -109,7 +109,7 @@ public class Fallback {
 						tranSent = Fallback.transformSentence(sentence, term, "what");
 						sentType = "WHAT";
 					}
-					
+
 					generate(tranSent, sentType, "Fallback");
 					if (tranSent1!=null)
 						generate(tranSent1, sentType, "Fallback");
@@ -131,7 +131,7 @@ public class Fallback {
 	public static String transformSentence (String sentence, Term term, String quesWord) {
 		String ret;
 		String text = term.getText();
-		int cfrom = term.getCfrom(), cto = term.getCfrom();
+		int cfrom = term.getCfrom(), cto = term.getCto();
 		if (cfrom > sentence.length() ||cto > sentence.length() )
 			return null;
 		if (text.equals((sentence.substring(cfrom, cto)))) {
@@ -146,11 +146,11 @@ public class Fallback {
 		else ret = ret + "?";
 		return ret;
 	}
-	
+
 	protected void generate (String tranSent, String sentType, String source) {
 		if (tranSent == null) return;
 		Preprocessor pre = new Preprocessor();
-		
+
 		String fsc = pre.getFSCbyTerms(tranSent, true);
 		log.info("Fallback sentence:");
 		log.info(tranSent);
@@ -181,7 +181,7 @@ public class Fallback {
 				ArrayList<String> genQuesList = generator.getGenSentences();
 				ArrayList<String> genQuesFailedList = null;
 				log.info(genQuesList);
-				
+
 				// Add to pair list
 				if (!(genQuesList==null && genQuesFailedList==null)) {
 					m.setDecomposer(source);
@@ -194,7 +194,7 @@ public class Fallback {
 		}
 
 	}
-	
+
 	/**
 	 * Change the punctuation in the last to ?
 	 */
