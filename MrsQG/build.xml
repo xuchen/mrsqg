@@ -5,8 +5,8 @@
 <project basedir="." default="jar" name="MrsQG">
     <property environment="env"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.5"/>
-    <property name="source" value="1.5"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
     <property name="main-class"  value="com.googlecode.mrsqg.MrsQG"/>
     <path id="MrsQG.classpath">
         <pathelement location="build"/>
@@ -45,7 +45,7 @@
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="build" source="${source}" target="${target}">
-            <src path="build"/>
+            <src path="src"/>
             <classpath refid="MrsQG.classpath"/>
         </javac>
     </target>

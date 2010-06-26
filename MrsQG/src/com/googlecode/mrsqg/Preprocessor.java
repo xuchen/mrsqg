@@ -172,7 +172,8 @@ public class Preprocessor {
 		int nTokens = tokens[0].length;
 		String[] tokens = this.tokens[0];
 
-		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
+		OutputFormat of = new OutputFormat("XML","UTF-8",true);
+		of.setCDataElements(new String[]{"str"});
 		of.setIndent(1);
 		of.setIndenting(true);
 		XMLSerializer serializer = new XMLSerializer(System.out,of);
@@ -299,7 +300,10 @@ public class Preprocessor {
 		Term[] terms = this.terms[0];
 		String[] pos = this.pos[0];
 
-		OutputFormat of = new OutputFormat("XML","ISO-8859-1",true);
+		OutputFormat of = new OutputFormat("XML","UTF-8",true);
+		// a bug in PET requires CDATA
+		// http://lists.delph-in.net/archive/pet/2010-June/000102.html
+		of.setCDataElements(new String[]{"str"});
 		of.setIndent(1);
 		of.setIndenting(true);
 		XMLSerializer serializer = new XMLSerializer(os,of);
