@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.googlecode.mrsqg.postprocessing;
 
@@ -23,16 +23,15 @@ public class NumReplacer extends Fallback {
 	}
 
 	public void doIt() {
-		
+
 		if (this.oriPairs == null) return;
-		
+
 		Preprocessor pre = new Preprocessor();
 		String sentence;
 		String tranSent;
-		String tranSent1;
-		
+
 		String beEPvalue = "CARD_REL";
-		
+
 		log.info("============== MrsReplacer Generation -- NumReplacer==============");
 
 		for (Pair oriPair:oriPairs) {
@@ -41,39 +40,44 @@ public class NumReplacer extends Fallback {
 			} else {
 				sentence = oriPair.getOriSent();
 			}
-			
+
 			pre.preprocess(sentence);
 			MRS mrs = oriPair.getOriMrs();
-			
+
 			ElementaryPredication oldEP = null;
-			
-			for (ElementaryPredication ep:mrs.getEps()) {
+
+			ArrayList<ElementaryPredication> eps = mrs.getEps();
+			ElementaryPredication ep;
+
+			for (int i=0; i<eps.size(); i++) {
+				ep = eps.get(i);
 				if (ep.getTypeName().equals(beEPvalue)) {
 					if (oldEP != null && oldEP.getTypeName().equals(beEPvalue)) continue;
 					int cfrom = ep.getCfrom();
 					int cto = ep.getCto();
-					
+
 					if (cfrom > sentence.length() || cto > sentence.length()) continue;
-					
+
 					String carg = ep.getValueByFeature("CARG");
-					//TODO: work more intelligently to determine many/much
-					if (carg!=null && carg.equals((sentence.substring(cfrom, cto)))) {
-						tranSent = sentence.substring(0, cfrom) + "how many " + sentence.substring(cto);
-						tranSent1 = sentence.substring(0, cfrom) + "how much " + sentence.substring(cto);
-					} else if (carg!=null && sentence.contains(carg)) {
-						tranSent = sentence.replaceAll(carg, "how many ");
-						tranSent1 = sentence.replaceAll(carg, "how much ");
-					} else {
-						tranSent = sentence.substring(0, cfrom) + "how many " + sentence.substring(cto);
-						tranSent1 = sentence.substring(0, cfrom) + "how much " + sentence.substring(cto);
+
+					// TODO: determine more smartly whether the noun is countable or not.
+					String qWord = "how many ";
+					if (i+1 <= eps.size()) {
+						String num = eps.get(i+1).getValueVarByFeature("ARG0").getExtrapair().get("NUM");
+						if (num != null && num.equals("SG"))
+							qWord = "how much ";
 					}
-					
+					if (carg!=null && carg.equals((sentence.substring(cfrom, cto)))) {
+						tranSent = sentence.substring(0, cfrom) + qWord + sentence.substring(cto);
+					} else if (carg!=null && sentence.contains(carg)) {
+						tranSent = sentence.replaceAll(carg, qWord);
+					} else {
+						tranSent = sentence.substring(0, cfrom) + qWord + sentence.substring(cto);
+					}
+
 					tranSent = changeQuestionMark(tranSent);
-					tranSent1 = changeQuestionMark(tranSent1);
-					
 					generate(tranSent, "HOW MANY/MUCH", "NumReplacer");
-									
-					generate(tranSent1, "HOW MANY/MUCH", "NumReplacer");
+
 					oldEP = ep;
 				}
 			}

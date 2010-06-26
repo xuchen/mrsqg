@@ -16,21 +16,24 @@ import com.googlecode.mrsqg.nlp.LKB;
  * @author Xuchen Yao
  *
  */
-public class WhyAppender extends Fallback {
+@Deprecated public class WhyAppender extends Fallback {
+	/*
+	 * Greedy appender to generate why questions, only used in the test.
+	 */
 
 	public WhyAppender(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
 		super(cheap, lkb, oriPairs);
 	}
-	
+
 	public void doIt() {
-		
+
 		if (this.oriPairs == null) return;
-		
+
 		Preprocessor pre = new Preprocessor();
 		String sentence;
 		String tranSent;
-		
-		
+
+
 		log.info("============== MrsReplacer Generation -- WhyAppender==============");
 
 		for (Pair oriPair:oriPairs) {
@@ -39,17 +42,17 @@ public class WhyAppender extends Fallback {
 			} else {
 				sentence = oriPair.getOriSent();
 			}
-			
+
 			pre.preprocess(sentence);
 			MRS mrs = oriPair.getOriMrs();
-			
-			// we can't care which is reash, which is result...
+
+			// we can't care which is reason, which is result...
 			MRS whyMrs = WhyDecomposer.constructWhyMrs(mrs);
 			if (whyMrs==null) continue;
 			tranSent = "Why " + sentence;
-			
+
 			generate(tranSent, "WHY", "WhyAppender");
-			
+
 			String mrx = whyMrs.toMRXstring();
 			generator.sendMrxToGen(mrx);
 			log.info("\nGenerate from fallback sentence:\n");
@@ -57,7 +60,7 @@ public class WhyAppender extends Fallback {
 			ArrayList<String> genQuesList = generator.getGenSentences();
 			ArrayList<String> genQuesFailedList = null;
 			log.info(genQuesList);
-			
+
 			// Add to pair list
 			if (!(genQuesList==null && genQuesFailedList==null)) {
 				whyMrs.setDecomposer("WhyAppender");

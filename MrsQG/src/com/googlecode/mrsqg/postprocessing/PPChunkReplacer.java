@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.googlecode.mrsqg.postprocessing;
 
@@ -12,19 +12,20 @@ import com.googlecode.mrsqg.nlp.LKB;
 import com.googlecode.mrsqg.util.StringUtils;
 
 /**
+ * Deprecated, too messy output
  * @author Xuchen Yao
  *
  */
-public class PPChunkReplacer extends Fallback {
+@Deprecated public class PPChunkReplacer extends Fallback {
 
 	public PPChunkReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
 		super(cheap, lkb, oriPairs);
 	}
-	
+
 	public void doIt() {
-		
+
 		if (this.oriPairs == null) return;
-		
+
 		Preprocessor pre = new Preprocessor();
 		final String B_PP = "B-PP", END = "O";
 		final String NP = "NP";
@@ -33,7 +34,7 @@ public class PPChunkReplacer extends Fallback {
 		String tranSentWhere, tranSentWhen;
 		String chunkTag;
 		String chunks[], tokens[], pos[];
-		
+
 		log.info("============== MrsReplacer Generation -- PPChunkReplacer==============");
 
 		for (Pair oriPair:oriPairs) {
@@ -42,16 +43,16 @@ public class PPChunkReplacer extends Fallback {
 			} else {
 				sentence = oriPair.getOriSent();
 			}
-			
+
 			pre.preprocess(sentence);
 			chunks = pre.getPpChunks()[0];
 			tokens = pre.getTokens()[0];
 			pos = pre.getPos()[0];
 			if (chunks==null || chunks.length==0) continue;
-			
+
 			boolean inPP = false;
 			int startPP=-1, endPP;
-			
+
 			for (int i=0; i<chunks.length; i++) {
 				tranSent = null;
 				tranSent1 = null;
@@ -91,19 +92,19 @@ public class PPChunkReplacer extends Fallback {
 						tranSentWhen = StringUtils.concatWithSpaces(tokens, 0, startPP-1) + " when " +
 							StringUtils.concatWithSpaces(tokens, endPP, tokens.length);
 					}
-					
-					tranSent = changeQuestionMark(tranSent);	
+
+					tranSent = changeQuestionMark(tranSent);
 					log.info("tranSent: "+tranSent);
 					generate(tranSent, quesWord.toUpperCase(), "PPChunkReplacer");
-					
-					tranSentWhere = changeQuestionMark(tranSentWhere);	
+
+					tranSentWhere = changeQuestionMark(tranSentWhere);
 					log.info("tranSent: "+tranSentWhere);
 					generate(tranSentWhere, "WHERE", "PPChunkReplacer");
-					
-					tranSentWhen = changeQuestionMark(tranSentWhen);	
+
+					tranSentWhen = changeQuestionMark(tranSentWhen);
 					log.info("tranSent: "+tranSentWhen);
 					generate(tranSentWhen, "WHEN", "PPChunkReplacer");
-					
+
 					if (tranSent1 != null)
 						generate(tranSent, "WHICH", "PPChunkReplacer");
 				}

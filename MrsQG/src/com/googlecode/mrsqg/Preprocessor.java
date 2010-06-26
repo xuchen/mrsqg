@@ -46,7 +46,7 @@ public class Preprocessor {
 	/** <code>Dictionaries</code> for term extraction. */
 	private static ArrayList<Dictionary> dicts = new ArrayList<Dictionary>();
 
-	public String[] getOriginalSentences() {return this.originalSentences;}
+	public String getOriginalSentence() {return this.sentences[0];}
 	public 	String[][] getTokens() {return this.tokens;}
 	public String[] getSentences() {return this.sentences;}
 	public String getFirstSent() {return this.sentences[0];}

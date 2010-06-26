@@ -17,24 +17,24 @@ import com.googlecode.mrsqg.nlp.LKB;
  * @author Xuchen Yao
  *
  */
-public class AndReplacer extends Fallback {
+public class CoordReplacer extends Fallback {
 
 
-	public AndReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
+	public CoordReplacer(Cheap cheap, LKB lkb, ArrayList<Pair> oriPairs) {
 		super(cheap, lkb, oriPairs);
 	}
 
 	public void doIt () {
 		if (this.oriPairs == null) return;
-		
+
 		Preprocessor pre = new Preprocessor();
 		String sentence;
 		String tranSent;
 		MRS mrs;
-		
-		String andEPvalue = "_AND_C_REL";
-		
-		log.info("============== Fallback Generation -- AndReplacer==============");
+
+		String coordEPname = "_C_REL";
+
+		log.info("============== Fallback Generation -- CoordReplacer==============");
 
 		for (Pair oriPair:oriPairs) {
 			if (oriPair.getGenOriCand()!=null) {
@@ -47,7 +47,7 @@ public class AndReplacer extends Fallback {
 			pre.preprocess(sentence);
 
 			for (ElementaryPredication ep:mrs.getEps()) {
-				if (ep.getTypeName().equals(andEPvalue) && 
+				if (ep.getTypeName().contains(coordEPname) &&
 						ep.getValueByFeature("L-INDEX") != null &&
 						ep.getValueByFeature("R-INDEX") != null &&
 						ep.getValueByFeature("L-HNDL") == null &&
@@ -62,7 +62,7 @@ public class AndReplacer extends Fallback {
 					for (ElementaryPredication e:argList) {
 						if (e.getCfrom()<cfrom) cfrom = e.getCfrom();
 					}
-					
+
 					argList = mrs.getEPbyFeatAndValue("ARG0", arg2);
 					if (argList == null) continue;
 					int cto = ep.getCto();
@@ -70,21 +70,21 @@ public class AndReplacer extends Fallback {
 					for (ElementaryPredication e:argList) {
 						if (e.getCto()>cto) cto = e.getCto();
 					}
-					
+
 					if (cfrom>sentence.length() || cto>sentence.length()) continue;
-					
+
 					tranSent = sentence.substring(0, cfrom);
 					tranSent += "what";
 					tranSent += sentence.substring(cto, sentence.length());
 					if (tranSent.substring(tranSent.length()-1).equals("."))
 						tranSent = tranSent.substring(0, tranSent.length()-1) + "?";
 					else tranSent = tranSent + "?";
-					
+
 					generate(tranSent, "WHAT", "AndReplacer");
 
 				}
 			}
-		}	
+		}
 	}
 
 }
