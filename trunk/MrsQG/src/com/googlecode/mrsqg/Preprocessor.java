@@ -32,7 +32,6 @@ public class Preprocessor {
 	private static Logger log = Logger.getLogger(Preprocessor.class);
 
 	private int countOfSents = 0;
-	private String[] originalSentences;
 	private String[][] tokens;
 	private String[][] pos;
 	private String[][] npChunks;
