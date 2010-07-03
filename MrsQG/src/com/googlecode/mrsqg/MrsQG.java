@@ -3,6 +3,7 @@ package com.googlecode.mrsqg;
 import com.googlecode.mrsqg.analysis.Pair;
 import com.googlecode.mrsqg.evaluation.Instance;
 import com.googlecode.mrsqg.evaluation.QGSTEC2010;
+import com.googlecode.mrsqg.languagemodel.Reranker;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.mrs.decomposition.*;
 import com.googlecode.mrsqg.mrs.selection.PreSelector;
@@ -53,6 +54,11 @@ public class MrsQG {
 	 * LKB used for generation from MRS in xml
 	 */
 	private LKB lkb = null;
+
+	/**
+	 * a question re-ranker based on language models
+	 */
+	private Reranker ranker = null;
 
 	/**
 	 * Whether run the QGSTEC2010 test
@@ -602,11 +608,16 @@ public class MrsQG {
 		if (quesSuccPairs.size()!=0) {
 			for (Pair pair:quesSuccPairs) {
 				log.info("\n");
+				pair.questionsRerank(ranker);
 				if (pair.getGenOriCand()!=null) log.info("oriSent: "+pair.getGenOriCand());
 				log.info("SentType: "+pair.getQuesMrs().getSentType());
 				log.info("Decomposer: "+pair.getQuesMrs().getDecomposer());
 				log.info("Question: "+pair.getGenQuesCand());
-				log.info(pair.getGenQuesList());
+				if (ranker != null) {
+					pair.printQuesRankedMap();
+				}
+				else
+					log.info(pair.getGenQuesList());
 			}
 		} else {
 			log.info("No questions generated.");
@@ -683,6 +694,12 @@ public class MrsQG {
 			if (! parser.isSuccess()) {
 				log.error("cheap is not started properly.");
 			}
+		}
+
+		// load language model
+		if (prop.getProperty("rerank").equalsIgnoreCase("yes")) {
+			System.out.println("Creating question reranker by loading language model...");
+			ranker = new Reranker("/home/xcyao/lm/corpus/questions/train.kylm.blm", true);
 		}
 
 		// create WordNet dictionary

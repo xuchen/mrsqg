@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="lib/trove.jar"/>
 	<classpathentry kind="lib" path="lib/jwnl.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/kylm.jar"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

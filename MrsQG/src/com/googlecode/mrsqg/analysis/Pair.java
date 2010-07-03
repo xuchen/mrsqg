@@ -7,10 +7,15 @@
 package com.googlecode.mrsqg.analysis;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
 
+import com.googlecode.mrsqg.languagemodel.Reranker;
 import com.googlecode.mrsqg.mrs.MRS;
+import com.googlecode.mrsqg.nlp.OpenNLP;
+import com.googlecode.mrsqg.util.MapUtils;
 import com.googlecode.mrsqg.util.StringUtils;
 
 /**
@@ -34,6 +39,8 @@ public class Pair {
 	protected MRS quesMrs;
 	/** generated question list from <code>quesMrs</code> */
 	protected ArrayList<String> genQuesList;
+	/** generated question list with ordered (decreasing) rankings */
+	protected LinkedHashMap<String, Float> quesRankedMap;
 	/** a selected best candidate from <code>genQuesList</code> */
 	protected String genQuesCand;
 	/** unsuccessfully generated question snippet list from <code>quesMrs</code> */
@@ -81,6 +88,7 @@ public class Pair {
 		this.quesMrs = quesMrs;
 		this.genQuesList = genQuesList;
 		this.genQuesFailedList =genQuesFailedList;
+		this.quesRankedMap = new LinkedHashMap<String, Float>();
 	}
 
 	public Pair (String oriSent, MRS oriMrs, ArrayList<String> genOriSentList, ArrayList<String> genOriSentFailedList) {
@@ -94,6 +102,7 @@ public class Pair {
 		this.quesMrs = quesMrs;
 		this.genQuesList = genQuesList;
 		this.genQuesFailedList =genQuesFailedList;
+		this.quesRankedMap = new LinkedHashMap<String, Float>();
 	}
 
 	public Pair (String tranSent, String failedType) {
@@ -110,6 +119,7 @@ public class Pair {
 	public void setOriMrs(MRS mrs) {this.oriMrs = mrs;}
 	public MRS getQuesMrs () {return this.quesMrs;}
 	public ArrayList<String> getGenQuesList() {return genQuesList;}
+	public LinkedHashMap<String, Float> getQuesRankedMap() {return quesRankedMap;}
 	public ArrayList<String> getGenQuesFailedList() {return genQuesFailedList;}
 	public String getFailedType() {return failedType;}
 	public boolean getFlag() {return this.flag;}
@@ -135,6 +145,32 @@ public class Pair {
 		}
 
 		return genOriCand;
+	}
+
+	/**
+	 * re-rank all question candidates with a language model
+	 */
+	public void questionsRerank(Reranker ranker) {
+		if (genQuesList == null) return;
+		if (ranker == null) return;
+		String[] tokens;
+		float rank;
+		for (String oriSent:genQuesList) {
+			tokens = OpenNLP.tokenize(oriSent);
+			tokens = StringUtils.lowerCaseList(tokens);
+			rank = ranker.rank(tokens);
+			// normalize with sentence length, plus <s> and </s>
+			rank /= (tokens.length+2);
+			// rank is usually between 0 and -10
+			rank += 10;
+			this.quesRankedMap.put(oriSent, rank);
+		}
+		this.quesRankedMap = MapUtils.sortByDecreasingValue(this.quesRankedMap);
+		Iterator<String> ite = this.quesRankedMap.keySet().iterator();
+		while(ite.hasNext()) {
+			this.genQuesCand = ite.next();
+			break;
+		}
 	}
 
 	// Post selection
@@ -205,5 +241,16 @@ public class Pair {
 		}
 
 		return genQuesCand;
+	}
+
+	public void printQuesRankedMap() {
+		Iterator<String> ite = this.quesRankedMap.keySet().iterator();
+		String ques;
+		float grade;
+		while(ite.hasNext()) {
+			ques = ite.next();
+			grade = quesRankedMap.get(ques);
+			log.info(grade+": "+ques);
+		}
 	}
 }
