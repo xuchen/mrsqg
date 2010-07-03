@@ -53,6 +53,9 @@ public class NumReplacer extends Fallback {
 				ep = eps.get(i);
 				if (ep.getTypeName().equals(beEPvalue)) {
 					if (oldEP != null && oldEP.getTypeName().equals(beEPvalue)) continue;
+					int oldCfrom = -1;
+					if (oldEP != null && oldEP.getTypeName().equals("_THE_Q_REL"))
+						oldCfrom = oldEP.getCfrom();
 					int cfrom = ep.getCfrom();
 					int cto = ep.getCto();
 
@@ -67,19 +70,24 @@ public class NumReplacer extends Fallback {
 						if (num != null && num.equals("SG"))
 							qWord = "how much ";
 					}
+
 					if (carg!=null && carg.equals((sentence.substring(cfrom, cto)))) {
+						if (oldCfrom != -1)
+							cfrom = oldCfrom;
 						tranSent = sentence.substring(0, cfrom) + qWord + sentence.substring(cto);
 					} else if (carg!=null && sentence.contains(carg)) {
 						tranSent = sentence.replaceAll(carg, qWord);
 					} else {
+						if (oldCfrom != -1)
+							cfrom = oldCfrom;
 						tranSent = sentence.substring(0, cfrom) + qWord + sentence.substring(cto);
 					}
 
 					tranSent = changeQuestionMark(tranSent);
 					generate(tranSent, "HOW MANY/MUCH", "NumReplacer");
 
-					oldEP = ep;
 				}
+				oldEP = ep;
 			}
 		}
 	}

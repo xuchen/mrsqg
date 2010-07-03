@@ -12,7 +12,7 @@ import com.googlecode.mrsqg.nlp.indices.FunctionWords;
 
 /**
  * A collection of utilities for string processing.
- * 
+ *
  * @author Nico Schlaefer
  * @version 2007-05-05
  */
@@ -23,13 +23,13 @@ public class StringUtils {
 	 * <code>equalsIntersect()</code> to be true.
 	 */
 	private static final float INTERSECT_THRESH = 0.33f;
-	
+
 	/**
 	 * Checks if the first array of tokens is a subset if the second array.
-	 * 
+	 *
 	 * @param tokens1 token array 1
 	 * @param tokens2 token array 2
-	 * 
+	 *
 	 * @return true, iff ss1 is a subset of ss2
 	 */
 	private static boolean isSubset(String[] tokens1, String[] tokens2) {
@@ -41,16 +41,16 @@ public class StringUtils {
 					exists = true;
 					break;
 				}
-			
+
 			if (!exists) return false;
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Checks if the tokens in the first string form a subset of the tokens in
 	 * the second string.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the tokens in s1 are a subset of the tokens in s2
@@ -58,10 +58,10 @@ public class StringUtils {
 	public static boolean isSubset(String s1, String s2) {
 		if (s1 == null) return true;
 		if (s2 == null) return false;
-		
+
 		String[] tokens1 = s1.split(" ");
 		String[] tokens2 = s2.split(" ");
-		
+
 		return isSubset(tokens1, tokens2);
 	}
 
@@ -69,7 +69,7 @@ public class StringUtils {
 	 * Checks if the tokens in the first string form a subset of the tokens in
 	 * the second string. Function words and tokens of length less than 2 are
 	 * ignored.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the keywords in s1 are a subset of the tokens in s2
@@ -77,93 +77,93 @@ public class StringUtils {
 	public static boolean isSubsetKeywords(String s1, String s2) {
 		if (s1 == null) return true;
 		if (s2 == null) return false;
-		
+
 		String[] tokens1 = s1.split(" ");
 		String[] tokens2 = s2.split(" ");
-		
+
 		// eliminate function words and tokens of length < 2 from tokens1
 		ArrayList<String> tks1 = new ArrayList<String>();
 		for (String token1 : tokens1)
 			if (token1.length() > 1 && !FunctionWords.lookup(token1))
 				tks1.add(token1);
 		tokens1 = tks1.toArray(new String[tks1.size()]);
-		
+
 		return isSubset(tokens1, tokens2);
 	}
-	
+
 	/**
 	 * Concatenates an array of strings, using the given delimiter.
-	 * 
+	 *
 	 * @param ss array of strings
 	 * @param delim delimiter
 	 * @return concatenated string
 	 */
 	public static String concat(String[] ss, String delim) {
 		String s = "";
-		
+
 		if (ss.length > 0) s += ss[0];
 		for (int i = 1; i < ss.length; i++) s += delim + ss[i];
-		
+
 		return s;
 	}
-	
+
 	/**
 	 * Concatenates an array of strings, using whitespaces as delimiters.
-	 * 
+	 *
 	 * @param ss array of strings
 	 * @return concatenated string
 	 */
 	public static String concatWithSpaces(String[] ss) {
 		String s = "";
-		
+
 		if (ss.length > 0) s += ss[0];
 		for (int i = 1; i < ss.length; i++) s += " " + ss[i];
-		
+
 		return s;
 	}
-	
+
 	public static String concatWithSpaces (String[] tokens, int start, int end) {
 		if (tokens==null || start>tokens.length || end > tokens.length) return null;
-		
+
 		String s = tokens[start];
 		for (int i=start+1; i<end; i++) {
 			s += " " + tokens[i];
 		}
 		return s;
 	}
-	
+
 	/**
 	 * Concatenates an array of strings, using tabs as delimiters.
-	 * 
+	 *
 	 * @param ss array of strings
 	 * @return concatenated string
 	 */
 	public static String concatWithTabs(String[] ss) {
 		String s = "";
-		
+
 		if (ss.length > 0) s += ss[0];
 		for (int i = 1; i < ss.length; i++) s += "\t" + ss[i];
-		
+
 		return s;
 	}
-	
+
 	/**
 	 * Repeats string <code>s</code> <code>n</code> times.
-	 * 
+	 *
 	 * @param s a string
 	 * @param n number of repetitions
 	 */
 	public static String repeat(String s, int n) {
 		String repeated = "";
-		
+
 		for (int i = 0; i < n; i++) repeated += s;
-		
+
 		return repeated;
 	}
-	
+
 	/**
 	 * Normalizes a string. Similar strings are mapped to equal normalizations.
-	 * 
+	 *
 	 * @param s the string
 	 * @return normalized string
 	 */
@@ -171,21 +171,21 @@ public class StringUtils {
 	public static String normalize(String s) {
 		// convert to lower-case
 		s = s.toLowerCase();
-		
+
 		// tokenize
 		String tokens[] = NETagger.tokenize(s);
-		
+
 		// stemm all tokens
 		for (int i = 0; i < tokens.length; i++)
 			tokens[i] = SnowballStemmer.stem(tokens[i]);
-		
+
 		return concatWithSpaces(tokens);
 	}
-	
+
 	/**
 	 * Compares the normalizations of the two strings, using the standard
 	 * <code>String.equals()</code> method.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the normalizations are equal
@@ -193,24 +193,24 @@ public class StringUtils {
 	public static boolean equalsNorm(String s1, String s2) {
 		return normalize(s1).equals(normalize(s2));
 	}
-	
+
 	/**
 	 * Compares two strings. The strings are considered equal, iff one of the
 	 * strings is a subset of the other string, i.e. iff all the tokens in the
 	 * one string also occur in the other string.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
-	 * @return true, iff the strings are equal in the sense defined above 
+	 * @return true, iff the strings are equal in the sense defined above
 	 */
 	public static boolean equalsSubset(String s1, String s2) {
 		return isSubset(s1, s2) || isSubset(s2, s1);
 	}
-	
+
 	/**
 	 * Compares the normalizations of the two strings, using the
 	 * <code>equalsSubset()</code> method.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the normalizations are equal
@@ -218,12 +218,12 @@ public class StringUtils {
 	public static boolean equalsSubsetNorm(String s1, String s2) {
 		return equalsSubset(normalize(s1), normalize(s2));
 	}
-	
+
 	/**
 	 * Compares two strings. The strings are considered equal, iff the number of
 	 * words that occur in both strings over the total number of words is at
 	 * least <code>INTERSECT_FRAC</code>.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the strings are equal in the sense defined above
@@ -232,7 +232,7 @@ public class StringUtils {
 		// tokenize both strings
 		String[] tokens1 = s1.split(" ");
 		String[] tokens2 = s2.split(" ");
-		
+
 		// number of common tokens and total number of tokens
 		// (note that duplicates are not handled properly)
 		int commonTokens = 0;
@@ -240,14 +240,14 @@ public class StringUtils {
 		for (String token1 : tokens1)
 			for (String token2 : tokens2)
 				if (token1.equals(token2)) commonTokens++; else totalTokens++;
-		
+
 		return ((float) commonTokens) / totalTokens >= INTERSECT_THRESH;
 	}
-	
+
 	/**
 	 * Compares the normalizations of the two strings, using the
 	 * <code>equalsIntersect()</code> method.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the normalizations are equal
@@ -255,12 +255,12 @@ public class StringUtils {
 	public static boolean equalsIntersectNorm(String s1, String s2) {
 		return equalsIntersect(normalize(s1), normalize(s2));
 	}
-	
+
 	/**
 	 * Compares two strings. The strings are considered equal, iff they have a
 	 * common token. Function words and tokens of length less than 2 are
 	 * ignored.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the strings are equal in the sense defined above
@@ -269,7 +269,7 @@ public class StringUtils {
 		// tokenize both strings
 		String[] tokens1 = s1.split(" ");
 		String[] tokens2 = s2.split(" ");
-		
+
 		// eliminate function words and tokens of length < 2
 		ArrayList<String> tks1 = new ArrayList<String>();
 		for (String token1 : tokens1)
@@ -279,17 +279,17 @@ public class StringUtils {
 		for (String token2 : tokens2)
 			if (token2.length() > 1 && !FunctionWords.lookup(token2))
 				tks2.add(token2);
-		
+
 		// check for common token
 		for (String token : tks1) if (tks2.contains(token)) return true;
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Compares the normalizations of the two strings, using the same criterion
 	 * as the <code>equalsCommon()</code> method.
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the normalizations are equal
@@ -298,11 +298,11 @@ public class StringUtils {
 		// convert to lower-case
 		s1 = s1.toLowerCase();
 		s2 = s2.toLowerCase();
-		
+
 		// tokenize
 		String tokens1[] = NETagger.tokenize(s1);
 		String tokens2[] = NETagger.tokenize(s2);
-		
+
 		// eliminate function words and tokens of length < 2, stemm all tokens
 		ArrayList<String> tks1 = new ArrayList<String>();
 		for (String token1 : tokens1)
@@ -312,16 +312,16 @@ public class StringUtils {
 		for (String token2 : tokens2)
 			if (token2.length() > 1 && !FunctionWords.lookup(token2))
 				tks2.add(SnowballStemmer.stem(token2));
-		
+
 		// check for common token
 		for (String token : tks1) if (tks2.contains(token)) return true;
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Compares two strings, using the same criterion as the <code>equalsCommonNorm()</code> method, but considers only words starting with a capital letter (proper nouns)
-	 * 
+	 *
 	 * @param s1 string 1
 	 * @param s2 string 2
 	 * @return true, iff the proper nouns are equal
@@ -330,11 +330,11 @@ public class StringUtils {
 		// convert to lower-case
 		s1 = s1.toLowerCase();
 		s2 = s2.toLowerCase();
-		
+
 		// tokenize
 		String tokens1[] = NETagger.tokenize(s1);
 		String tokens2[] = NETagger.tokenize(s2);
-		
+
 		// eliminate function words and tokens of length < 2, stemm all tokens
 		ArrayList<String> tks1 = new ArrayList<String>();
 		for (String token1 : tokens1)
@@ -344,18 +344,18 @@ public class StringUtils {
 		for (String token2 : tokens2)
 			if (token2.length() > 1 && !FunctionWords.lookup(token2) && token2.substring(0, 1).matches("[A-Z]"))
 				tks2.add(SnowballStemmer.stem(token2));
-		
+
 		// check for common token
 		for (String token : tks1) if (tks2.contains(token)) return true;
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Replaces all substrings of <code>s</code> that match <code>s1</code> with
 	 * <code>s2</code>. This method is similar to <code>String.replace()</code>,
 	 * but it ignores the case of <code>s1</code>.
-	 * 
+	 *
 	 * @param s the string
 	 * @param s1 the substring to be replaced
 	 * @param s2 the replacement for the substring
@@ -365,13 +365,13 @@ public class StringUtils {
 		return s.replaceAll("(?i)" + RegexConverter.strToRegex(s1),
 							RegexConverter.strToRegex(s2));
 	}
-	
+
 	/**
 	 * <p>Sorts an array of strings by their length in ascending order.</p>
-	 * 
+	 *
 	 * <p>This sort is guaranteed to be stable: strings of equal length are not
 	 * reordered.</p>
-	 * 
+	 *
 	 * @param ss array of strings
 	 */
 	public static void sortByLength(String[] ss) {
@@ -380,16 +380,16 @@ public class StringUtils {
 					return s1.length() - s2.length();
 			}
 		};
-		
+
 		Arrays.sort(ss, lengthC);
 	}
-	
+
 	/**
 	 * <p>Sorts an array of strings by their length in descending order.</p>
-	 * 
+	 *
 	 * <p>This sort is guaranteed to be stable: strings of equal length are not
 	 * reordered.</p>
-	 * 
+	 *
 	 * @param ss array of strings
 	 */
 	public static void sortByLengthDesc(String[] ss) {
@@ -398,23 +398,23 @@ public class StringUtils {
 					return s2.length() - s1.length();
 			}
 		};
-		
+
 		Arrays.sort(ss, lengthC);
 	}
-	
+
 	/**
 	 * Capitalize the first letter of <code>input</code> and return the new string.
-	 * 
+	 *
 	 */
 	public static String capitalizeFirst(String input) {
 		if (input == null) return null;
-		
+
 		return input.substring(0,1).toUpperCase() + input.substring(1);
 	}
-	
+
 	/**
 	 * Check whether all letters in a string are in upper case.
-	 * 
+	 *
 	 */
 	public static boolean isAllUppercase(String input) {
 		if (input == null) return false;
@@ -422,10 +422,10 @@ public class StringUtils {
 		if (cap.equals(input)) return true;
 		else return false;
 	}
-	
+
 	/**
 	 * Check whether a string contains upper-case letters.
-	 * 
+	 *
 	 */
 	public static boolean containsUppercase(String input) {
 		if (input == null) return false;
@@ -436,20 +436,20 @@ public class StringUtils {
 		        break;
 		    }
 		}
-		    
+
 		return upperFound;
 	}
-	
+
 	/**
 	 * Make the first letter of <code>input</code> lower case and return the new string.
-	 * 
+	 *
 	 */
 	public static String lowercaseFirst(String input) {
 		if (input == null) return null;
-		
+
 		return input.substring(0,1).toLowerCase() + input.substring(1);
 	}
-	
+
 	/**
 	 * Convert a String array to ArrayList
 	 */
@@ -460,7 +460,7 @@ public class StringUtils {
 		}
 		return list;
 	}
-	
+
 	/**
 	 * replace XML-specific symbols:
 	 * <           ->     &lt;
@@ -474,14 +474,14 @@ public class StringUtils {
 		return input.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 		.replaceAll("\"", "&quot;").replaceAll("\'", "&apos;");
 	}
-	
+
 	/**
 	 * Given a list of strings, return a list of longest strings.
 	 */
 	public static ArrayList<String> getLongest (ArrayList<String> inList) {
 		if (inList == null) return null;
 		ArrayList<String> outList = new ArrayList<String>();
-		
+
 		int shortest, oldshortest = 0;
 		for (String s:inList) {
 			shortest = s.length();
@@ -493,17 +493,17 @@ public class StringUtils {
 				outList.add(s);
 			}
 		}
-		
+
 		return outList;
 	}
-	
+
 	/**
 	 * Given a list of strings, return a list of shortest strings.
 	 */
 	public static ArrayList<String> getShortest (ArrayList<String> inList) {
 		if (inList == null) return null;
 		ArrayList<String> outList = new ArrayList<String>();
-		
+
 		int shortest, oldshortest = 10000;
 		for (String s:inList) {
 			shortest = s.length();
@@ -515,7 +515,7 @@ public class StringUtils {
 				outList.add(s);
 			}
 		}
-		
+
 		return outList;
 	}
 
@@ -528,4 +528,31 @@ public class StringUtils {
 			return LevenshteinDistance.compute(s1, s2);
 	}
 
+	/**
+	 * Make all strings in the list lower case and return it.
+	 */
+	public static String[] lowerCaseList (String[] tokens) {
+		for(int i=0; i<tokens.length; i++) {
+			tokens[i] = tokens[i].toLowerCase();
+		}
+		return tokens;
+	}
+
+	/**
+	 * Add <s> and </s> symbol to the start and end of a sentence, if not present
+	 */
+	public static String[] addStartEnd(String[] sent) {
+		String start = "<s>", end = "</s>";
+		int len = sent.length;
+		if (sent == null) return null;
+		if (sent[0].equals(start) && sent[len-1].equals(end))
+			return sent;
+		else {
+			String[] newSent = new String[len+2];
+			System.arraycopy(sent, 0, newSent, 1, len);
+			newSent[0] = start;
+			newSent[len+1] = end;
+			return newSent;
+		}
+	}
 }
