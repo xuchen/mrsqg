@@ -36,7 +36,6 @@ public class LKB {
 	public LKB(boolean quicktest) {
 		// change to lkb in case logon rather than lkb is used
         String lkbChange = ":pa lkb";
-		String genCmd = "(index-for-generator)";
 		Properties prop = new Properties();
 
 		try {
@@ -86,7 +85,7 @@ public class LKB {
 		// load script and generate index for the generator
 		if (!quicktest) {
 			sendInput(lkbChange);
-			sendInput(scriptCmd+genCmd);
+			sendInput(scriptCmd);
 			// increase the number of edges to have a better chance of generation
 			// if you have enough memory
 			// (setq *maximum-number-of-edges* 10000)
@@ -94,17 +93,15 @@ public class LKB {
 
 		// output LKB loading message
 		success = true;
-		// 4 commands were sent:
+		// 3 commands were sent:
 		// one for LKB itself,
 		// one for lkbChange
 		// one for scriptCmd,
-		// one for genCmd.
 		// Thus 3 threads are needed to retrieve LKB output
 		log.info(getRawOutput());
 		log.info(getRawOutput());
 		if (!quicktest) {
-			String out = getRawOutput()+"\n";
-			out += getRawOutput();
+			String out = getRawOutput();
 			log.info(out);
 			if (out.contains("select using :continue")) {
 				success = false;
@@ -112,6 +109,7 @@ public class LKB {
 						" Press Enter and try again.");
 				System.out.println("Press Enter: ");
 				readLine();
+				exit();
 			}
 		}
 		if (!quicktest && success)
