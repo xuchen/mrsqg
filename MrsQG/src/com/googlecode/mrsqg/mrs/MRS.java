@@ -649,6 +649,30 @@ public class MRS {
 				}
 			}
 		}
+
+		/*
+		 * There's a very rare case that hiLabel = loLabel rather than
+		 * hiLabel = loLabel, for instance, from the sentence:
+		 * how much societies are organized round specialized technical fields?
+		 * [ WHICH_Q_REL<0:3>
+		  LBL: h12
+		  ARG0: x14
+		  RSTR: h15
+		  BODY: h13
+		]
+		[ PROPERTY_REL<0:3>
+		  LBL: h15
+		  ARG0: x14
+		]
+		 */
+		if (loLabel == null) {
+			for (ElementaryPredication e:this.eps) {
+				if (e.getLabel().equals(hiLabel)) {
+					loLabel = hiLabel;
+					break;
+				}
+			}
+		}
 		return loLabel;
 	}
 
