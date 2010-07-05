@@ -71,10 +71,10 @@ public class Reranker {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String lmFile = "/home/xcyao/lm/corpus/questions/train.kylm.blm";
+		String lmFile = "/home/xcyao/lm/corpus/questions/questions.en.rclean.adapt.plm";
 		String batchFile = "/home/xcyao/lm/corpus/questions/batch.txt";
 
-		Reranker r = new Reranker(lmFile, true);
+		Reranker r = new Reranker(lmFile, false);
 		r.batchJob(batchFile);
 
 	}
