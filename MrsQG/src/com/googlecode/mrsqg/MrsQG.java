@@ -158,17 +158,17 @@ public class MrsQG {
 				exitAll();
 			}
 
-			if (input.startsWith("mrx: ")||input.startsWith("MRX: ")) {
+			if (input.startsWith("mrx:")||input.startsWith("MRX:")) {
 				String fileLine = input.substring(4).trim();
 				File file = new File(fileLine);
 				MrsTransformer t = new MrsTransformer(file, p);
 				t.transform(true);
-			} else if (input.startsWith("lkb: ")) {
+			} else if (input.startsWith("lkb:")) {
 				input = input.substring(4).trim();
 				lkb.sendInput(input);
 				System.out.println(lkb.getRawOutput());
-			} else if (input.startsWith("cheap: ")) {
-				input = input.substring(6).trim();
+			} else if (input.startsWith("pet:")) {
+				input = input.substring(4).trim();
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
 				String fsc = p.getFSCbyTerms(input, true);
@@ -190,7 +190,7 @@ public class MrsQG {
 					parser.releaseMemory();
 				}
 				//if (!parser.isSuccess()) continue;
-			} else if (input.startsWith("pg: ")) {
+			} else if (input.startsWith("pg:")) {
 				input = input.substring(3).trim();
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
@@ -221,20 +221,22 @@ public class MrsQG {
 					mrx = m.toMRXstring();
 					lkb.sendMrxToGen(mrx);
 					log.info(lkb.getGenSentences());
-					log.info(lkb.getMaxEntScores());
+					lkb.printMaxEntScores();
 				}
 
-			} else if (input.startsWith("pipe: ")) {
+			} else if (input.startsWith("pre: ")) {
+				p = new Preprocessor();
+				p.preprocess(input);
+				p.outputFSCbyTerms(System.out, true);
+			} else if (input.equals("help")||input.equals("h")) {
+				printUsage();
+			} else {
 				// do everything in an automatic pipeline
-				input = input.substring(5).trim();
+				input = input.substring(4).trim();
 
 				// generate questions based on text
 				runPipe(input);
 
-			} else {
-				p = new Preprocessor();
-				p.preprocess(input);
-				p.outputFSCbyTerms(System.out, true);
 			}
 		}
 	}
@@ -371,6 +373,7 @@ public class MrsQG {
 	private boolean runPipe(String input) {
 		input = input.trim();
 		boolean usePreSelector = false;
+		double[] scores;
 
 		// TODO: a better way is to check whether ' is in between letters such as "he'll", "won't"
 		if (!(input.indexOf("'") == input.lastIndexOf("'")))
@@ -441,7 +444,7 @@ public class MrsQG {
 				log.info("\nGenerate from the original/decomposed sentence:\n");
 				ArrayList<String> genOriSentList = lkb.getGenSentences();
 				log.info(genOriSentList);
-				log.info(lkb.getMaxEntScores());
+				lkb.printMaxEntScores();
 				log.info("\nFrom the following MRS:\n");
 				log.info(mrx);
 				log.info(m);
@@ -496,12 +499,14 @@ public class MrsQG {
 					lkb.sendMrxToGen(mrx);
 					log.info("\nGenerated Questions:");
 					ArrayList<String> genQuesList = lkb.getGenSentences();
+					scores = lkb.getMaxEntScores();
 					ArrayList<String> genQuesFailedList = null;
 					if (genQuesList != null) {
 						countType++;
 						countNum += genQuesList.size();
 						log.info(genQuesList);
-						log.info(lkb.getMaxEntScores());
+						if (scores != null)
+							log.info(StringUtils.arrayDoubleToArrayList(scores));
 					} else {
 						// generation failure
 						genQuesFailedList = lkb.getFailedGenSentences();
@@ -517,7 +522,7 @@ public class MrsQG {
 					// Add to pair list
 					if (!(genQuesList==null && genQuesFailedList==null)) {
 						Pair pair = new Pair (input, m, genOriSentList, genOriSentFailedList,
-								qmrs, genQuesList, genQuesFailedList);
+								qmrs, genQuesList, scores, genQuesFailedList);
 						if (genQuesList!=null)	quesSuccPairs.add(pair);
 						else quesFailPairs.add(pair);
 					}
@@ -797,19 +802,21 @@ public class MrsQG {
 
 	public static void printUsage() {
 		System.out.println("\nUsage:");
-		System.out.println("\t1. a sentence ending with a full stop.");
-		System.out.println("\t\tMrsQG generates the pre-processed FSC in XML. Then you can copy/paste this FSC into cheap to parse.");
-		System.out.println("\t2. pipe: a declrative sentence ending with a full stop.");
+		System.out.println("\t1. a declrative sentence.");
 		System.out.println("\t\tMrsQG generates a question through pipelines of PET and LKB.");
+		System.out.println("\t2. pre: a sentence ending with a full stop.");
+		System.out.println("\t\tMrsQG generates the pre-processed FSC in XML. Then you can copy/paste this FSC into cheap to parse.");
 		System.out.println("\t3. mrx: an declrative MRS XML (MRX) file.");
 		System.out.println("\t\tMrsQG reads this MRX and transforms it into interrogative MRX.");
 		System.out.println("\t\tThen you can copy/paste the transformed MRX to LKB for generation.");
 		System.out.println("\t4. lkb: an LKB command");
 		System.out.println("\t\tThen MrsQG serves as a wrapper for LKB. You can talk with LKB interactively through the prompt.");
-		System.out.println("\t5. cheap: a sentence");
-		System.out.println("\t\tThen MrsQG serves as a wrapper for Cheap. You can talk with cheap interactively through the prompt.");
+		System.out.println("\t5. pet: a sentence");
+		System.out.println("\t\tThen MrsQG serves as a wrapper for cheap. You can talk with cheap interactively through the prompt.");
 		System.out.println("\t6. pg: a sentence");
 		System.out.println("\t\tThen MrsQG first parses then generates from the sentence (pg stands for parse-generation).");
+		System.out.println("\t7. help (or h)");
+		System.out.println("\t\tPrint this message.");
 		System.out.println();
 	}
 }

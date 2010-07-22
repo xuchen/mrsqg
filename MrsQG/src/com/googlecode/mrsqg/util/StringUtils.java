@@ -462,6 +462,17 @@ public class StringUtils {
 	}
 
 	/**
+	 * Convert a double array to ArrayList
+	 */
+	public static ArrayList<String> arrayDoubleToArrayList (double[] array) {
+		ArrayList<String> list = new ArrayList<String>();
+		for (int i=0; i<array.length; i++) {
+			list.add(Double.toString(array[i]));
+		}
+		return list;
+	}
+
+	/**
 	 * replace XML-specific symbols:
 	 * <           ->     &lt;
 	 * &           ->     &amps;

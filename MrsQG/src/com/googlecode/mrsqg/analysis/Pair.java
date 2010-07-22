@@ -39,6 +39,8 @@ public class Pair {
 	protected MRS quesMrs;
 	/** generated question list from <code>quesMrs</code> */
 	protected ArrayList<String> genQuesList;
+	/** MaxEnt scores from LOGON after generation. */
+	protected double[] maxEntScores;
 	/** generated question list with ordered (decreasing) rankings */
 	protected LinkedHashMap<String, Double> quesRankedMap;
 	/** a selected best candidate from <code>genQuesList</code> */
@@ -55,32 +57,8 @@ public class Pair {
 	private boolean flag = false;
 
 
-//	/** MRS list for <code>tranSent</code> */
-//	protected ArrayList<MRS> tranMrsList;
-//	/** Generated sentence list from LKB, the input to LKB could either
-//	 * come from <code>oriSent</code> or <code>tranSent</code>. */
-//	protected ArrayList<String> genSentList;
-//	/** MRS list for generated sentence list*/
-//	protected ArrayList<MRS> genMrsList;
-//	/** the type of question */
-//	protected String quesType;
-//
-//	public Pair () {
-//		this.genOriSentList = new ArrayList<String>();
-////		this.genSentList = new ArrayList<String>();
-////		this.genMrsList = new ArrayList<MRS>();
-////		this.tranMrsList = new ArrayList<MRS>();
-//	}
-//
-//	public Pair (String ori, String tranSent, String quesType) {
-//		this();
-//		this.oriSent = ori;
-//		this.tranSent = tranSent;
-//		//this.quesType = quesType;
-//	}
-
 	public Pair (String oriSent, MRS oriMrs, ArrayList<String> genOriSentList, ArrayList<String> genOriSentFailedList,
-			MRS quesMrs, ArrayList<String> genQuesList, ArrayList<String> genQuesFailedList) {
+			MRS quesMrs, ArrayList<String> genQuesList, double[] maxEntScores, ArrayList<String> genQuesFailedList) {
 		this.oriSent = oriSent;
 		this.oriMrs = oriMrs;
 		this.genOriSentList = genOriSentList;
@@ -88,6 +66,7 @@ public class Pair {
 		this.quesMrs = quesMrs;
 		this.genQuesList = genQuesList;
 		this.genQuesFailedList =genQuesFailedList;
+		this.maxEntScores = maxEntScores;
 		this.quesRankedMap = new LinkedHashMap<String, Double>();
 	}
 
