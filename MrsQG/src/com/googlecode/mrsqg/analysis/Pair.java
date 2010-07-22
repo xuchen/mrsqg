@@ -249,7 +249,7 @@ public class Pair {
 		while(ite.hasNext()) {
 			i = ite.next();
 			ques = genQuesList.get(i);
-			grade = quesRankedMap.get(ques);
+			grade = quesRankedMap.get(i);
 			gradeME = maxEntScores==null?"nil":String.format(".2f", maxEntScores[i]);
 			gradeLM = lmScores==null?"nil":String.format(".2f", lmScores[i]);
 			log.info(grade+"(ME:"+gradeME+"|LM:"+gradeLM+"): "+ques);
