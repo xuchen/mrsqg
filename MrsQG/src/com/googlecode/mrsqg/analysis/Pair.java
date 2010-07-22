@@ -41,8 +41,12 @@ public class Pair {
 	protected ArrayList<String> genQuesList;
 	/** MaxEnt scores from LOGON after generation. */
 	protected double[] maxEntScores;
+	/** Normalized sentence log-likelihood from the language model*/
+	protected double[] lmScores = null;
+	/** Overall score, weighted between maxEntScores and lmScores */
+	protected double[] overallScores;
 	/** generated question list with ordered (decreasing) rankings */
-	protected LinkedHashMap<String, Double> quesRankedMap;
+	protected LinkedHashMap<Integer, Double> quesRankedMap;
 	/** a selected best candidate from <code>genQuesList</code> */
 	protected String genQuesCand;
 	/** unsuccessfully generated question snippet list from <code>quesMrs</code> */
@@ -67,7 +71,7 @@ public class Pair {
 		this.genQuesList = genQuesList;
 		this.genQuesFailedList =genQuesFailedList;
 		this.maxEntScores = maxEntScores;
-		this.quesRankedMap = new LinkedHashMap<String, Double>();
+		this.quesRankedMap = new LinkedHashMap<Integer, Double>();
 	}
 
 	public Pair (String oriSent, MRS oriMrs, ArrayList<String> genOriSentList, ArrayList<String> genOriSentFailedList) {
@@ -81,7 +85,7 @@ public class Pair {
 		this.quesMrs = quesMrs;
 		this.genQuesList = genQuesList;
 		this.genQuesFailedList =genQuesFailedList;
-		this.quesRankedMap = new LinkedHashMap<String, Double>();
+		this.quesRankedMap = new LinkedHashMap<Integer, Double>();
 	}
 
 	public Pair (String tranSent, String failedType) {
@@ -98,7 +102,7 @@ public class Pair {
 	public void setOriMrs(MRS mrs) {this.oriMrs = mrs;}
 	public MRS getQuesMrs () {return this.quesMrs;}
 	public ArrayList<String> getGenQuesList() {return genQuesList;}
-	public LinkedHashMap<String, Double> getQuesRankedMap() {return quesRankedMap;}
+	public LinkedHashMap<Integer, Double> getQuesRankedMap() {return quesRankedMap;}
 	public ArrayList<String> getGenQuesFailedList() {return genQuesFailedList;}
 	public String getFailedType() {return failedType;}
 	public boolean getFlag() {return this.flag;}
@@ -109,6 +113,11 @@ public class Pair {
 		if (genOriSentList == null) return null;
 		ArrayList<String> shortest = StringUtils.getShortest(genOriSentList);
 
+		/*
+		 * Though we might have a MaxEnt model from LOGON here, we don't
+		 * want to use it: statistics might favor different PP attachment.
+		 * What we need is just simply the most similar to the original one.
+		 */
 		if (oriSent == null) {
 			genOriCand = shortest.get(0);
 		} else {
@@ -127,45 +136,54 @@ public class Pair {
 	}
 
 	/**
-	 * re-rank all question candidates with a language model
+	 * Re-rank all question candidates with a language model.
+	 * If LOGON is used, then the re-ranked scores are combined with
+	 * the MaxEnt score to give an overall score.
 	 */
 	public void questionsRerank(Reranker ranker) {
 		if (genQuesList == null) return;
-		if (ranker == null) return;
+		if (ranker == null && maxEntScores == null) return;
 		String[] tokens;
 		double rank;
-		for (String oriSent:genQuesList) {
-			tokens = OpenNLP.tokenize(oriSent);
-			tokens = StringUtils.lowerCaseList(tokens);
-			rank = ranker.rank(tokens);
-			// normalize with sentence length, plus <s> and </s>
-			rank /= (tokens.length+2);
-			// rank is usually between 0 and -10
-			rank += 10;
-			this.quesRankedMap.put(oriSent, rank);
+		String oriSent;
+		if (ranker != null) {
+			lmScores = new double[genQuesList.size()];
+			for (int i=0; i<genQuesList.size(); i++) {
+				oriSent = genQuesList.get(i);
+				tokens = OpenNLP.tokenize(oriSent);
+				tokens = StringUtils.lowerCaseList(tokens);
+				rank = ranker.rank(tokens);
+				lmScores[i] = rank;
+			}
 		}
+
+		if (maxEntScores != null)
+			maxEntScores = Reranker.normalize(maxEntScores);
+		if (lmScores != null)
+			lmScores = Reranker.normalize(lmScores);
+
+		overallScores = Reranker.Fbeta(maxEntScores, lmScores, 1);
+		if (overallScores == null) return;
+
+		for (int i=0; i<overallScores.length; i++) {
+			this.quesRankedMap.put(i, overallScores[i]);
+		}
+
 		this.quesRankedMap = MapUtils.sortByDecreasingValue(this.quesRankedMap);
-		Iterator<String> ite = this.quesRankedMap.keySet().iterator();
+		Iterator<Integer> ite = this.quesRankedMap.keySet().iterator();
 		while(ite.hasNext()) {
-			this.genQuesCand = ite.next();
+			this.genQuesCand = genQuesList.get(ite.next());
 			break;
 		}
 	}
 
 	// Post selection
-	/*
-	 * TODO: LKB tend to have a favor of "topicalization" in the front of the generation list:
-	 * Why is dating of prehistoric materials particularly crucial to the enterprise?
-	 * -> To the enterprise, why is dating of prehistoric materials particularly crucial?
-	 * should find a way to use this pattern.
-	 *
-	 * TODO:
-	 * pg: This is the water that is red.
-	 * [This is the water, that is red., This is the water, who is red.,
-	 * This is the water, which is red., This is the water that is red.,
-	 * wThis is the water who is red., This is the water which is red.]
+	/**
+	 * The old rule-based way. Now upgraded to statistics.
 	 */
 	public String getGenQuesCand() {
+		// if a ranker exists, genQuesCand will be already set,
+		// so the code doesn't go further.
 		if (genQuesCand != null) return genQuesCand;
 		if (genQuesList == null) return null;
 		ArrayList<String> shortest;
@@ -223,13 +241,18 @@ public class Pair {
 	}
 
 	public void printQuesRankedMap() {
-		Iterator<String> ite = this.quesRankedMap.keySet().iterator();
+		Iterator<Integer> ite = this.quesRankedMap.keySet().iterator();
 		String ques;
 		double grade;
+		int i;
+		String gradeME, gradeLM;
 		while(ite.hasNext()) {
-			ques = ite.next();
+			i = ite.next();
+			ques = genQuesList.get(i);
 			grade = quesRankedMap.get(ques);
-			log.info(grade+": "+ques);
+			gradeME = maxEntScores==null?"nil":String.format(".2f", maxEntScores[i]);
+			gradeLM = lmScores==null?"nil":String.format(".2f", lmScores[i]);
+			log.info(grade+"(ME:"+gradeME+"|LM:"+gradeLM+"): "+ques);
 		}
 	}
 }
