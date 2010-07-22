@@ -14,6 +14,8 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.googlecode.mrsqg.util.StringUtils;
+
 
 public class LKB {
 
@@ -295,6 +297,12 @@ NIL
 		}
 
 		return scores;
+	}
+
+	public void printMaxEntScores() {
+		double[] scores = getMaxEntScores();
+		if (scores!=null)
+			log.info(StringUtils.arrayDoubleToArrayList(scores ));
 	}
 
 	/**
