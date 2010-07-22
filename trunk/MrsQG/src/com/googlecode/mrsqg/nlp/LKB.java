@@ -89,9 +89,6 @@ public class LKB {
 		if (!quicktest) {
 			sendInput(lkbChange);
 			sendInput(scriptCmd);
-			// increase the number of edges to have a better chance of generation
-			// if you have enough memory
-			// (setq *maximum-number-of-edges* 10000)
 		}
 
 		// output LKB loading message
@@ -102,8 +99,8 @@ public class LKB {
 		// one for scriptCmd,
 		// Thus 3 threads are needed to retrieve LKB output
 		log.info(getRawOutput());
-		log.info(getRawOutput());
 		if (!quicktest) {
+			log.info(getRawOutput());
 			String out = getRawOutput();
 			log.info(out);
 			if (out.contains("select using :continue")) {
@@ -270,8 +267,7 @@ NIL
 		// or (NIL NIL ...) if LKB is used
 		if (raw.contains("NIL")) return null;
 
-		Pattern gen = Pattern.compile("\\((.*)\\)\n*",
-				Pattern.MULTILINE|Pattern.DOTALL);
+		Pattern gen = Pattern.compile("\\((.*)\\)");
 
 		Matcher m = gen.matcher(raw);
 		String genStr;
@@ -405,36 +401,6 @@ LKB(6):
 		sendInput("(excl:exit 0 :no-unwind t :quiet t)\n");
 	}
 
-	public static void main(String args[]) {
-
-		PropertyConfigurator.configure("conf/log4j.properties");
-		boolean quicktest = false;
-		LKB lkb = new LKB(quicktest);
-
-		if (! lkb.isSuccess()) {
-			log.fatal("LKB was not started properly.");
-			return;
-		}
-
-		while (true) {
-			System.out.println("Input: ");
-			String input = readLine().trim();
-			if (input.length() == 0) continue;
-			if (input.equalsIgnoreCase("exit")) {
-				lkb.exit();
-				System.exit(0);
-			}
-//			if (quicktest) {
-				lkb.sendInput(input);
-				System.out.println(lkb.getRawOutput());
-//			} else {
-//				lkb.sendMrxToGen(input);
-//				System.out.println(lkb.getGenSentences());
-//				//System.out.println(lkb.getFailedGenSentences());
-//			}
-		}
-	}
-
 	private class InputWriter extends Thread {
 		private String input;
 
@@ -472,8 +438,7 @@ LKB(6):
 			int ph=-1;
 			try {
 				StringBuffer readBuffer = new StringBuffer();
-				BufferedReader isr = new BufferedReader(new InputStreamReader(p
-						.getInputStream()));
+				BufferedReader isr = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				String buff = new String();
 				String jailbreak=null;
 
@@ -540,7 +505,6 @@ LKB(6):
 		}
 	}
 
-
 	protected static String readLine() {
 		try {
 			return new java.io.BufferedReader(new
@@ -550,8 +514,6 @@ LKB(6):
 			return new String("");
 		}
 	}
-
-
 
 	public String getOutput() {
 		try {
@@ -573,6 +535,33 @@ LKB(6):
 		String value = error;
 		errorSem.release();
 		return value;
+	}
+
+
+	public static void main(String args[]) {
+
+		PropertyConfigurator.configure("conf/log4j.properties");
+		boolean quicktest = true;
+		LKB lkb = new LKB(quicktest);
+
+		if (! lkb.isSuccess()) {
+			log.fatal("LKB was not started properly.");
+			return;
+		}
+
+		while (true) {
+			System.out.println("Input: ");
+			String input = readLine().trim();
+			if (input.length() == 0) continue;
+			if (input.equalsIgnoreCase("exit")) {
+				lkb.exit();
+				System.exit(0);
+			}
+			lkb.sendInput(input);
+			System.out.println(lkb.getRawOutput());
+			//System.out.println(lkb.getMaxEntScores());
+
+		}
 	}
 
 }
