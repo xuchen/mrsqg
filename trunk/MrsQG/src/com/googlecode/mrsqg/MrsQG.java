@@ -221,6 +221,7 @@ public class MrsQG {
 					mrx = m.toMRXstring();
 					lkb.sendMrxToGen(mrx);
 					log.info(lkb.getGenSentences());
+					log.info(lkb.getMaxEntScores());
 				}
 
 			} else if (input.startsWith("pipe: ")) {
@@ -440,6 +441,7 @@ public class MrsQG {
 				log.info("\nGenerate from the original/decomposed sentence:\n");
 				ArrayList<String> genOriSentList = lkb.getGenSentences();
 				log.info(genOriSentList);
+				log.info(lkb.getMaxEntScores());
 				log.info("\nFrom the following MRS:\n");
 				log.info(mrx);
 				log.info(m);
@@ -499,6 +501,7 @@ public class MrsQG {
 						countType++;
 						countNum += genQuesList.size();
 						log.info(genQuesList);
+						log.info(lkb.getMaxEntScores());
 					} else {
 						// generation failure
 						genQuesFailedList = lkb.getFailedGenSentences();

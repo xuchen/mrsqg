@@ -19,6 +19,7 @@ public class LKB {
 
 	private static Logger log = Logger.getLogger(LKB.class);
 	public final String propertyFile = "conf/lkb.properties";
+	private int nanalyses = 50;
 	private Semaphore outputSem;
 	private String output;
 	private Semaphore errorSem;
@@ -33,7 +34,7 @@ public class LKB {
 	 * @param quicktest true to only load LKB for testing purposes,
 	 * false to also load ERG and generate index (which takes a while).
 	 */
-	public LKB(boolean quicktest) {
+	public LKB (boolean quicktest) {
 		// change to lkb in case logon rather than lkb is used
         String lkbChange = ":pa lkb";
 		Properties prop = new Properties();
@@ -68,6 +69,8 @@ public class LKB {
 							"Assuming it's yes");
 			display = true;
 		}
+
+		nanalyses = Integer.parseInt(prop.getProperty("nanalyses"));
 
 		if (!display) {
 			lkb="DISPLAY=;"+lkb;
@@ -248,6 +251,51 @@ NIL
 	}
 
 	/**
+	 * If LOGON is used, then selective unpacking is enabled. Every generated
+	 * sentence is assigned a score from an MaxEnt model. This function retrieves
+	 * the scores.
+	 * @return an array of double for scores, or none if LKB is used.
+	 */
+	public double[] getMaxEntScores () {
+
+		String cmd = "(loop for edge in *gen-record* collect (edge-score edge))";
+
+		InputWriter in = new InputWriter(cmd);
+		in.start();
+		String raw = getRawOutput();
+		if (raw==null) return null;
+
+		// sample raw generation output:
+		// (0.22712623 -0.33235812 -0.3921994 -0.57672715 -0.6158402 -0.63656837 -0.65841746 -0.67568123 -1.2179018 -1.277743 ...)
+		// or (NIL NIL ...) if LKB is used
+		if (raw.contains("NIL")) return null;
+
+		Pattern gen = Pattern.compile("\\((.*)\\)\n*",
+				Pattern.MULTILINE|Pattern.DOTALL);
+
+		Matcher m = gen.matcher(raw);
+		String genStr;
+
+		if (m.find()) {
+			genStr = m.group(1);
+		} else return null;
+
+		String[] list = genStr.split("\\s+");
+
+		if(list==null) {
+			log.warn("No split matching in getMaxEntScores, debug your code!");
+			log.warn("Score String:\n"+genStr);
+			return null;
+		}
+		double[] scores = new double[list.length];
+		for (int i=0; i<list.length; i++) {
+			scores[i] = Double.parseDouble(list[i]);
+		}
+
+		return scores;
+	}
+
+	/**
 	 * In case of a generation failure, send the (print-gen-summary)
 	 * cmd to LKB to get all the excerpts of *gen-chart*
 	 * @return an ArrayList containing all the edges of *gen-chart*
@@ -319,8 +367,9 @@ LKB(6):
 
 		// (format t "(~{\"~a\"~^, ~})" list)
 		// oh yeah, this is pain......
-		mrxCmd = "(format t \"(~{\\\"~a\\\"~\\^, ~})\" (lkb::generate-from-mrs (mrs::read-single-mrs-xml-from-string " +
-				"\""+mrxCmd+"\")))";
+		mrxCmd = "(format t \"(~{\\\"~a\\\"~\\^, ~})\" (lkb::generate-from-mrs " +
+				"(mrs::read-single-mrs-xml-from-string " +
+				"\""+mrxCmd+"\") :nanalyses "+nanalyses+"))";
 
 		sendInput(mrxCmd);
 	}
