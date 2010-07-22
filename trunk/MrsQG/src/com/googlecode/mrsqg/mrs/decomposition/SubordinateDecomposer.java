@@ -26,6 +26,12 @@ public class SubordinateDecomposer extends MrsDecomposer {
 	public ArrayList<MRS> decompose(ArrayList<MRS> inList) {
 
 		if (inList == null) return null;
+		/*
+		 * TODO: Some _x_*rel can also indicate subordinate relation,
+		 * such as  _even+though_x_rel, _if_x_then_rel.
+		 * But some _x_*rel has only one argument, such as _largely_x_rel,
+		 * so they should be ruled out. Refer to core.smi to dig all out.
+		 */
 		String subord = "SUBORD_REL";
 		String[] args = {"ARG1", "ARG2"};
 		String label;

@@ -38,13 +38,13 @@ public class Reranker {
 	}
 
 	/**
-	 * Calculate the log likelihood of a sentence
+	 * Calculate the normalized log likelihood of a sentence
 	 * @param tokens a tokenized string list representing a sentence
-	 * @return log10 of sentence probability (<=0)
+	 * @return log10 of normalized sentence probability (<=0)
 	 */
 	public float rank(String[] tokens) {
 		tokens = StringUtils.addStartEnd(tokens);
-		float prob = lm.getSentenceProb(tokens);
+		float prob = lm.getSentenceProbNormalized(tokens);
 		return prob;
 	}
 
@@ -63,7 +63,7 @@ public class Reranker {
 		for(String[] sent : tssl) {
 			float prob = lm.getSentenceProb(sent);
 			System.out.println("Log likelihood of sentence \""+KylmTextUtils.concatWithSpaces(sent)+
-					"\": "+prob+"("+prob/sent.length+")");
+					"\": "+prob+"("+prob/-sent.length+")");
 		}
 	}
 

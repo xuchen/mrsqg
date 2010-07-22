@@ -40,7 +40,7 @@ public class Pair {
 	/** generated question list from <code>quesMrs</code> */
 	protected ArrayList<String> genQuesList;
 	/** generated question list with ordered (decreasing) rankings */
-	protected LinkedHashMap<String, Float> quesRankedMap;
+	protected LinkedHashMap<String, Double> quesRankedMap;
 	/** a selected best candidate from <code>genQuesList</code> */
 	protected String genQuesCand;
 	/** unsuccessfully generated question snippet list from <code>quesMrs</code> */
@@ -88,7 +88,7 @@ public class Pair {
 		this.quesMrs = quesMrs;
 		this.genQuesList = genQuesList;
 		this.genQuesFailedList =genQuesFailedList;
-		this.quesRankedMap = new LinkedHashMap<String, Float>();
+		this.quesRankedMap = new LinkedHashMap<String, Double>();
 	}
 
 	public Pair (String oriSent, MRS oriMrs, ArrayList<String> genOriSentList, ArrayList<String> genOriSentFailedList) {
@@ -102,7 +102,7 @@ public class Pair {
 		this.quesMrs = quesMrs;
 		this.genQuesList = genQuesList;
 		this.genQuesFailedList =genQuesFailedList;
-		this.quesRankedMap = new LinkedHashMap<String, Float>();
+		this.quesRankedMap = new LinkedHashMap<String, Double>();
 	}
 
 	public Pair (String tranSent, String failedType) {
@@ -119,7 +119,7 @@ public class Pair {
 	public void setOriMrs(MRS mrs) {this.oriMrs = mrs;}
 	public MRS getQuesMrs () {return this.quesMrs;}
 	public ArrayList<String> getGenQuesList() {return genQuesList;}
-	public LinkedHashMap<String, Float> getQuesRankedMap() {return quesRankedMap;}
+	public LinkedHashMap<String, Double> getQuesRankedMap() {return quesRankedMap;}
 	public ArrayList<String> getGenQuesFailedList() {return genQuesFailedList;}
 	public String getFailedType() {return failedType;}
 	public boolean getFlag() {return this.flag;}
@@ -154,7 +154,7 @@ public class Pair {
 		if (genQuesList == null) return;
 		if (ranker == null) return;
 		String[] tokens;
-		float rank;
+		double rank;
 		for (String oriSent:genQuesList) {
 			tokens = OpenNLP.tokenize(oriSent);
 			tokens = StringUtils.lowerCaseList(tokens);
@@ -246,7 +246,7 @@ public class Pair {
 	public void printQuesRankedMap() {
 		Iterator<String> ite = this.quesRankedMap.keySet().iterator();
 		String ques;
-		float grade;
+		double grade;
 		while(ite.hasNext()) {
 			ques = ite.next();
 			grade = quesRankedMap.get(ques);
