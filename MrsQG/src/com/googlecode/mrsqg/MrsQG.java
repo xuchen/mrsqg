@@ -699,7 +699,8 @@ public class MrsQG {
 		// load language model
 		if (prop.getProperty("rerank").equalsIgnoreCase("yes")) {
 			System.out.println("Creating question reranker by loading language model...");
-			ranker = new Reranker("/home/xcyao/lm/corpus/questions/train.kylm.blm", true);
+			String lmfile = prop.getProperty("lmfile");
+			ranker = new Reranker(lmfile, false);
 		}
 
 		// create WordNet dictionary

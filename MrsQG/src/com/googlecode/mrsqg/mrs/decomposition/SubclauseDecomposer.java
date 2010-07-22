@@ -49,6 +49,12 @@ public class SubclauseDecomposer extends MrsDecomposer {
 				String oriTense = null;
 				// find out all verb EPs who are not the main verb of the sentence
 				// not main verb: ARG0 value isn't the index of this mrs
+				/*
+				 * TODO: these EPs also should share some /EQ relation with
+				 * their ARG1 or ARG2
+				 *
+				 * TODO: work with prepositions
+				 */
 				if (ep.isVerbEP() && !ep.getArg0().equals(inMrs.getIndex()) &&
 						ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP")) {
 

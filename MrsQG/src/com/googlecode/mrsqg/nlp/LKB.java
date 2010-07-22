@@ -54,7 +54,7 @@ public class LKB {
 		String lkb = prop.getProperty("lkb");
 		f = new File(lkb);
 		if (!f.exists()) {
-			log.fatal("LKB "+scriptFile+" should exist!");
+			log.fatal("LKB "+lkb+" should exist!");
 			return;
 		}
 
