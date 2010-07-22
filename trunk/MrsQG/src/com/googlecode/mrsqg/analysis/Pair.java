@@ -243,15 +243,14 @@ public class Pair {
 	public void printQuesRankedMap() {
 		Iterator<Integer> ite = this.quesRankedMap.keySet().iterator();
 		String ques;
-		double grade;
+		String grade, gradeME, gradeLM;
 		int i;
-		String gradeME, gradeLM;
 		while(ite.hasNext()) {
 			i = ite.next();
 			ques = genQuesList.get(i);
-			grade = quesRankedMap.get(i);
-			gradeME = maxEntScores==null?"nil":String.format(".2f", maxEntScores[i]);
-			gradeLM = lmScores==null?"nil":String.format(".2f", lmScores[i]);
+			grade = String.format("%.2f", quesRankedMap.get(i));
+			gradeME = maxEntScores==null?"nil":String.format("%.2f", maxEntScores[i]);
+			gradeLM = lmScores==null?"nil":String.format("%.2f", lmScores[i]);
 			log.info(grade+"(ME:"+gradeME+"|LM:"+gradeLM+"): "+ques);
 		}
 	}
