@@ -224,15 +224,15 @@ public class MrsQG {
 					lkb.printMaxEntScores();
 				}
 
-			} else if (input.startsWith("pre: ")) {
+			} else if (input.startsWith("pre:")) {
 				p = new Preprocessor();
-				p.preprocess(input);
+				p.preprocess(input.substring(4).trim());
 				p.outputFSCbyTerms(System.out, true);
 			} else if (input.equals("help")||input.equals("h")) {
 				printUsage();
 			} else {
 				// do everything in an automatic pipeline
-				input = input.substring(4).trim();
+				input = input.trim();
 
 				// generate questions based on text
 				runPipe(input);
