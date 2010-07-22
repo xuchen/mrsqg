@@ -255,7 +255,7 @@ NIL
 	 */
 	public double[] getMaxEntScores () {
 
-		String cmd = "(loop for edge in *gen-record* collect (edge-score edge))";
+		String cmd = "(format t \"~a\" (loop for edge in *gen-record* collect (edge-score edge)))";
 
 		InputWriter in = new InputWriter(cmd);
 		in.start();
@@ -265,9 +265,15 @@ NIL
 		// sample raw generation output:
 		// (0.22712623 -0.33235812 -0.3921994 -0.57672715 -0.6158402 -0.63656837 -0.65841746 -0.67568123 -1.2179018 -1.277743 ...)
 		// or (NIL NIL ...) if LKB is used
-		if (raw.contains("NIL")) return null;
+		// (format t "~a" (list 3.14 0 1.23435353))
+		// (3.14 0 1.2343535)
+		// NIL
+		// in LKB it prints two NILs:
+		// NIL
+		// NIL
 
-		Pattern gen = Pattern.compile("\\((.*)\\)");
+		Pattern gen = Pattern.compile("\\((.*)\\)\nNIL",
+				Pattern.MULTILINE|Pattern.DOTALL);
 
 		Matcher m = gen.matcher(raw);
 		String genStr;
