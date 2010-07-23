@@ -173,6 +173,13 @@ public class MrsTransformer {
 
 				if (eps.size() > 2) {
 					log.warn("the size of eps isn't 1 or 2 (but maybe I can manage): \n"+eps);
+					for (ElementaryPredication ep:eps) {
+						if (ep != loEP && ep.getLabel().equals(loEP.getLabel())) {
+							// possibly adjective, such as "next" in "next Monday".
+							q_mrs.removeEP(ep);
+							log.warn("Removed EP with the same label as loEP:\n" + ep);
+						}
+					}
 				}
 
 				// change hiEP to which_q_rel
