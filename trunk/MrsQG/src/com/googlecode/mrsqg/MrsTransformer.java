@@ -165,14 +165,14 @@ public class MrsTransformer {
 					}
 				} else {
 					// one is hi, the other is lo in a qeq relation
-					int hiIdx = MRS.determineHiEPindex (eps, q_mrs);
-					if (hiIdx == -1) continue;
-					hiEP = eps.get(hiIdx);
-					loEP = eps.get(1-hiIdx);
+					ArrayList<ElementaryPredication> hiloEPS = MRS.determineHiLowEP (eps, q_mrs);
+					if (hiloEPS == null) continue;
+					hiEP = hiloEPS.get(0);
+					loEP = hiloEPS.get(1);
 				}
 
 				if (eps.size() > 2) {
-					log.warn("the size of eps isn't 1 or 2 (but maybe I can manage): "+eps);
+					log.warn("the size of eps isn't 1 or 2 (but maybe I can manage): \n"+eps);
 				}
 
 				// change hiEP to which_q_rel
@@ -189,7 +189,7 @@ public class MrsTransformer {
 					q_mrs.setSentType("WHERE");
 //					loEP.setTypeName("THING_REL");
 //					q_mrs.setSentType("WHAT");
-				} else if (neType.equals("NEdate")||neType.equals("NEtime")) {
+				} else if (neType.equals("NEdate")||neType.equals("NEtime")||neType.equals("NEtweekday")) {
 					loEP.setTypeName("TIME_N_REL");
 					q_mrs.setSentType("WHEN");
 
@@ -266,7 +266,7 @@ public class MrsTransformer {
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 		MRS q_mrs;
-		ArrayList<ElementaryPredication> eps;
+		ArrayList<ElementaryPredication> eps, hiloEPS;
 
 		for (Term term:terms) {
 			for (String neType:term.getNeTypes()) {
@@ -288,10 +288,10 @@ public class MrsTransformer {
 					ElementaryPredication hiEP, loEP;
 
 					// one is hi, the other is lo in a qeq relation
-					int hiIdx = MRS.determineHiEPindex (eps, q_mrs);
-					if (hiIdx == -1) continue;
-					hiEP = eps.get(hiIdx);
-					loEP = eps.get(1-hiIdx);
+					hiloEPS = MRS.determineHiLowEP (eps, q_mrs);
+					if (hiloEPS == null) continue;
+					hiEP = hiloEPS.get(0);
+					loEP = hiloEPS.get(1);
 
 					// loEP should be "CARD_REL"
 					if (!loEP.getTypeName().equals("CARD_REL")) {
