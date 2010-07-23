@@ -175,13 +175,18 @@ public class MrsTransformer {
 					log.warn("the size of eps isn't 1 or 2 (but maybe I can manage): \n"+eps);
 				}
 
+				ArrayList<ElementaryPredication> removed = new ArrayList<ElementaryPredication>();
 				for (ElementaryPredication ep:q_mrs.getEps()) {
-					if (ep != loEP && ep.getLabel().equals(loEP.getLabel())) {
+					if (ep != loEP && ep.getLabel().equals(loEP.getLabel())
+							&& !ep.getTypeName().contains("_p_") && !ep.getTypeName().contains("_v_")) {
 						// possibly adjective, such as "next" in "next Monday".
-						// TODO: do it in DMRS
-						q_mrs.removeEP(ep);
-						log.warn("Removed EP with the same label as loEP:\n" + ep);
+						// TODO: this way is buggy, do it in DMRS
+						removed.add(ep);
 					}
+				}
+				if (removed != null) {
+					q_mrs.removeEPlist(removed);
+					log.warn("Removed EP with the same label as loEP:\n" + removed);
 				}
 
 				// change hiEP to which_q_rel
