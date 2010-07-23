@@ -699,13 +699,13 @@ public class MRS {
 				if (hiEP != null)
 					log.warn ("more than one EP with RSTR value. Debug your code!"+eps);
 				hiEP = ep;
+				hi = rstr;
 			}
 		}
 
-		if (rstr == null) {log.error("HELL1");return null;}
-		else hi=rstr;
+		if (hi == null) return null;
 		lo = mrs.getLoLabelFromHconsList(hi);
-		if (lo == null) {log.error("HELL2");return null;}
+		if (lo == null) return null;
 
 		for (ElementaryPredication ep:eps) {
 			if (ep.getLabel().equals(lo) && ep.getArg0().equals(hiEP.getArg0())) {
@@ -714,7 +714,7 @@ public class MRS {
 			}
 		}
 
-		if (loEP == null) {log.error("HELL3");return null;}
+		if (loEP == null) return null;
 
 		hiloEPS.add(hiEP);
 		hiloEPS.add(loEP);
