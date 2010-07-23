@@ -189,7 +189,7 @@ public class MrsTransformer {
 					q_mrs.setSentType("WHERE");
 //					loEP.setTypeName("THING_REL");
 //					q_mrs.setSentType("WHAT");
-				} else if (neType.equals("NEdate")||neType.equals("NEtime")||neType.equals("NEtweekday")) {
+				} else if (neType.equals("NEdate")||neType.equals("NEtime")||neType.equals("NEweekday")) {
 					loEP.setTypeName("TIME_N_REL");
 					q_mrs.setSentType("WHEN");
 
