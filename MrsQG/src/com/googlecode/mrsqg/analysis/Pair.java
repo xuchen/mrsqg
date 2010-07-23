@@ -120,12 +120,10 @@ public class Pair {
 		 */
 		if (oriSent == null) {
 			genOriCand = shortest.get(0);
-			log.warn("WHY DO WE REACH HERE? "+genOriCand);
-			log.warn(genOriSentList);
 		} else {
 			// find out the one that's most similar to oriSent
 			int lowest, oldLowest = 10000;
-			for (String s:shortest) {
+			for (String s:genOriSentList) {
 				lowest = StringUtils.getLevenshteinDistance(oriSent, s);
 				if (lowest < oldLowest) {
 					genOriCand = s;
@@ -250,9 +248,9 @@ public class Pair {
 		while(ite.hasNext()) {
 			i = ite.next();
 			ques = genQuesList.get(i);
-			grade = String.format("%.2f", quesRankedMap.get(i));
-			gradeME = maxEntScores==null?"nil":String.format("%.2f", maxEntScores[i]);
-			gradeLM = lmScores==null?"nil":String.format("%.2f", lmScores[i]);
+			grade = String.format("%.2f", quesRankedMap.get(i)*10);
+			gradeME = maxEntScores==null?"nil":String.format("%.2f", maxEntScores[i]*10);
+			gradeLM = lmScores==null?"nil":String.format("%.2f", lmScores[i]*10);
 			log.info(grade+"(ME:"+gradeME+"|LM:"+gradeLM+"): "+ques);
 		}
 	}
