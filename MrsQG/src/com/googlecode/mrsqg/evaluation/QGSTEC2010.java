@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.googlecode.mrsqg.evaluation;
 
@@ -30,29 +30,29 @@ import org.xml.sax.helpers.XMLReaderFactory;
 public class QGSTEC2010 {
 
 	private static Logger log = Logger.getLogger(QGSTEC2010.class);
-	
+
 	ArrayList<Instance> instanceList;
-	
+
 	private Instance currentInstance;
-	
+
 	private TestXmlParser parser;
-	
+
 	public QGSTEC2010 () {
 		instanceList = new ArrayList<Instance>();
 		parser = new TestXmlParser();
 	}
-	
+
 	public QGSTEC2010 (File file) {
 		this();
 		this.parser.parse(file);
 	}
-	
+
 	public ArrayList<Instance> getInstanceList() {
 		return instanceList;
 	}
-	
+
 	private class TestXmlParser extends DefaultHandler {
-		
+
 		private Stack<String> stack;
 		private StringBuilder chars;
 
@@ -61,52 +61,52 @@ public class QGSTEC2010 {
 			this.stack = new Stack<String>();
 			this.chars = new StringBuilder();
 		}
-		
+
 		public void parse(File file) {
 			try {
 				XMLReader xr = XMLReaderFactory.createXMLReader();
 				TestXmlParser handler = new TestXmlParser();
 				xr.setContentHandler(handler);
 				xr.setErrorHandler(handler);
-				
+
 				FileReader r = new FileReader(file);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error(e);
 			}
-	
+
 		}
-		
+
 		public void parseString(String str) {
 			try {
 				XMLReader xr = XMLReaderFactory.createXMLReader();
 				TestXmlParser handler = new TestXmlParser();
 				xr.setContentHandler(handler);
 				xr.setErrorHandler(handler);
-				
+
 				StringReader r = new StringReader(str);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error(e);
 			}
-	
+
 		}
-		
+
 		public void startDocument ()
 	    {
 			//System.out.println("Start document");
 	    }
-		
+
 		public void endDocument ()
 	    {
 			//System.out.println("End document");
 	    }
-	
+
 		public void startElement (String uri, String name,
 				String qName, Attributes atts)
 		{
 			String idNum, questionType;
-			
+
 			if (qName.equals("dataset")) {
 				// if stack is not empty, then error
 				if (stack.empty() == false) {
@@ -118,7 +118,7 @@ public class QGSTEC2010 {
 				idNum = atts.getValue("id");
 
 				currentInstance = new Instance();
-				
+
 				currentInstance.setIdNum(idNum);
 
 			} else if (qName.equals("question")) {
@@ -129,7 +129,7 @@ public class QGSTEC2010 {
 			chars = new StringBuilder();
 			stack.push(qName);
 		}
-		
+
 		public void endElement (String uri, String name, String qName)
 		{
 			String idSource, source, text;
@@ -150,17 +150,17 @@ public class QGSTEC2010 {
 				// <text>...</text>
 				text = chars.toString();
 				currentInstance.setText(text);
-			} 
+			}
 			stack.pop();
 		}
-	
+
 		public void characters (char ch[], int start, int length)
 		{
 			chars.append(ch, start, length);
 		}
 
 	}
-	
+
 	public void toXML(OutputStream os) {
 		OutputFormat of = new OutputFormat("XML","UTF-8",true);
 
@@ -171,7 +171,7 @@ public class QGSTEC2010 {
 //		try {
 //			fos = new FileOutputStream("");
 //		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
+//			log.error(e);
 //		}
 		XMLSerializer serializer = new XMLSerializer(os,of);
 		// SAX2.0 ContentHandler.
@@ -188,28 +188,28 @@ public class QGSTEC2010 {
 				atts.clear();
 				atts.addAttribute("", "", "id", "CDATA", ins.getIdNum());
 				hd.startElement("", "", "instance", atts);
-				
+
 				// <id>OpenLearn</id>
 				atts.clear();
 				hd.startElement("", "", "id", atts);
 				tmp = ins.getIdSource();
 				hd.characters(tmp.toCharArray(), 0, tmp.length());
 				hd.endElement("", "", "id");
-				
+
 				// <source>A103_3</source>
 				atts.clear();
 				hd.startElement("", "", "source", atts);
 				tmp = ins.getSource();
 				hd.characters(tmp.toCharArray(), 0, tmp.length());
 				hd.endElement("", "", "source");
-				
+
 				// <text>...</text>
 				atts.clear();
 				hd.startElement("", "", "text", atts);
 				tmp = ins.getText();
 				hd.characters(tmp.toCharArray(), 0, tmp.length());
 				hd.endElement("", "", "text");
-				
+
 				// <question type="how many">
 			    // </question>
 				ArrayList<String> qTypeList = ins.getQuestionTypeList();
@@ -227,28 +227,28 @@ public class QGSTEC2010 {
 					}
 					hd.endElement("", "", "question");
 				}
-				
+
 				hd.endElement("", "", "instance");
 			}
 			hd.endElement("", "", "dataset");
-			
+
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (SAXException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
-		
+
 	}
 
 	/**
-	 * This method parses a QGSTEC2010 Test document in XML. 
-	 * 
+	 * This method parses a QGSTEC2010 Test document in XML.
+	 *
 	 * @param file an XML file
 	 */
 	public void parse(File file) {
 		this.parser.parse(file);
 	}
-	
+
 	public static void main(String[] args) {
 		//File file = new File("/home/xcyao/delphin/mrs.xml/QuestionsFromSentences.Test.2010.small.xml");
 		File file = new File("/home/xcyao/delphin/eval/QuestionsFromSentences.Test.2010.Saarland.xml");

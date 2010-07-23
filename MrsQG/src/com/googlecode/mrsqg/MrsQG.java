@@ -114,7 +114,7 @@ public class MrsQG {
 			else
 				HelloLady.commandLine();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
 			HelloLady.exitAll();
 		}
 	}
@@ -287,7 +287,7 @@ public class MrsQG {
 			QGSTEC2010processor.toXML(fop);
 			fop.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 
@@ -728,7 +728,7 @@ public class MrsQG {
 		try {
 			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 
 		// whether run QGSTEC2010 test

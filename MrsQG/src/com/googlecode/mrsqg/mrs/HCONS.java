@@ -1,33 +1,34 @@
 package com.googlecode.mrsqg.mrs;
 
+import org.apache.log4j.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 public class HCONS {
 //	;;; <!ELEMENT hcons (hi, lo)>
-//	;;; <!ATTLIST hcons 
+//	;;; <!ATTLIST hcons
 //	;;;          hreln (qeq|lheq|outscopes) #REQUIRED >
 //	;;;
 //	;;; <!ELEMENT hi (var)>
 //	;;; <!ELEMENT lo (label|var)>
 
-	
+
 	/*
 	 * !!! WARNING !!!
-	 * Any new field added to this class must also be added to the copy constructor. 
+	 * Any new field added to this class must also be added to the copy constructor.
 	 */
-	
+	private static Logger log = Logger.getLogger(HCONS.class);
 	private String rel = null;
 //	private String hi = null;
 //	private String lo = null;
 	private Var hiVar = null;
-	
+
 	// could be either Var or label
 	private Var loVar = null;
 	/** <code>loLabel</code> is rarely used in <!ELEMENT lo (label|var)>. use loVar instead. */
 	private String loLabel = null;
-	
+
 	public String getRel() {return rel;}
 	public String getHi() {return hiVar.getLabel();}
 	public String getLo() {return loVar.getLabel();}
@@ -40,7 +41,7 @@ public class HCONS {
 	public void setHiVar(Var v) {hiVar=v;}
 	public void setLoVar(Var v) {loVar=v;}
 	public void setLoLabelRare (String s) {loLabel=s;}
-	
+
 	@Override public String toString() {
 		StringBuilder res = new StringBuilder();
 		// h5 qeq h7
@@ -57,11 +58,11 @@ public class HCONS {
 		this.loVar = new Var(old.getLoVar());
 		this.loLabel = old.getLoLabelRare();
 	}
-	
+
 	public HCONS(String rel) {
 		this.rel = rel;
 	}
-	
+
 	/**
 	 * A simple constructor, such as "h1 qeq h2"
 	 * @param hreln "qeq"
@@ -76,7 +77,7 @@ public class HCONS {
 		this.hiVar = new Var(hi_vid, hi_sort);
 		this.loVar = new Var(lo_vid, lo_sort);
 	}
-	
+
 	/**
 	 * A simple constructor, such as "h1 qeq h2"
 	 * @param hreln "qeq"
@@ -88,7 +89,7 @@ public class HCONS {
 		this.hiVar = new Var(hi);
 		this.loVar = new Var(lo);
 	}
-	
+
 	public boolean checkValid() {
 		if (rel != null && hiVar != null && (loVar != null || loLabel != null) ) {
 			return true;
@@ -96,7 +97,7 @@ public class HCONS {
 			return false;
 		}
 	}
-	
+
 	public void serializeXML (ContentHandler hd) {
 		//<hcons hreln='qeq'><hi><var vid='4' sort='h'></var></hi><lo><var vid='7' sort='h'></var></lo></hcons>
 		AttributesImpl atts = new AttributesImpl();
@@ -121,16 +122,16 @@ public class HCONS {
 				hd.startElement("", "", "label", atts);
 				hd.endElement("", "", "label");
 			} else {
-				
+
 				System.err.println("Error, <lo> must have either <lo> or <label>");
 			}
 			hd.endElement("", "", "lo");
-			
+
 			hd.endElement("", "", "hcons");
 		} catch (SAXException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
-		
+
 	}
 }
 
