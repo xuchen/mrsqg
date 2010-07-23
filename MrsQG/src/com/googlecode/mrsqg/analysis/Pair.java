@@ -166,7 +166,14 @@ public class Pair {
 		if (lmScores != null)
 			lmScores = Reranker.normalize(lmScores);
 
-		overallScores = Reranker.Fbeta(maxEntScores, lmScores, 1);
+		/*
+		 * MaxEnt doesn't give a good ranking on Y/N questions. It always
+		 * ranks a declarative+? the most. So we give LM more weight.
+		 */
+		if (quesMrs.getSentType().equals("Y/N"))
+			overallScores = Reranker.Fbeta(maxEntScores, lmScores, 10);
+		else
+			overallScores = Reranker.Fbeta(maxEntScores, lmScores, 1);
 		if (overallScores == null) return;
 
 		for (int i=0; i<overallScores.length; i++) {
