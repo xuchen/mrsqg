@@ -18,6 +18,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -26,6 +28,7 @@ import com.googlecode.mrsqg.nlp.*;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.Ontology;
 import com.googlecode.mrsqg.nlp.semantics.ontologies.WordNet;
 import com.googlecode.mrsqg.postprocessing.*;
+import com.googlecode.mrsqg.util.MapUtils;
 import com.googlecode.mrsqg.util.StringUtils;
 
 
@@ -612,9 +615,10 @@ public class MrsQG {
 			}
 		}
 		// summary
-		log.info("===========Summary of Generated Questions============");
+		log.info("===========Details of Generated Questions============");
 		log.info("oriSent: "+input);
 		if (quesSuccPairs.size()!=0) {
+
 			for (Pair pair:quesSuccPairs) {
 				log.info("\n");
 				pair.questionsRerank(ranker);
@@ -627,6 +631,61 @@ public class MrsQG {
 				}
 				else
 					log.info(pair.getGenQuesList());
+			}
+			if (quesSuccPairs.get(0).getOverallScores() != null) {
+				// ranking is working
+				log.info("===========Summary of Generated Questions============");
+				// a map between a question and its Pair instance, used to find out duplicate questions
+				HashMap<String, Pair> quesMapbyQues = new HashMap<String, Pair>();
+				// a map between a question type and all the Pairs of questions
+				HashMap<String, ArrayList<Pair>> quesMapbyType = new HashMap<String, ArrayList<Pair>>();
+				// a map between a question and its grade
+				LinkedHashMap<String, Double> quesMapbyGrade = new LinkedHashMap<String, Double>();
+				String ques, type;
+				Double grade;
+				Pair ppair;
+				for (Pair pair:quesSuccPairs) {
+					ques = pair.getGenQuesCand();
+					grade = pair.getGenQuesCandGrade();
+					if (quesMapbyQues.keySet().contains(ques)) {
+						// duplicated questions, only store the one with a bigger grade
+						if (quesMapbyGrade.get(ques) > grade)
+							continue;
+					}
+					quesMapbyQues.put(ques, pair);
+					quesMapbyGrade.put(ques, grade);
+				}
+				// sort by decreasing value
+				quesMapbyGrade = MapUtils.sortByDecreasingValue(quesMapbyGrade);
+				// loop to categorize questions by types
+				for (String q:quesMapbyGrade.keySet()) {
+					ppair = quesMapbyQues.get(q);
+					grade = quesMapbyGrade.get(q);
+					if (grade != ppair.getGenQuesCandGrade()) {
+						log.error(grade+"!="+ppair.getGenQuesCandGrade()+
+								"Debug your code for "+q);
+					}
+					// question type
+					type = ppair.getQuesMrs().getSentType();
+					if (!quesMapbyType.containsKey(type)) {
+						quesMapbyType.put(type, new ArrayList<Pair>());
+					}
+					quesMapbyType.get(type).add(ppair);
+				}
+				// print
+				log.info("\n");
+				log.info("OriSent: "+input);
+				log.info("Questions Generated:");
+				int nType = 0, nQ = 0;
+				for (String t:quesMapbyType.keySet()) {
+					log.info("\nSentType: "+t);
+					nType++;
+					for (Pair pp:quesMapbyType.get(t)) {
+						nQ++;
+						log.info(String.format("%.2f: ", pp.getGenQuesCandGrade())+pp.getGenQuesCand());
+					}
+				}
+				log.info("\nGenerated "+nQ+" questions of "+nType+" types.");
 			}
 		} else {
 			log.info("No questions generated.");

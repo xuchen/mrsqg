@@ -49,6 +49,8 @@ public class Pair {
 	protected LinkedHashMap<Integer, Double> quesRankedMap;
 	/** a selected best candidate from <code>genQuesList</code> */
 	protected String genQuesCand;
+	/** grade for <code>genQuesCand</code> */
+	protected double genQuesCandGrade;
 	/** unsuccessfully generated question snippet list from <code>quesMrs</code> */
 	protected ArrayList<String> genQuesFailedList;
 
@@ -107,6 +109,8 @@ public class Pair {
 	public String getFailedType() {return failedType;}
 	public boolean getFlag() {return this.flag;}
 	public void setFlag(boolean flag) {this.flag = flag;}
+	public double getGenQuesCandGrade () {return genQuesCandGrade;}
+	public double[] getOverallScores () {return overallScores;}
 
 	public String getGenOriCand() {
 		if (genOriCand != null) return genOriCand;
@@ -172,7 +176,9 @@ public class Pair {
 		this.quesRankedMap = MapUtils.sortByDecreasingValue(this.quesRankedMap);
 		Iterator<Integer> ite = this.quesRankedMap.keySet().iterator();
 		while(ite.hasNext()) {
-			this.genQuesCand = genQuesList.get(ite.next());
+			int i = ite.next();
+			this.genQuesCand = genQuesList.get(i);
+			this.genQuesCandGrade = quesRankedMap.get(i);
 			break;
 		}
 	}
