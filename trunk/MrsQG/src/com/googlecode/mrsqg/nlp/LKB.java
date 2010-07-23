@@ -136,7 +136,11 @@ public class LKB {
 	public void sendInput (String input) {
 		//String cmd = input.replaceAll("\n","").replaceAll("\"", "\\\\\"");
 		InputWriter in = new InputWriter(input);
-		in.start();
+		try {
+			in.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -150,7 +154,11 @@ public class LKB {
 		}
 
 		OutputReader out = new OutputReader();
-		out.start();
+		try {
+			out.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		String result = getOutput();
 		return result;
@@ -260,7 +268,11 @@ NIL
 		String cmd = "(format t \"~a\" (loop for edge in *gen-record* collect (edge-score edge)))";
 
 		InputWriter in = new InputWriter(cmd);
-		in.start();
+		try {
+			in.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		String raw = getRawOutput();
 		if (raw==null) return null;
 
@@ -396,7 +408,11 @@ LKB(6):
 		}
 
 		ErrorReader err = new ErrorReader();
-		err.start();
+		try {
+			err.start();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		String result = getError();
 		return result;
@@ -415,7 +431,7 @@ LKB(6):
 		sendInput("(excl:exit 0 :no-unwind t :quiet t)\n");
 	}
 
-	private class InputWriter extends Thread {
+	private class InputWriter extends Thread implements Thread.UncaughtExceptionHandler {
 		private String input;
 
 		public InputWriter(String input) {
@@ -427,13 +443,25 @@ LKB(6):
 			pw.println(input);
 			pw.flush();
 		}
+
+		public void uncaughtException(Thread thread, Throwable throwable) {
+            log.error("Thread " + thread.getName()
+              + " died, exception was: ");
+            throwable.printStackTrace();
+        }
 	}
 
-	private class OutputReader extends Thread {
+	private class OutputReader extends Thread implements Thread.UncaughtExceptionHandler {
         private static final int colon = (int)':';
         private static final  int rightp = (int)')';
         private static final  int space = (int)' ';
         private Pattern prompt;
+
+		public void uncaughtException(Thread thread, Throwable throwable) {
+            log.error("Thread " + thread.getName()
+              + " died, exception was: ");
+            throwable.printStackTrace();
+        }
 
 		public OutputReader() {
 			prompt = Pattern.compile(".*(LKB|TSNLP)\\(\\d+\\): $", Pattern.MULTILINE|Pattern.DOTALL);
@@ -488,7 +516,14 @@ LKB(6):
 		}
 	}
 
-	private class ErrorReader extends Thread {
+	private class ErrorReader extends Thread implements Thread.UncaughtExceptionHandler {
+
+		public void uncaughtException(Thread thread, Throwable throwable) {
+            log.error("Thread " + thread.getName()
+              + " died, exception was: ");
+            throwable.printStackTrace();
+        }
+
 		public ErrorReader() {
 			try {
 				errorSem = new Semaphore(1);
