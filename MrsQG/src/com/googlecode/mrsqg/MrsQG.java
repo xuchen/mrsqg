@@ -682,7 +682,7 @@ public class MrsQG {
 					nType++;
 					for (Pair pp:quesMapbyType.get(t)) {
 						nQ++;
-						log.info(String.format("%.2f: ", pp.getGenQuesCandGrade())+pp.getGenQuesCand());
+						log.info(String.format("%.2f: ", pp.getGenQuesCandGrade()*10)+pp.getGenQuesCand());
 					}
 				}
 				log.info("\nGenerated "+nQ+" questions of "+nType+" types.");
