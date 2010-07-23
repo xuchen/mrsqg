@@ -376,8 +376,9 @@ public class MrsQG {
 		double[] scores;
 
 		// TODO: a better way is to check whether ' is in between letters such as "he'll", "won't"
-		if (!(input.indexOf("'") == input.lastIndexOf("'")))
-			input = input.replaceAll("'", "");
+		// FIXED by chart mapping?
+		// if (!(input.indexOf("'") == input.lastIndexOf("'")))
+		//	input = input.replaceAll("'", "");
 		input = input.replaceAll("\\(.*?\\)", "");
 
 		SubordinateDecomposer subordDecomposer = new SubordinateDecomposer();
