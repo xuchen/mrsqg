@@ -143,7 +143,9 @@ public class MrsTransformer {
 				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
 				String hi, lo;
 				ElementaryPredication hiEP, loEP;
-				if (eps.size() == 1) {
+				if (eps == null || eps.size() == 0) {
+					continue;
+				} else if (eps.size() == 1) {
 					loEP = eps.get(0);
 					lo = loEP.getLabel();
 					// hiEP should be found through a qeq relation
@@ -161,17 +163,16 @@ public class MrsTransformer {
 						log.warn("Can't find a qeq relation for "+lo+" in "+q_mrs.getHcons());
 						continue;
 					}
-				} else if (eps.size() == 2) {
+				} else {
 					// one is hi, the other is lo in a qeq relation
 					int hiIdx = MRS.determineHiEPindex (eps, q_mrs);
 					if (hiIdx == -1) continue;
 					hiEP = eps.get(hiIdx);
 					loEP = eps.get(1-hiIdx);
-				} else if (eps == null || eps.size() == 0) {
-					continue;
-				} else {
-					log.warn("the size of eps isn't 1 or 2: "+eps);
-					continue;
+				}
+
+				if (eps.size() > 2) {
+					log.warn("the size of eps isn't 1 or 2 (but maybe I can manage): "+eps);
 				}
 
 				// change hiEP to which_q_rel
