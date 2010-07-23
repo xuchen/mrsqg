@@ -120,6 +120,8 @@ public class Pair {
 		 */
 		if (oriSent == null) {
 			genOriCand = shortest.get(0);
+			log.warn("WHY DO WE REACH HERE? "+genOriCand);
+			log.warn(genOriSentList);
 		} else {
 			// find out the one that's most similar to oriSent
 			int lowest, oldLowest = 10000;
