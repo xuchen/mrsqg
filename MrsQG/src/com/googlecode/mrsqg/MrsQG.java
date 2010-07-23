@@ -166,7 +166,7 @@ public class MrsQG {
 			} else if (input.startsWith("lkb:")) {
 				input = input.substring(4).trim();
 				lkb.sendInput(input);
-				System.out.println(lkb.getRawOutput());
+				log.info(lkb.getRawOutput());
 			} else if (input.startsWith("pet:")) {
 				input = input.substring(4).trim();
 				// pre-processing, get the output FSC XML in a string fsc
@@ -654,6 +654,8 @@ public class MrsQG {
 	 */
 	public MrsQG(String dir) {
 
+		long t0 = System.currentTimeMillis();
+
 		timestampFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		this.dir = dir;
 
@@ -685,7 +687,7 @@ public class MrsQG {
 
 		// init the LKB generator
 		if (prop.getProperty("runLkbPipeline").equalsIgnoreCase("yes")) {
-			System.out.println("Creating LKB...");
+			log.info("Creating LKB...");
 			// Set Cheap to take FSC as input
 			lkb = new LKB(false);
 
@@ -696,7 +698,7 @@ public class MrsQG {
 
 		// init the cheap parser
 		if (prop.getProperty("runCheapPipeline").equalsIgnoreCase("yes")) {
-			System.out.println("Creating parser...");
+			log.info("Creating parser...");
 			// Set Cheap to take FSC as input
 			parser = new Cheap(true);
 
@@ -707,16 +709,16 @@ public class MrsQG {
 
 		// load language model
 		if (prop.getProperty("rerank").equalsIgnoreCase("yes")) {
-			System.out.println("Creating question reranker by loading language model...");
+			log.info("Creating question reranker by loading language model...");
 			String lmfile = prop.getProperty("lmfile");
 			ranker = new Reranker(lmfile, false);
 		}
 
 		// create WordNet dictionary
-		System.out.println("Creating WordNet dictionary...");
+		log.info("Creating WordNet dictionary...");
 		if (!WordNet.initialize(dir +
 		"res/ontologies/wordnet/file_properties.xml"))
-			System.err.println("Could not create WordNet dictionary.");
+			log.error("Could not create WordNet dictionary.");
 
 		// init wordnet
 		Ontology wordNet = new WordNet();
@@ -726,76 +728,77 @@ public class MrsQG {
 
 
 		// load function words (numbers are excluded)
-		System.out.println("Loading function verbs...");
+		log.info("Loading function verbs...");
 		if (!FunctionWords.loadIndex(dir +
 		"res/indices/functionwords_nonumbers"))
-			System.err.println("Could not load function words.");
+			log.error("Could not load function words.");
 
 		// load prepositions
-		System.out.println("Loading prepositions...");
+		log.info("Loading prepositions...");
 		if (!Prepositions.loadIndex(dir +
 		"res/indices/prepositions"))
-			System.err.println("Could not load prepositions.");
+			log.error("Could not load prepositions.");
 
 		// load irregular verbs
-		System.out.println("Loading irregular verbs...");
+		log.info("Loading irregular verbs...");
 		if (!IrregularVerbs.loadVerbs(dir + "res/indices/irregularverbs"))
-			System.err.println("Could not load irregular verbs.");
+			log.error("Could not load irregular verbs.");
 
 		// load word frequencies
-		System.out.println("Loading word frequencies...");
+		log.info("Loading word frequencies...");
 		if (!WordFrequencies.loadIndex(dir + "res/indices/wordfrequencies"))
-			System.err.println("Could not load word frequencies.");
+			log.error("Could not load word frequencies.");
 
 		// create tokenizer
-		System.out.println("Creating tokenizer...");
+		log.info("Creating tokenizer...");
 		if (!OpenNLP.createTokenizer(dir +
 		"res/nlp/tokenizer/opennlp/EnglishTok.bin.gz"))
-			System.err.println("Could not create tokenizer.");
+			log.error("Could not create tokenizer.");
 		LingPipe.createTokenizer();
 
 		// create sentence detector
-		System.out.println("Creating sentence detector...");
+		log.info("Creating sentence detector...");
 		if (!OpenNLP.createSentenceDetector(dir +
 		"res/nlp/sentencedetector/opennlp/EnglishSD.bin.gz"))
-			System.err.println("Could not create sentence detector.");
+			log.error("Could not create sentence detector.");
 		LingPipe.createSentenceDetector();
 
 		// create stemmer
-		System.out.println("Creating stemmer...");
+		log.info("Creating stemmer...");
 		SnowballStemmer.create();
 
 		// create part of speech tagger
-		System.out.println("Creating POS tagger...");
+		log.info("Creating POS tagger...");
 		if (!OpenNLP.createPosTagger(
 				dir + "res/nlp/postagger/opennlp/tag.bin.gz",
 				dir + "res/nlp/postagger/opennlp/tagdict"))
-			System.err.println("Could not create OpenNLP POS tagger.");
+			log.error("Could not create OpenNLP POS tagger.");
 
 		// create chunker
-		System.out.println("Creating chunker...");
+		log.info("Creating chunker...");
 		if (!OpenNLP.createChunker(dir +
 		"res/nlp/phrasechunker/opennlp/EnglishChunk.bin.gz"))
-			System.err.println("Could not create chunker.");
+			log.error("Could not create chunker.");
 
 		// create named entity taggers
-		System.out.println("Creating NE taggers...");
+		log.info("Creating NE taggers...");
 		NETagger.loadListTaggers(dir + "res/nlp/netagger/lists/");
 		NETagger.loadRegExTaggers(dir + "res/nlp/netagger/patterns.lst");
-		System.out.println("  ...loading Standford NETagger");
+		log.info("  ...loading Standford NETagger");
 		//		if (!NETagger.loadNameFinders(dir + "res/nlp/netagger/opennlp/"))
-		//			System.err.println("Could not create OpenNLP NE tagger.");
+		//			log.error("Could not create OpenNLP NE tagger.");
 		if (!StanfordNeTagger.isInitialized() && !StanfordNeTagger.init())
-			System.err.println("Could not create Stanford NE tagger.");
+			log.error("Could not create Stanford NE tagger.");
 
-		System.out.println("  ...done");
-		System.out.println("Now turn off your email client, instant messenger, put a " +
-				"\"Do Not Disturb\" sign outside your door,\n\tsend your secretary home " +
-		", order a takeout and start working.;-)");
+		log.info("  ...done");
+
+        long tf = System.currentTimeMillis();
+        log.info("MrsQG took "+((tf-t0)/1000.0)+" seconds to start.");
+
 		printUsage();
 
 		//		if (lkb!=null && lkb.getDisplay()) {
-		//			System.out.println("\tYour lkb.properties file sets LKB to show display. " +
+		//			log.info("\tYour lkb.properties file sets LKB to show display. " +
 		//					"If you don't see the LKB window,\n\tthen the program doesn't start " +
 		//					"properly (this happens occasionally).\n\tInput exit and run MrsQG again.");
 		//		}
@@ -805,17 +808,17 @@ public class MrsQG {
 		System.out.println("\nUsage:");
 		System.out.println("\t1. a declrative sentence.");
 		System.out.println("\t\tMrsQG generates a question through pipelines of PET and LKB.");
-		System.out.println("\t2. pre: a sentence ending with a full stop.");
+		System.out.println("\t2. pre: a sentence.");
 		System.out.println("\t\tMrsQG generates the pre-processed FSC in XML. Then you can copy/paste this FSC into cheap to parse.");
 		System.out.println("\t3. mrx: an declrative MRS XML (MRX) file.");
 		System.out.println("\t\tMrsQG reads this MRX and transforms it into interrogative MRX.");
 		System.out.println("\t\tThen you can copy/paste the transformed MRX to LKB for generation.");
 		System.out.println("\t4. lkb: an LKB command");
 		System.out.println("\t\tThen MrsQG serves as a wrapper for LKB. You can talk with LKB interactively through the prompt.");
-		System.out.println("\t5. pet: a sentence");
+		System.out.println("\t5. pet: a sentence.");
 		System.out.println("\t\tThen MrsQG serves as a wrapper for cheap. You can talk with cheap interactively through the prompt.");
-		System.out.println("\t6. pg: a sentence");
-		System.out.println("\t\tThen MrsQG first parses then generates from the sentence (pg stands for parse-generation).");
+		System.out.println("\t6. pg: a sentence.");
+		System.out.println("\t\tThen MrsQG first parses then generates from the sentence (pg stands for Parse-Generate).");
 		System.out.println("\t7. help (or h)");
 		System.out.println("\t\tPrint this message.");
 		System.out.println();

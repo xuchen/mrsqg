@@ -677,64 +677,50 @@ public class MRS {
 	}
 
 	/**
-	 * Give an EP ArrayList of size 2, determine which is the HiEP, and return the
+	 * Give an EP ArrayList, determine which is the HiEP, and return the
 	 * index (0 or 1).
-	 * @param eps an EP ArrayList of size 2
+	 * @param eps an EP ArrayList
 	 * @param mrs the MRS in which <code>eps</code> comes from
-	 * @return an index 0 or 1, or -1 if error
+	 * @return an ArrayList with the 0th the HiEP and the 1st the LoEP, or null if not found
 	 */
-	public static int determineHiEPindex (ArrayList<ElementaryPredication> eps, MRS mrs) {
-		if (eps.size() != 2) {
-			log.error("EPS size should be exactly 2!\n" + eps);
-		}
+	public static ArrayList<ElementaryPredication> determineHiLowEP (ArrayList<ElementaryPredication> eps, MRS mrs) {
+		ArrayList<ElementaryPredication> hiloEPS = new ArrayList<ElementaryPredication>();
 
-		int hiIdx;
-		String hi, lo, rstr;
-		ElementaryPredication hiEP, loEP;
+		//TODO: totally rewrite this with DMRS
+		// it would be much simpler with a RSTR/H relation
+		// e.g. the wedding will be held Monday.
 
-		hiEP = loEP = eps.get(0);
-		hi = lo = eps.get(0).getLabel();
-		rstr = eps.get(1).getValueByFeature("RSTR");
-		if (rstr == null) {
-			hiIdx = 0;
-			loEP = eps.get(1);
-			lo = loEP.getLabel();
-			hi = hiEP.getValueByFeature("RSTR");
-		} else {
-			hiEP = eps.get(1);
-			hi = rstr;
-			try {
-				assert lo == rstr;
-			} catch (AssertionError e) {
-				log.error("In eps:\n"+eps+"\none should refer" +
-				"the other in RSTR field");
-				return -1;
-			}
-			hiIdx = 1;
-		}
-		// check whether hi and lo match HCONS
-		boolean match = false;
-		for (HCONS h: mrs.getHcons()) {
-			if (h.getHi().equals(hi)) {
-				try {
-					assert h.getLo().equals(lo);
-					assert h.getRel().equals("qeq");
-					match = true;
-					break;
-				} catch (AssertionError e) {
-					log.error("hi "+hi+" and lo "+lo+" don't match" +
-							" with HCONS: "+h);
-					continue;
-				}
+		String hi=null, lo=null, rstr=null;
+		ElementaryPredication hiEP =null, loEP = null;
+
+		for (ElementaryPredication ep:eps) {
+			rstr = ep.getValueByFeature("RSTR");
+			if (rstr != null) {
+				if (hiEP != null)
+					log.warn ("more than one EP with RSTR value. Debug your code!"+eps);
+				hiEP = ep;
 			}
 		}
-		if (!match) {
-			log.error("hi "+hi+" and lo "+lo+" don't match" +
-					" with HCONS: "+mrs.getHcons());
-			return -1;
+
+		if (rstr == null) return null;
+		else hi=rstr;
+		lo = mrs.getLoLabelFromHconsList(hi);
+		if (lo == null) return null;
+
+		for (ElementaryPredication ep:eps) {
+			if (ep.getLabel().equals(lo) && ep.getArg0().equals(hiEP.getArg0())) {
+				loEP = ep;
+				break;
+			}
 		}
 
-		return hiIdx;
+		if (loEP == null) return null;
+
+		hiloEPS.add(hiEP);
+		hiloEPS.add(loEP);
+
+		return hiloEPS;
+
 	}
 
 	/**

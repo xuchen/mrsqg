@@ -87,9 +87,10 @@ public class SubclauseDecomposer extends MrsDecomposer {
 					if (argList.size() == 1 && argList.get(0).getLabel().equals(verbEP.getLabel())) {
 						argList.get(0).setLabel("h"+mrs.generateUnusedLabel(1).get(0));
 					} else if (argList.size() == 2) {
-						int hiEPidx = MRS.determineHiEPindex(argList, mrs);
-						ElementaryPredication hiEP = argList.get(hiEPidx);
-						ElementaryPredication lowEP = argList.get(1-hiEPidx);
+						ArrayList<ElementaryPredication> hiloEPS = MRS.determineHiLowEP (argList, mrs);
+						if (hiloEPS == null) continue;
+						ElementaryPredication hiEP = hiloEPS.get(0);
+						ElementaryPredication lowEP = hiloEPS.get(1);
 						if (lowEP.getLabel().equals(verbEP.getLabel())) {
 							String oldLowLabel = lowEP.getLabel();
 							// correct the HCONS list
