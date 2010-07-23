@@ -702,10 +702,10 @@ public class MRS {
 			}
 		}
 
-		if (rstr == null) return null;
+		if (rstr == null) {log.error("HELL1");return null;}
 		else hi=rstr;
 		lo = mrs.getLoLabelFromHconsList(hi);
-		if (lo == null) return null;
+		if (lo == null) {log.error("HELL2");return null;}
 
 		for (ElementaryPredication ep:eps) {
 			if (ep.getLabel().equals(lo) && ep.getArg0().equals(hiEP.getArg0())) {
@@ -714,7 +714,7 @@ public class MRS {
 			}
 		}
 
-		if (loEP == null) return null;
+		if (loEP == null) {log.error("HELL3");return null;}
 
 		hiloEPS.add(hiEP);
 		hiloEPS.add(loEP);
