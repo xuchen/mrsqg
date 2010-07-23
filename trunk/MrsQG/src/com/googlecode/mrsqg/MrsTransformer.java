@@ -184,7 +184,7 @@ public class MrsTransformer {
 						removed.add(ep);
 					}
 				}
-				if (removed != null) {
+				if (removed.size() != 0) {
 					q_mrs.removeEPlist(removed);
 					log.warn("Removed EP with the same label as loEP:\n" + removed);
 				}

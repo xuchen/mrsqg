@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.googlecode.mrsqg.evaluation;
 
@@ -20,7 +20,7 @@ import org.xml.sax.helpers.AttributesImpl;
  */
 public class Instance {
 	private static Logger log = Logger.getLogger(Instance.class);
-	
+
 	/**  <instance id="1"> */
 	protected String idNum;
 	/** <id>OpenLearn</id> */
@@ -33,14 +33,14 @@ public class Instance {
 	 * <question type="how many"></question>
 	 */
 	protected ArrayList<String> questionTypeList;
-	
+
 	/**
 	 * Generated question from <code>text</code> according to <code>questionTypeList</code>.
 	 */
 	protected ArrayList<String> genQuestionList;
-	
+
 	private ArrayList<String> candidatesList;
-	
+
 	public void setIdNum (String idNum) {this.idNum = idNum;}
 	public void setIdSource (String idSource) {this.idSource= idSource;}
 	public void setSource (String source) {this.source = source;}
@@ -54,13 +54,13 @@ public class Instance {
 	public String getIdSource () {return this.idSource;}
 	public String getSource () {return this.source;}
 	public void addToCandidatesList (String s) {this.candidatesList.add(s);}
-	
+
 	public Instance () {
 		this.questionTypeList = new ArrayList<String>();
 		this.genQuestionList = new ArrayList<String>();
 		this.candidatesList = new ArrayList<String>();
 	}
-	
+
 	public void toXML(OutputStream os) {
 		OutputFormat of = new OutputFormat("XML","UTF-8",true);
 
@@ -72,7 +72,7 @@ public class Instance {
 //		try {
 //			fos = new FileOutputStream("");
 //		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
+//			log.error(e);
 //		}
 		XMLSerializer serializer = new XMLSerializer(os,of);
 		// SAX2.0 ContentHandler.
@@ -88,28 +88,28 @@ public class Instance {
 				atts.clear();
 				atts.addAttribute("", "", "id", "CDATA", idNum);
 				hd.startElement("", "", "instance", atts);
-				
+
 				// <id>OpenLearn</id>
 				atts.clear();
 				hd.startElement("", "", "id", atts);
 				tmp = idSource;
 				hd.characters(tmp.toCharArray(), 0, tmp.length());
 				hd.endElement("", "", "id");
-				
+
 				// <source>A103_3</source>
 				atts.clear();
 				hd.startElement("", "", "source", atts);
 				tmp = source;
 				hd.characters(tmp.toCharArray(), 0, tmp.length());
 				hd.endElement("", "", "source");
-				
+
 				// <text>...</text>
 				atts.clear();
 				hd.startElement("", "", "text", atts);
 				tmp = text;
 				hd.characters(tmp.toCharArray(), 0, tmp.length());
 				hd.endElement("", "", "text");
-				
+
 				// <question type="how many">
 			    // </question>
 
@@ -133,17 +133,17 @@ public class Instance {
 						hd.endElement("", "", "questions");
 					}
 				}
-				
-				
+
+
 				hd.endElement("", "", "instance");
 
-			
+
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (SAXException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
-		
+
 	}
 
 

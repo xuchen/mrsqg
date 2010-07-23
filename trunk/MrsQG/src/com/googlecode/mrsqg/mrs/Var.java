@@ -3,6 +3,7 @@ package com.googlecode.mrsqg.mrs;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -11,19 +12,21 @@ import org.xml.sax.helpers.AttributesImpl;
 /*
  * Data structure used to hold <var> element in an MRS xml file.
  * <var> is used by both <fvpair> and <mrs> thus it can't be
- * declared private in ElementaryPredication 
+ * declared private in ElementaryPredication
  */
 public class Var {
 //	;;; <!ELEMENT var (extrapair*)>
 //	;;; <!ATTLIST var
-//	;;;          vid  CDATA #REQUIRED 
-//	;;;          sort (x|e|h|u|l) #IMPLIED >	
-	
+//	;;;          vid  CDATA #REQUIRED
+//	;;;          sort (x|e|h|u|l) #IMPLIED >
+
 	/*
 	 * !!! WARNING !!!
-	 * Any new field added to this class must also be added to the copy constructor. 
+	 * Any new field added to this class must also be added to the copy constructor.
 	 */
-	
+
+	private static Logger log = Logger.getLogger(Var.class);
+
 	protected String vid = null;
 	protected String sort = null;
 	// label = sort+vid
@@ -34,7 +37,7 @@ public class Var {
 	// use LinkedHashMap to get insertion order of keys
 	protected LinkedHashMap<String, String> extrapair = null;
 	private String path;
-	
+
 	public String getVid() {return vid;}
 	public String getSort() {return sort;}
 	public String getLabel() {return label;}
@@ -47,7 +50,7 @@ public class Var {
 		this.sort = value.substring(0, 1);
 		this.label = value;
 	}
-	
+
 	@Override public String toString() {
 		// x6 [ x PERS: 3 NUM: SG IND: + ]
 		StringBuilder res = new StringBuilder();
@@ -61,7 +64,7 @@ public class Var {
 			}
 			res.append("]");
 		}
-		
+
 		return res.toString();
 	}
 
@@ -78,21 +81,21 @@ public class Var {
 		// so shallow copy equals deep copy in this case.
 		this.extrapair = (LinkedHashMap<String, String>)old.getExtrapair().clone();
 	}
-	
+
 	public Var(String vid, String sort) {
 		this.vid = vid;
 		this.sort = sort;
 		this.label = sort+vid;
 		this.extrapair = new LinkedHashMap<String, String>();
 	}
-	
+
 	public Var(String value) {
 		this.vid = value.substring(1);
 		this.sort = value.substring(0, 1);
 		this.label = sort+vid;
 		this.extrapair = new LinkedHashMap<String, String>();
 	}
-	
+
 	/**
 	 * Construct a complex Var such as "e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]"
 	 * @param value "e13"
@@ -108,14 +111,14 @@ public class Var {
 			extrapair.put(extraPairs[2*i], extraPairs[2*i+1]);
 		}
 	}
-	
+
 	public Var(Attributes atts) {
 		vid = atts.getValue("vid");
 		sort = atts.getValue("sort");
 		label = sort+vid;
 		extrapair = new LinkedHashMap<String, String>();
 	}
-	
+
 //	@Override public boolean equals (Object obj) {
 //		Var v = (Var) obj;
 //		boolean ret = false;
@@ -124,25 +127,25 @@ public class Var {
 //				&& this.extrapair.equals(v.getExtrapair())) {
 //			ret = true;
 //		}
-//		
+//
 //		return ret;
 //	}
-	
+
 	public void newExtraPair () {
 
 	}
-	
+
 	public void updatePath (String path) {
 		this.path = path;
 	}
-	
+
 	public void updateValue (String value) {
 		extrapair.put(path, value);
 	}
-	
+
 	/**
 	 * Keep some extrapair in var and remove all others.
-	 * 
+	 *
 	 * @param extra extrapair to be kept, such as {"NUM", "PERS"}
 	 */
 	public void keepExtrapair(String[] extra) {
@@ -157,11 +160,11 @@ public class Var {
 				extrapair.remove(k);
 		}
 	}
-	
+
 	/**
 	 * Set the value of extrapair. E.g. path="SF", value="QUES"
 	 * set the value of the "SF" extrapair to "QUES".
-	 * 
+	 *
 	 * @param path path of this extrapair
 	 * @param value value of this extrapair
 	 */
@@ -173,7 +176,7 @@ public class Var {
 			}
 		}
 	}
-	
+
 	/**
 	 * Add an extra pair to exiting ones, such as add "IND: +" to  [ x PERS: 3 NUM: SG ]
 	 * @param extraFeature
@@ -182,12 +185,12 @@ public class Var {
 	public void addExtrapair(String extraFeature, String extraValue) {
 		if (this.extrapair != null)
 			this.extrapair.put(extraFeature, extraValue);
-		
+
 		return;
 	}
-	
+
 	public void serializeXML (ContentHandler hd) {
-		
+
 		// <var vid='5' sort='x'>
 		AttributesImpl atts = new AttributesImpl();
 		atts.addAttribute("", "", "vid", "CDATA", vid);
@@ -219,7 +222,7 @@ public class Var {
 			// but this generates: <var vid='4' sort='h'/>
 			hd.endElement("", "", "var");
 		} catch (SAXException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 

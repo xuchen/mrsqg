@@ -634,7 +634,7 @@ public class ElementaryPredication {
 			}
 			hd.endElement("", "", "ep");
 		} catch (SAXException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 
 	}

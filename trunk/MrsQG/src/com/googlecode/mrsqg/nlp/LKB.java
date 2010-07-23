@@ -44,7 +44,7 @@ public class LKB {
 		try {
 			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		String scriptFile = prop.getProperty("script");
 		File f = new File(scriptFile);
@@ -83,7 +83,7 @@ public class LKB {
 			String[] cmd = {"/bin/sh","-c",lkb};
 			p = Runtime.getRuntime().exec(cmd);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error(e);
 			return;
 		}
 
@@ -139,7 +139,7 @@ public class LKB {
 		try {
 			in.start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 
@@ -157,7 +157,7 @@ public class LKB {
 		try {
 			out.start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 
 		String result = getOutput();
@@ -271,7 +271,7 @@ NIL
 		try {
 			in.start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		String raw = getRawOutput();
 		if (raw==null) return null;
@@ -411,7 +411,7 @@ LKB(6):
 		try {
 			err.start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 
 		String result = getError();
@@ -447,7 +447,7 @@ LKB(6):
 		public void uncaughtException(Thread thread, Throwable throwable) {
             log.error("Thread " + thread.getName()
               + " died, exception was: ");
-            throwable.printStackTrace();
+            log.error(throwable);
         }
 	}
 
@@ -460,7 +460,7 @@ LKB(6):
 		public void uncaughtException(Thread thread, Throwable throwable) {
             log.error("Thread " + thread.getName()
               + " died, exception was: ");
-            throwable.printStackTrace();
+            log.error(throwable);
         }
 
 		public OutputReader() {
@@ -469,7 +469,7 @@ LKB(6):
 				outputSem = new Semaphore(1, true);
 				outputSem.acquire();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				log.error(e);
 			}
 		}
 
@@ -511,7 +511,7 @@ LKB(6):
 				//System.out.println("OutputReader Thread: "+output);
 				outputSem.release();
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e);
 			}
 		}
 	}
@@ -521,7 +521,7 @@ LKB(6):
 		public void uncaughtException(Thread thread, Throwable throwable) {
             log.error("Thread " + thread.getName()
               + " died, exception was: ");
-            throwable.printStackTrace();
+            log.error(throwable);
         }
 
 		public ErrorReader() {
@@ -529,7 +529,7 @@ LKB(6):
 				errorSem = new Semaphore(1);
 				errorSem.acquire();
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				log.error(e);
 			}
 		}
 
@@ -549,7 +549,7 @@ LKB(6):
 				System.out.println("ErrorReader Thread: "+error);
 				errorSem.release();
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e);
 			}
 		}
 	}
@@ -568,7 +568,7 @@ LKB(6):
 		try {
 			outputSem.acquire();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		String value = output;
 		outputSem.release();
@@ -579,7 +579,7 @@ LKB(6):
 		try {
 			errorSem.acquire();
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		String value = error;
 		errorSem.release();

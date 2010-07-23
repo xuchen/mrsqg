@@ -1,9 +1,9 @@
 package com.googlecode.mrsqg.mrs;
 
+import org.apache.log4j.Logger;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
-
 
 public class FvPair {
 //	<!ELEMENT fvpair (rargname, (var|constant))>
@@ -14,6 +14,8 @@ public class FvPair {
 	 * !!! WARNING !!!
 	 * Any new field added to this class must also be added to the copy constructor.
 	 */
+
+	private static Logger log = Logger.getLogger(FvPair.class);
 
 	private String rargname = null;
 	private String constant = null;
@@ -119,7 +121,7 @@ public class FvPair {
 			}
 			hd.endElement("", "", "fvpair");
 		} catch (SAXException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 }
