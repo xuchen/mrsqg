@@ -299,6 +299,8 @@ public class MrsTransformer {
 						loEP.setTypeName("_president_n_of_rel");
 					} else if (neType.equals("NEvirus")) {
 						loEP.setTypeName("_virus_n_1_rel");
+					} else if (neType.equals("NEsoftware")) {
+						loEP.setTypeName("_software_n_1_rel");
 					} else {
 						hiEP.setTypeName("WHICH_Q_REL");
 						loEP.setTypeName("THING_REL");

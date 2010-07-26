@@ -865,7 +865,7 @@ public class MrsQG {
 
 	public static void printUsage() {
 		System.out.println("\nUsage:");
-		System.out.println("\t1. a declrative sentence.");
+		System.out.println("\t1. a declarative sentence.");
 		System.out.println("\t\tMrsQG generates a question through pipelines of PET and LKB.");
 		System.out.println("\t2. pre: a sentence.");
 		System.out.println("\t\tMrsQG generates the pre-processed FSC in XML. Then you can copy/paste this FSC into cheap to parse.");
