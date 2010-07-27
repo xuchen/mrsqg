@@ -300,9 +300,258 @@ relevance: 2.95	questionType: 1.56	correctness: 3.36	ambiguity: 2.52	variety: 2.
 		 */
 	}
 
+	/**
+	 * Calculate the average scores for all ratings per question type
+	 */
+	public void averagePerQtype () {
+		// <submitter, <QuestionType, <RatingCriterion, Score>>>
+		LinkedHashMap<String, HashMap<String, HashMap<String, Float>>> scoreMap = new LinkedHashMap<String, HashMap<String, HashMap<String, Float>>>();
+		// with penalty for missing questions
+		LinkedHashMap<String, HashMap<String, HashMap<String, Float>>> scoreMapPenalty = new LinkedHashMap<String, HashMap<String, HashMap<String, Float>>>();
+		// <submitter, <QuestionType, questionCount>>
+		LinkedHashMap<String, HashMap<String, Integer>> questionCountMap = new LinkedHashMap<String, HashMap<String, Integer>>();
+		// with penalty for missing questions
+		LinkedHashMap<String, HashMap<String, Integer>> countMapPenalty = new LinkedHashMap<String, HashMap<String, Integer>>();
+		// <submitter, sententCount>
+		LinkedHashMap<String, Integer> sentCountMap = new LinkedHashMap<String, Integer>();
+
+		float score, scorePenalty;
+		int count = 0, countPenalty = 0;
+		for (EvalInstance e:this.instanceList) {
+			int sentLen = e.textLen;
+			for (String submitter:e.submissionMap.keySet()) {
+
+				// initialization
+				if (scoreMap.get(submitter)==null) {
+
+					scoreMap.put(submitter, new HashMap<String, HashMap<String, Float>>());
+					questionCountMap.put(submitter, new HashMap<String, Integer>());
+					scoreMapPenalty.put(submitter, new HashMap<String, HashMap<String, Float>>());
+					countMapPenalty.put(submitter, new HashMap<String, Integer>());
+
+					sentCountMap.put(submitter, 0);
+				}
+				Submission submission = e.submissionMap.get(submitter);
+				HashMap<String, ArrayList<Question>> typeQuesMap = submission.typeQuesMap;
+				if (typeQuesMap.size() != 0) {
+					sentCountMap.put(submitter, sentCountMap.get(submitter)+1);
+				}
+				for (String type:e.questionTypeSet) {
+					// initialization 2nd
+					if (scoreMap.get(submitter).get(type)==null) {
+						// <submitter, <QuestionType, <RatingCriterion, Score>>>
+						HashMap<String, Float> mapScore = new HashMap<String, Float>();
+						HashMap<String, Float> mapScorePenalty = new HashMap<String, Float>();
+						for (String ratingCriterion:criterionSet) {
+							mapScore.put(ratingCriterion, 0f);
+							mapScorePenalty.put(ratingCriterion, 0f);
+						}
+						scoreMap.get(submitter).put(type, mapScore);
+						scoreMapPenalty.get(submitter).put(type, mapScorePenalty);
+						// <submitter, <QuestionType, questionCount>>
+						questionCountMap.get(submitter).put(type, 0);
+						countMapPenalty.get(submitter).put(type, 0);
+
+					}
+					ArrayList<Question> questions = typeQuesMap.get(type);
+					int penaltyTimes=0;
+					if (questions==null || questions.size()==0) {
+						penaltyTimes = 2;
+					} else if (questions.size()==1 || questions.size()==2) {
+						penaltyTimes = 2 - questions.size();
+
+						// <submitter, <RatingCriterion, Score>>
+						for (Question q:questions) {
+							for (String criterion:criterionSet) {
+								score = scoreMap.get(submitter).get(type).get(criterion);
+								score += q.getScoreByCriterion(criterion);
+								scoreMap.get(submitter).get(type).put(criterion, score);
+
+								scorePenalty = scoreMapPenalty.get(submitter).get(type).get(criterion);
+								scorePenalty += q.getScoreByCriterion(criterion);
+								scoreMapPenalty.get(submitter).get(type).put(criterion, scorePenalty);
+							}
+							count = questionCountMap.get(submitter).get(type);
+							questionCountMap.get(submitter).put(type, count+1);
+
+							countPenalty = countMapPenalty.get(submitter).get(type);
+							countMapPenalty.get(submitter).put(type, countPenalty+1);
+						}
+					} else {
+						System.err.println("questions size > 2, debug your code.");
+						System.exit(-1);
+					}
+
+					// penalty
+
+					if (penaltyTimes != 0) {
+						for (String criterion:this.worstScoreMap.keySet()) {
+							scorePenalty = scoreMapPenalty.get(submitter).get(type).get(criterion);
+							// 0, 1, or 2
+							scorePenalty += this.worstScoreMap.get(criterion)*penaltyTimes;
+							scoreMapPenalty.get(submitter).get(type).put(criterion, scorePenalty);
+						}
+
+						countPenalty = countMapPenalty.get(submitter).get(type);
+						countPenalty += penaltyTimes;
+						countMapPenalty.get(submitter).put(type, countPenalty);
+					}
+
+				}
+
+			}
+
+		}
+
+		System.out.println("\nAverages:");
+		for (String submitter:scoreMap.keySet()) {
+			//<submitter, <QuestionType, <RatingCriterion, Score>>
+			System.out.println("\nSubmitter "+submitter+":");
+			for (String type:scoreMap.get(submitter).keySet()) {
+				count = questionCountMap.get(submitter).get(type);
+				System.out.print(type+"\t\t");
+				for (String criterion:criterionSet) {
+					score = scoreMap.get(submitter).get(type).get(criterion);
+					score = score/count;
+					System.out.print(criterion+String.format(": %.2f\t",score));
+					//System.out.print(String.format("%.2f\t",score));
+				}
+				System.out.println();
+			}
+			System.out.println("\nSentence Count: "+sentCountMap.get(submitter));
+			System.out.println("Question Count: "+questionCountMap.get(submitter)+" All: "+Rater.sumHashMap(questionCountMap.get(submitter)));
+		}
+
+
+		System.out.println("\nAverages with Penalties:");
+		for (String submitter:scoreMapPenalty.keySet()) {
+			//<submitter, <QuestionType, <RatingCriterion, Score>>
+			System.out.println("\nSubmitter "+submitter+":");
+			for (String type:scoreMapPenalty.get(submitter).keySet()) {
+				count = countMapPenalty.get(submitter).get(type);
+				System.out.print(type+"\t");
+				for (String criterion:criterionSet) {
+					score = scoreMapPenalty.get(submitter).get(type).get(criterion);
+					score = score/count;
+					System.out.print(criterion+String.format(": %.2f\t",score));
+					//System.out.print(String.format("%.2f\t",score));
+				}
+				System.out.println("\tTotal Count: "+countPenalty);
+			}
+		}
+		/*
+
+Averages:
+
+Submitter a:
+yes/no		relevance: 1.50	questionType: 1.05	correctness: 2.34	ambiguity: 1.48	variety: 2.29
+which		relevance: 1.77	questionType: 1.42	correctness: 2.73	ambiguity: 1.57	variety: 2.17
+what		relevance: 1.54	questionType: 1.04	correctness: 1.81	ambiguity: 1.56	variety: 1.53
+when		relevance: 1.42	questionType: 1.15	correctness: 2.00	ambiguity: 1.51	variety: 1.72
+how many		relevance: 1.60	questionType: 1.16	correctness: 2.50	ambiguity: 1.39	variety: 2.06
+where		relevance: 1.68	questionType: 1.04	correctness: 1.71	ambiguity: 1.34	variety: 1.96
+why		relevance: 1.92	questionType: 1.27	correctness: 1.97	ambiguity: 1.88	variety: 1.93
+who		relevance: 1.58	questionType: 1.08	correctness: 1.70	ambiguity: 1.28	variety: 1.10
+
+Sentence Count: 89
+Question Count: {yes/no=28, which=42, what=116, when=36, how many=44, where=28, why=30, who=30} All: 354
+
+Submitter b:
+yes/no		relevance: NaN	questionType: NaN	correctness: NaN	ambiguity: NaN	variety: NaN
+which		relevance: 1.23	questionType: 1.08	correctness: 1.83	ambiguity: 1.37	variety: 2.06
+what		relevance: 1.25	questionType: 1.10	correctness: 1.79	ambiguity: 1.35	variety: 1.85
+when		relevance: 1.21	questionType: 1.00	correctness: 1.68	ambiguity: 1.24	variety: 2.32
+how many		relevance: 1.00	questionType: 1.00	correctness: 1.75	ambiguity: 1.16	variety: 2.13
+where		relevance: 1.12	questionType: 1.04	correctness: 2.00	ambiguity: 1.46	variety: 2.54
+why		relevance: 1.05	questionType: 1.05	correctness: 1.36	ambiguity: 1.23	variety: 2.73
+who		relevance: 1.00	questionType: 1.00	correctness: 1.53	ambiguity: 1.17	variety: 1.93
+
+Sentence Count: 76
+Question Count: {yes/no=0, which=26, what=65, when=19, how many=16, where=13, why=11, who=15} All: 165
+
+Submitter c:
+yes/no		relevance: 1.30	questionType: 1.05	correctness: 1.95	ambiguity: 1.38	variety: 1.75
+which		relevance: 1.56	questionType: 1.11	correctness: 2.09	ambiguity: 1.41	variety: 1.70
+what		relevance: 1.74	questionType: 1.20	correctness: 2.14	ambiguity: 1.87	variety: 1.98
+when		relevance: 1.89	questionType: 1.11	correctness: 3.07	ambiguity: 2.11	variety: 1.66
+how many		relevance: 1.50	questionType: 1.13	correctness: 2.69	ambiguity: 1.78	variety: 1.88
+where		relevance: 2.32	questionType: 1.13	correctness: 3.32	ambiguity: 2.21	variety: 1.84
+why		relevance: 1.77	questionType: 1.10	correctness: 2.83	ambiguity: 1.67	variety: 2.43
+who		relevance: 1.43	questionType: 1.79	correctness: 1.76	ambiguity: 1.62	variety: 1.86
+
+Sentence Count: 85
+Question Count: {yes/no=20, which=32, what=42, when=28, how many=32, where=19, why=15, who=21} All: 209
+
+Submitter d:
+yes/no		relevance: 2.17	questionType: 1.04	correctness: 3.04	ambiguity: 2.38	variety: 1.83
+which		relevance: 2.56	questionType: 1.13	correctness: 3.25	ambiguity: 2.06	variety: 2.00
+what		relevance: 1.91	questionType: 1.07	correctness: 2.37	ambiguity: 1.89	variety: 1.59
+when		relevance: 1.56	questionType: 1.00	correctness: 2.67	ambiguity: 1.96	variety: 2.00
+how many		relevance: 1.07	questionType: 1.00	correctness: 2.50	ambiguity: 1.71	variety: 1.79
+where		relevance: 1.21	questionType: 1.00	correctness: 2.68	ambiguity: 1.89	variety: 1.71
+why		relevance: 1.84	questionType: 1.06	correctness: 3.13	ambiguity: 2.28	variety: 1.94
+who		relevance: 1.61	questionType: 1.06	correctness: 2.61	ambiguity: 1.89	variety: 1.72
+
+Sentence Count: 50
+Question Count: {yes/no=12, which=8, what=62, when=24, how many=14, where=14, why=16, who=18} All: 168
+
+Averages with Penalties:
+
+Submitter a:
+yes/no	relevance: 1.50	questionType: 1.05	correctness: 2.34	ambiguity: 1.48	variety: 2.29		Total Count: 27
+which	relevance: 1.88	questionType: 1.44	correctness: 2.78	ambiguity: 1.64	variety: 2.20		Total Count: 27
+what	relevance: 1.54	questionType: 1.04	correctness: 1.81	ambiguity: 1.56	variety: 1.53		Total Count: 27
+when	relevance: 1.42	questionType: 1.15	correctness: 2.00	ambiguity: 1.51	variety: 1.72		Total Count: 27
+how many	relevance: 1.71	questionType: 1.20	correctness: 2.57	ambiguity: 1.46	variety: 2.10		Total Count: 27
+where	relevance: 1.83	questionType: 1.10	correctness: 1.87	ambiguity: 1.45	variety: 2.03		Total Count: 27
+why	relevance: 1.92	questionType: 1.27	correctness: 1.97	ambiguity: 1.88	variety: 1.93		Total Count: 27
+who	relevance: 1.58	questionType: 1.08	correctness: 1.70	ambiguity: 1.28	variety: 1.10		Total Count: 27
+
+Submitter b:
+yes/no	relevance: 4.00	questionType: 2.00	correctness: 4.00	ambiguity: 3.00	variety: 3.00		Total Count: 27
+which	relevance: 2.36	questionType: 1.45	correctness: 2.72	ambiguity: 2.03	variety: 2.44		Total Count: 27
+what	relevance: 2.46	questionType: 1.50	correctness: 2.76	ambiguity: 2.07	variety: 2.36		Total Count: 27
+when	relevance: 2.53	questionType: 1.47	correctness: 2.78	ambiguity: 2.07	variety: 2.64		Total Count: 27
+how many	relevance: 2.96	questionType: 1.65	correctness: 3.22	ambiguity: 2.36	variety: 2.70		Total Count: 27
+where	relevance: 2.75	questionType: 1.58	correctness: 3.13	ambiguity: 2.33	variety: 2.80		Total Count: 27
+why	relevance: 2.92	questionType: 1.65	correctness: 3.03	ambiguity: 2.35	variety: 2.90		Total Count: 27
+who	relevance: 2.50	questionType: 1.50	correctness: 2.77	ambiguity: 2.08	variety: 2.47		Total Count: 27
+
+Submitter c:
+yes/no	relevance: 2.07	questionType: 1.32	correctness: 2.54	ambiguity: 1.84	variety: 2.11		Total Count: 27
+which	relevance: 2.23	questionType: 1.35	correctness: 2.61	ambiguity: 1.84	variety: 2.06		Total Count: 27
+what	relevance: 3.18	questionType: 1.71	correctness: 3.33	ambiguity: 2.59	variety: 2.63		Total Count: 27
+when	relevance: 2.36	questionType: 1.31	correctness: 3.28	ambiguity: 2.31	variety: 1.96		Total Count: 27
+how many	relevance: 2.26	questionType: 1.39	correctness: 3.09	ambiguity: 2.15	variety: 2.22		Total Count: 27
+where	relevance: 2.93	questionType: 1.45	correctness: 3.57	ambiguity: 2.50	variety: 2.27		Total Count: 27
+why	relevance: 2.88	questionType: 1.55	correctness: 3.42	ambiguity: 2.33	variety: 2.72		Total Count: 27
+who	relevance: 2.20	questionType: 1.85	correctness: 2.43	ambiguity: 2.03	variety: 2.20		Total Count: 27
+
+Submitter d:
+yes/no	relevance: 3.21	questionType: 1.59	correctness: 3.59	ambiguity: 2.73	variety: 2.50		Total Count: 27
+which	relevance: 3.74	questionType: 1.84	correctness: 3.86	ambiguity: 2.83	variety: 2.82		Total Count: 27
+what	relevance: 2.88	questionType: 1.50	correctness: 3.13	ambiguity: 2.41	variety: 2.25		Total Count: 27
+when	relevance: 2.38	questionType: 1.33	correctness: 3.11	ambiguity: 2.31	variety: 2.33		Total Count: 27
+how many	relevance: 3.11	questionType: 1.70	correctness: 3.54	ambiguity: 2.61	variety: 2.63		Total Count: 27
+where	relevance: 2.70	questionType: 1.53	correctness: 3.38	ambiguity: 2.48	variety: 2.40		Total Count: 27
+why	relevance: 2.85	questionType: 1.50	correctness: 3.53	ambiguity: 2.62	variety: 2.43		Total Count: 27
+who	relevance: 2.57	questionType: 1.43	correctness: 3.17	ambiguity: 2.33	variety: 2.23		Total Count: 27
+
+		 */
+	}
+
+
 	public static int sumArrayList(ArrayList<Integer> list) {
 		int s = 0;
 		for (Integer l:list)
+			s+=l;
+		return s;
+	}
+
+
+	public static int sumHashMap(HashMap<String, Integer> map) {
+		int s = 0;
+		for (Integer l:map.values())
 			s+=l;
 		return s;
 	}
@@ -960,8 +1209,9 @@ Question Count: 162
 	public static void main(String[] args) {
 		File file = new File("/home/xcyao/tex/qg/QGSTECresult/EvaluatedSubmissions.xml");
 		Rater r = new Rater(file);
-		r.average();
-		r.testset();
+		//r.average();
+		//r.testset();
+		r.averagePerQtype();
 	}
 
 }
