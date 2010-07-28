@@ -178,7 +178,7 @@ public class MrsTransformer {
 				ArrayList<ElementaryPredication> removed = new ArrayList<ElementaryPredication>();
 				for (ElementaryPredication ep:q_mrs.getEps()) {
 					if (ep != loEP && ep.getLabel().equals(loEP.getLabel())
-							&& !ep.getTypeName().contains("_p_") && !ep.getTypeName().contains("_v_")) {
+							&& !ep.getTypeName().toLowerCase().contains("_p_") && !ep.getTypeName().toLowerCase().contains("_v_")) {
 						// possibly adjective, such as "next" in "next Monday".
 						// TODO: this way is buggy, do it in DMRS
 						removed.add(ep);
