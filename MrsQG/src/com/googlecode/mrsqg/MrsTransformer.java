@@ -310,6 +310,11 @@ public class MrsTransformer {
 						loEP.setFvpairByFeatAndValue("ARG0", hiEP.getValueVarByFeature("ARG0"));
 						q_mrs.setSentType("WHAT");
 					}
+					if (loEP.getTypeName().contains("_of_rel") || loEP.getTypeName().contains("_for_rel")) {
+						// add an dumb ARG1 to "_of_rel" and "_for_rel"
+						String value=q_mrs.generateUnusedLabel(1).get(0);
+						loEP.addSimpleFvpair("ARG1", "i"+value);
+					}
 				}
 				loEP.delFvpair("CARG");
 				String[] extra = {"NUM", "PERS"};
