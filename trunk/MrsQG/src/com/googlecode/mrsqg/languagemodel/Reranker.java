@@ -60,7 +60,7 @@ public class Reranker {
 		try {
 			is = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
-			log.error(e);
+			log.error("Error:", e);
 			return;
 		}
 		TextStreamSentenceReader tssl = new TextStreamSentenceReader(is);

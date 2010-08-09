@@ -194,7 +194,7 @@ public class MRS {
 				FileReader r = new FileReader(file);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 
 		}
@@ -210,7 +210,7 @@ public class MRS {
 				StringReader r = new StringReader(str);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 
 		}
@@ -952,7 +952,7 @@ public class MRS {
 				p.getVar().setExtrapairValue("SF", "QUES");
 			}
 		} catch (java.lang.NullPointerException e) {
-			log.error(e);
+			log.error("Error:", e);
 			log.error("MRS is malformed!");
 		}
 	}
@@ -1410,7 +1410,7 @@ public class MRS {
 //		try {
 //			fos = new FileOutputStream("");
 //		} catch (FileNotFoundException e) {
-//			log.error(e);
+//			log.error("Error:", e);
 //		}
 		XMLSerializer serializer = new XMLSerializer(os,of);
 		// SAX2.0 ContentHandler.
@@ -1443,9 +1443,9 @@ public class MRS {
 			hd.endElement("", "", "mrs");
 
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 	}

@@ -272,9 +272,9 @@ public class Preprocessor {
 			hd.endElement("", "", "chart");
 			hd.endElement("", "", "fsc");
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 
@@ -470,9 +470,9 @@ public class Preprocessor {
 			hd.endElement("", "", "chart");
 			hd.endElement("", "", "fsc");
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 

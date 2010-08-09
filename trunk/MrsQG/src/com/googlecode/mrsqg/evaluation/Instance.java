@@ -72,7 +72,7 @@ public class Instance {
 //		try {
 //			fos = new FileOutputStream("");
 //		} catch (FileNotFoundException e) {
-//			log.error(e);
+//			log.error("Error:", e);
 //		}
 		XMLSerializer serializer = new XMLSerializer(os,of);
 		// SAX2.0 ContentHandler.
@@ -139,9 +139,9 @@ public class Instance {
 
 
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 	}

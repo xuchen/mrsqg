@@ -40,7 +40,7 @@ public class Cheap {
 		try {
 			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String command;
 		if (fsc) {
@@ -65,7 +65,7 @@ public class Cheap {
 			log.info("Cheap is starting up, please wait...\n ");
 			p = Runtime.getRuntime().exec(command);
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 		// output cheap loading message
@@ -75,7 +75,7 @@ public class Cheap {
 			String buff = getError();
 			log.info(buff);
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		success = true;
 		retrieved = false;
@@ -279,7 +279,7 @@ public class Cheap {
 				outputSem = new Semaphore(1);
 				outputSem.acquire();
 			} catch (InterruptedException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 
@@ -298,7 +298,7 @@ public class Cheap {
 				System.out.println("Output in MainThread: "+output);
 				outputSem.release();
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 	}
@@ -309,7 +309,7 @@ public class Cheap {
 				errorSem = new Semaphore(1);
 				errorSem.acquire();
 			} catch (InterruptedException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 
@@ -335,7 +335,7 @@ public class Cheap {
 				//System.out.println("Error in MainThread: "+error);
 				errorSem.release();
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 //			if (error.length() > 0)
 //				System.out.println("Output: "+error);
@@ -359,7 +359,7 @@ public class Cheap {
 		try {
 			outputSem.acquire();
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String value = output;
 		outputSem.release();
@@ -370,7 +370,7 @@ public class Cheap {
 		try {
 			errorSem.acquire();
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String value = error;
 		errorSem.release();
@@ -428,7 +428,7 @@ public class Cheap {
 				outputSem = new Semaphore(1);
 				outputSem.acquire();
 			} catch (InterruptedException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 
@@ -445,7 +445,7 @@ public class Cheap {
 				output = readBuffer.toString();
 				outputSem.release();
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 	}
@@ -456,7 +456,7 @@ public class Cheap {
 				errorSem = new Semaphore(1);
 				errorSem.acquire();
 			} catch (InterruptedException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 
@@ -472,7 +472,7 @@ public class Cheap {
 				error = readBuffer.toString();
 				errorSem.release();
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 			if (error.length() > 0)
 				System.out.println("Output: "+error);
@@ -487,9 +487,9 @@ public class Cheap {
 			new ErrorReader().start();
 			p.waitFor();
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 	protected static String readLine() {
@@ -518,9 +518,9 @@ public class Cheap {
 				//System.out.println("Output: "+buff);
 				//p.waitFor();
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error:", e);
 			} catch (Exception e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 	}
@@ -529,7 +529,7 @@ public class Cheap {
 		try {
 			outputSem.acquire();
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String value = output;
 		outputSem.release();
@@ -540,7 +540,7 @@ public class Cheap {
 		try {
 			errorSem.acquire();
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String value = error;
 		errorSem.release();
