@@ -12,13 +12,18 @@ import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 import com.googlecode.mrsqg.nlp.indices.Prepositions;
 import com.googlecode.mrsqg.nlp.indices.WordFrequencies;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 
@@ -161,16 +166,16 @@ public class MrsQG {
 				exitAll();
 			}
 
-			if (input.startsWith("mrx:")||input.startsWith("MRX:")) {
+			if (input.toLowerCase().startsWith("mrx:")) {
 				String fileLine = input.substring(4).trim();
 				File file = new File(fileLine);
 				MrsTransformer t = new MrsTransformer(file, p);
 				t.transform(true);
-			} else if (input.startsWith("lkb:")) {
+			} else if (input.toLowerCase().startsWith("lkb:")) {
 				input = input.substring(4).trim();
 				lkb.sendInput(input);
 				log.info(lkb.getRawOutput());
-			} else if (input.startsWith("pet:")) {
+			} else if (input.toLowerCase().startsWith("pet:")) {
 				input = input.substring(4).trim();
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
@@ -193,7 +198,7 @@ public class MrsQG {
 					parser.releaseMemory();
 				}
 				//if (!parser.isSuccess()) continue;
-			} else if (input.startsWith("pg:")) {
+			} else if (input.toLowerCase().startsWith("pg:")) {
 				input = input.substring(3).trim();
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
@@ -227,11 +232,24 @@ public class MrsQG {
 					lkb.printMaxEntScores();
 				}
 
-			} else if (input.startsWith("pre:")) {
+			} else if (input.toLowerCase().startsWith("pre:")) {
 				p = new Preprocessor();
 				p.preprocess(input.substring(4).trim());
 				p.outputFSCbyTerms(System.out, true);
-			} else if (input.equals("help")||input.equals("h")) {
+			} else if (input.toLowerCase().startsWith("file:")) {
+                // when input is the following format:
+                // FILE: in.txt out.txt
+                // read text from in.txt and output to out.txt
+                String fileLine = input.substring(5).trim();
+                String[] files = fileLine.split("\\s+");
+                if (files.length != 2) {
+                    log.error("file field must only contain two valid files. e.g.:");
+                    log.error("file: input.txt output.xml");
+                    continue;
+                }
+                producePList(files[0], files[1]);
+
+			} else if (input.toLowerCase().equals("help")||input.toLowerCase().equals("h")) {
 				printUsage();
 			} else {
 				// do everything in an automatic pipeline
@@ -249,7 +267,7 @@ public class MrsQG {
 		ArrayList<Instance> instanceList = QGSTEC2010processor.getInstanceList();
 		String text, questionType, question;
 		ArrayList <String> quesList;
-		boolean success;
+		HashMap<String, Pair> success;
 		try {
 			// append
 			FileOutputStream fop=new FileOutputStream(testFileOutput, true);
@@ -259,7 +277,7 @@ public class MrsQG {
 				// generate questions based on text
 				success = runPipe(text);
 
-				if (!success) continue;
+				if (success==null) continue;
 				log.info("runPipe is done");
 
 				// assign generated question back
@@ -373,7 +391,12 @@ public class MrsQG {
 		return succList;
 	}
 
-	private boolean runPipe(String input) {
+	/**
+	 * run the pipeline of question generation
+	 * @param input a sentence string
+	 * @return a mapping between a question and its Pair instance
+	 */
+	private HashMap<String, Pair> runPipe(String input) {
 		input = input.trim();
 		boolean usePreSelector = false;
 		double[] scores;
@@ -406,7 +429,7 @@ public class MrsQG {
 		//log.info(fsc);
 
 		// parsing fsc with cheap
-		if (parser == null) return false;
+		if (parser == null) return null;
 		parser.parse(fsc);
 		// the number of MRS in the list depends on
 		// the option "-results=" in cheap.
@@ -418,7 +441,7 @@ public class MrsQG {
 		if (p.getNumTokens() > 15) {
 			parser.releaseMemory();
 		}
-		if (!success) return false;
+		if (!success) return null;
 
 		if (mrxList == null) {
 			log.warn("LKB didn't generate at all from PET input.");
@@ -686,14 +709,99 @@ public class MrsQG {
 					}
 				}
 				log.info("\nGenerated "+nQ+" questions of "+nType+" types.");
+				return quesMapbyQues.size()==0?null:quesMapbyQues;
+			} else {
+				return null;
 			}
 		} else {
 			log.info("No questions generated.");
+			return null;
 		}
-
-		return true;
 	}
 
+	public void producePList(String inFile, String outFile) {
+		if (inFile == null || outFile == null) {
+            return;
+        }
+
+        Integer quesIDcount = new Integer(0);
+        String ansSent, sentID;
+        HashSet<String> sentSet = new HashSet<String>();
+
+        int paragraphCounter=0;
+        int oriSentCounter=0;
+
+		try {
+			BufferedReader in = new BufferedReader(new FileReader(new File(inFile)));
+			BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
+			out.write("<?xml version=\"1.0\"?>\n");
+			out.write("<Workbook>\n");
+			out.write("\t<Row>\n");
+			out.write("\t\t<Cell><Data ss:Type=\"String\">question</Data></Cell>\n");
+			out.write("\t\t<Cell><Data ss:Type=\"String\">text</Data></Cell>\n");
+			out.write("\t\t<Cell><Data ss:Type=\"String\">ID</Data></Cell>\n");
+			out.write("\t</Row>\n");
+
+			while (in.ready()) {
+				String paragraph = in.readLine().trim();
+				if (paragraph.length() == 0 || paragraph.startsWith("//"))
+					continue;
+
+				paragraphCounter++;
+				log.info("processing paragraph "+paragraphCounter+"...");
+
+				// break the paragraph
+				String[] sentences = OpenNLP.sentDetect(paragraph);
+				oriSentCounter += sentences.length;
+
+				// mapping between a question and its pair
+				HashMap<String, Pair> quesMapPair;
+				Pair pair;
+
+				try {
+					for (String sentence:sentences) {
+						quesMapPair = runPipe(sentence);
+						if (quesMapPair==null) continue;
+
+						for (String question:quesMapPair.keySet()) {
+							pair = quesMapPair.get(question);
+							// skip Y/N questions
+							if (pair.getQuesMrs().getSentType().equals("Y/N")) continue;
+
+							ansSent = pair.getGenOriCand();
+							sentSet.add(ansSent);
+
+							question = StringUtils.replaceXMLspecials(question);
+							ansSent = StringUtils.replaceXMLspecials(ansSent);
+							quesIDcount++;
+							sentID = "S"+quesIDcount;
+
+							out.write("\t<Row>\n");
+							out.write("\t\t<Cell><Data ss:Type=\"String\">"+question+"</Data></Cell>\n");
+							out.write("\t\t<Cell><Data ss:Type=\"String\">"+ansSent+"</Data></Cell>\n");
+							out.write("\t\t<Cell><Data ss:Type=\"String\">"+sentID+"</Data></Cell>\n");
+							out.write("\t</Row>\n");
+
+						}
+
+					}
+				} catch (java.io.IOException e) {
+					log.error(e);
+				}
+			}
+			in.close();
+			out.write("</Workbook>");
+			out.close();
+
+			log.info("Summary (without y/n questions):");
+			log.info("Paragraph: "+paragraphCounter
+					+". Original Sentences: "+oriSentCounter
+					+". Actual Sentences: "+sentSet.size()
+					+". Questions: "+quesIDcount);
+		} catch (java.io.IOException e) {
+			log.error(e);
+		}
+	}
 
 	/**
 	 * <p>Creates a new instance of MrsQG and initializes the system.</p>
@@ -878,7 +986,9 @@ public class MrsQG {
 		System.out.println("\t\tThen MrsQG serves as a wrapper for cheap. You can talk with cheap interactively through the prompt.");
 		System.out.println("\t6. pg: a sentence.");
 		System.out.println("\t\tThen MrsQG first parses then generates from the sentence (pg stands for Parse-Generate).");
-		System.out.println("\t7. help (or h)");
+		System.out.println("\t7. file: input.txt output.xml enerate questions from the text of input.txt and output to output.xml (used by plist of NPCEditor)");
+		System.out.println("\t\tThen MrsQG ");
+		System.out.println("\t8. help (or h)");
 		System.out.println("\t\tPrint this message.");
 		System.out.println();
 	}
