@@ -171,7 +171,7 @@ public class Pair {
 		 * ranks a declarative+? the most. So we give LM more weight.
 		 */
 		if (quesMrs.getSentType().equals("Y/N"))
-			overallScores = Reranker.Fbeta(maxEntScores, lmScores, 10);
+			overallScores = Reranker.Fbeta(maxEntScores, lmScores, 50);
 		else
 			overallScores = Reranker.Fbeta(maxEntScores, lmScores, 1);
 		if (overallScores == null) return;
