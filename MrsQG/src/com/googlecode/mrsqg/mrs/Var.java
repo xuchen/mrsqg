@@ -222,7 +222,7 @@ public class Var {
 			// but this generates: <var vid='4' sort='h'/>
 			hd.endElement("", "", "var");
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 

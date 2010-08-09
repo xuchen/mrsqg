@@ -44,7 +44,7 @@ public class LKB {
 		try {
 			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String scriptFile = prop.getProperty("script");
 		File f = new File(scriptFile);
@@ -83,7 +83,7 @@ public class LKB {
 			String[] cmd = {"/bin/sh","-c",lkb};
 			p = Runtime.getRuntime().exec(cmd);
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 			return;
 		}
 
@@ -139,7 +139,7 @@ public class LKB {
 		try {
 			in.start();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 
@@ -157,7 +157,7 @@ public class LKB {
 		try {
 			out.start();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 		String result = getOutput();
@@ -271,7 +271,7 @@ NIL
 		try {
 			in.start();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String raw = getRawOutput();
 		if (raw==null) return null;
@@ -411,7 +411,7 @@ LKB(6):
 		try {
 			err.start();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 		String result = getError();
@@ -469,7 +469,7 @@ LKB(6):
 				outputSem = new Semaphore(1, true);
 				outputSem.acquire();
 			} catch (InterruptedException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 
@@ -511,7 +511,7 @@ LKB(6):
 				//System.out.println("OutputReader Thread: "+output);
 				outputSem.release();
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 	}
@@ -529,7 +529,7 @@ LKB(6):
 				errorSem = new Semaphore(1);
 				errorSem.acquire();
 			} catch (InterruptedException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 
@@ -549,7 +549,7 @@ LKB(6):
 				System.out.println("ErrorReader Thread: "+error);
 				errorSem.release();
 			} catch (IOException e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 		}
 	}
@@ -568,7 +568,7 @@ LKB(6):
 		try {
 			outputSem.acquire();
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String value = output;
 		outputSem.release();
@@ -579,7 +579,7 @@ LKB(6):
 		try {
 			errorSem.acquire();
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 		String value = error;
 		errorSem.release();

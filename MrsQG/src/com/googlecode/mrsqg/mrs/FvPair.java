@@ -121,7 +121,7 @@ public class FvPair {
 			}
 			hd.endElement("", "", "fvpair");
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 }

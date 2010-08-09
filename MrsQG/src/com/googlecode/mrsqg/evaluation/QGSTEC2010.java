@@ -72,7 +72,7 @@ public class QGSTEC2010 {
 				FileReader r = new FileReader(file);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 
 		}
@@ -87,7 +87,7 @@ public class QGSTEC2010 {
 				StringReader r = new StringReader(str);
 				xr.parse(new InputSource(r));
 			} catch (Exception e) {
-				log.error(e);
+				log.error("Error:", e);
 			}
 
 		}
@@ -171,7 +171,7 @@ public class QGSTEC2010 {
 //		try {
 //			fos = new FileOutputStream("");
 //		} catch (FileNotFoundException e) {
-//			log.error(e);
+//			log.error("Error:", e);
 //		}
 		XMLSerializer serializer = new XMLSerializer(os,of);
 		// SAX2.0 ContentHandler.
@@ -233,9 +233,9 @@ public class QGSTEC2010 {
 			hd.endElement("", "", "dataset");
 
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 	}

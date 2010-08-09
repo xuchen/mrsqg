@@ -119,7 +119,7 @@ public class MrsQG {
 			else
 				HelloLady.commandLine();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Error", e);
 			HelloLady.exitAll();
 		}
 	}
@@ -305,7 +305,7 @@ public class MrsQG {
 			QGSTEC2010processor.toXML(fop);
 			fop.close();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 
@@ -781,12 +781,13 @@ public class MrsQG {
 							out.write("\t\t<Cell><Data ss:Type=\"String\">"+ansSent+"</Data></Cell>\n");
 							out.write("\t\t<Cell><Data ss:Type=\"String\">"+sentID+"</Data></Cell>\n");
 							out.write("\t</Row>\n");
+							out.flush();
 
 						}
 
 					}
 				} catch (java.io.IOException e) {
-					log.error(e);
+					log.error("Error:", e);
 				}
 			}
 			in.close();
@@ -799,7 +800,7 @@ public class MrsQG {
 					+". Actual Sentences: "+sentSet.size()
 					+". Questions: "+quesIDcount);
 		} catch (java.io.IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 	}
 
@@ -836,7 +837,7 @@ public class MrsQG {
 		try {
 			prop.load(new FileInputStream(propertyFile));
 		} catch (IOException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 		// whether run QGSTEC2010 test

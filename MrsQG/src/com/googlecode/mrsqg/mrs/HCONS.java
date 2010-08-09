@@ -129,7 +129,7 @@ public class HCONS {
 
 			hd.endElement("", "", "hcons");
 		} catch (SAXException e) {
-			log.error(e);
+			log.error("Error:", e);
 		}
 
 	}
