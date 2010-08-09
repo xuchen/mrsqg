@@ -49,7 +49,12 @@ public class Reranker {
 	 */
 	public float rank(String[] tokens) {
 		tokens = StringUtils.addStartEnd(tokens);
-		float prob = lm.getSentenceProbNormalized(tokens);
+		float prob = Float.NEGATIVE_INFINITY;
+		try {
+		 prob = lm.getSentenceProbNormalized(tokens);
+		} catch (Exception e) {
+			log.error("Error for sentence "+StringUtils.concatWithSpaces(tokens), e);
+		}
 		return prob;
 	}
 
