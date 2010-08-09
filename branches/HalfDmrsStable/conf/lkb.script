@@ -1,0 +1,11 @@
+
+;;; ATTENTION: modify the following path to load the grammar!
+(read-script-file-aux "/home/xcyao/delphin/erg/lkb/script")
+
+(index-for-generator)
+
+;;; increase the number of edges to have a better chance of generation
+;;; if you have enough memory
+(setq *maximum-number-of-edges* 10000)
+
+
