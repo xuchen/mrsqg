@@ -54,6 +54,8 @@ public class ElementaryPredication {
 	/** the rare /EQ relation as in dmrs.pdf */
 	private HashSet<ElementaryPredication> equalLabelSet = null;
 
+	private HashSet<DMRS> dmrsSet = null;
+
 	/**
 	* Copy constructor.
 	*/
@@ -77,6 +79,7 @@ public class ElementaryPredication {
 		dependentsByArg = new HashSet<ElementaryPredication>();
 		dependentsByNonArg = new HashSet<ElementaryPredication>();
 		equalLabelSet = new HashSet<ElementaryPredication>();
+		dmrsSet = new HashSet<DMRS>();
 	}
 
 
@@ -87,6 +90,7 @@ public class ElementaryPredication {
 		dependentsByArg = new HashSet<ElementaryPredication>();
 		dependentsByNonArg = new HashSet<ElementaryPredication>();
 		equalLabelSet = new HashSet<ElementaryPredication>();
+		dmrsSet = new HashSet<DMRS>();
 	}
 
 	public ElementaryPredication(String typeName, String label) {
@@ -130,6 +134,7 @@ public class ElementaryPredication {
 	public HashSet<ElementaryPredication> getDependentsByArg () { return dependentsByArg;}
 	public HashSet<ElementaryPredication> getDependentsByNonArg () { return dependentsByNonArg;}
 	public HashSet<ElementaryPredication> getEqualLabelSet () { return equalLabelSet;}
+	public HashSet<DMRS> getDmrsSet () {return dmrsSet;}
 	/**
 	 * Add an EP to the set of governors which refer to the current EP by ARG*.
 	 * @param ep An EP
@@ -188,6 +193,27 @@ public class ElementaryPredication {
 			if (ep != this)
 				equalLabelSet.add(ep);
 		}
+	}
+
+	public void addDmrs (DMRS d) {
+		dmrsSet.add(d);
+	}
+
+
+	/**
+	 * Check whether <code>ep</code> is in the dmrsSet of this EP.
+	 * @param ep
+	 * @return
+	 */
+	public boolean isInDmrsSet (ElementaryPredication ep) {
+		boolean ret = false;
+		for (DMRS d:dmrsSet) {
+			if (d.getEP() == ep) {
+				ret = true;
+				break;
+			}
+		}
+		return ret;
 	}
 
 	/**
