@@ -113,6 +113,8 @@ public class MRS {
 		for (ElementaryPredication ep: eps) {
 			res.append(ep);
 			res.append("\n");
+			res.append("\tDMRS: "+ep.getDmrsSet());
+			res.append("\n");
 		}
 		res.append(">\n");
 		res.append("HCONS: < ");
@@ -1525,12 +1527,18 @@ public class MRS {
 	 * Build dependencies for each EP, find out their governors and dependents.
 	 */
 	public void buildDependencies() {
+		//TODO: PARG_D?
 		/*
 		 * whether this EP is a hiEP in a qeq relation, by
 		 * indicating whether the RSTR feature exists
 		 */
 		String rstr;
+		DMRS.PRE_SLASH preSlash = DMRS.PRE_SLASH.NOTHING;
+		DMRS.POST_SLASH postSlash = DMRS.POST_SLASH.NOTHING;
 		ElementaryPredication dEP = null;
+		DMRS dmrsL, dmrsR;
+		String argNum;
+
 		for (ElementaryPredication ep: eps) {
 			rstr = null;
 			dEP = null;
@@ -1553,23 +1561,58 @@ public class MRS {
 					String arg0 = ep.getArg0();
 
 					for (FvPair pair:ep.getFvpair()) {
+						String feature = pair.getFeature();
 						String value = pair.getValue();
-						boolean isArgFeature = pair.getFeature().startsWith("ARG");
+						argNum = "";
+						dEP = null;
+						boolean isArgFeature = feature.startsWith("ARG");
 						if (value.equals(arg0)) continue;
-						if (pair.getFeature().equals("RSTR")) continue;
-						if (pair.getFeature().equals("BODY")) continue;
+						if (isArgFeature) {
+							argNum = pair.getFeature().substring(3);
+						}
+						if (feature.equals("RSTR")) continue;
+						if (feature.equals("BODY")) continue;
 						ArrayList<ElementaryPredication> l=null;
 						if (value.startsWith("x") || value.startsWith("e")) {
 							dEP = this.charVariableMap.get(value);
-						} else if (value.startsWith("h")) {
-							String loLabel = this.getLoLabelFromHconsList(value);
-							if (loLabel != null) value = loLabel;
-							l = this.getEPbyLabelValue(value);
-							if (l==null) continue;
-							if (l.size() == 1) {
-								dEP = l.get(0);
+							if (dEP.getLabel().equals(ep.getLabel())) {
+								postSlash = DMRS.POST_SLASH.EQ;
 							} else {
+								postSlash = DMRS.POST_SLASH.NEQ;
+							}
+						} else if (value.startsWith("h")) {
+							/* HEQ (one ep’s argument is the other ep’s label)
+L-HNDL:h8 -> _like_v-1_rel
+[ _AND_C_REL<16:19>
+  LBL: h15
+  ARG0: e2 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+  L-HNDL: h8
+  L-INDEX: e10 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+  R-HNDL: h17
+  R-INDEX: e16 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+]
+[ _like_v_1_rel<5:10>
+  LBL: h8
+  ARG0: e10 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG1: x6 [ x PERS: 3 NUM: SG GEND: M IND: + ]
+  ARG2: x9 [ x PERS: 3 NUM: PL IND: + ]
+]
+							 */
+							l = this.getEPbyLabelValue(value);
+							if (l != null) {
 								dEP = getDependentEP(l);
+								postSlash = DMRS.POST_SLASH.HEQ;
+							} else {
+								/*
+								 * H (qeq relationship)
+								 */
+								String loLabel = this.getLoLabelFromHconsList(value);
+								if (loLabel != null) value = loLabel;
+								l = this.getEPbyLabelValue(value);
+								if (l!=null) {
+									dEP = getDependentEP(l);
+									postSlash = DMRS.POST_SLASH.H;
+								}
 							}
 						} else {
 						}
@@ -1577,9 +1620,22 @@ public class MRS {
 							if (isArgFeature) {
 								dEP.addGovernorByArg(ep);
 								ep.addDependentByArg(dEP);
+								dmrsL = new DMRS(dEP, DMRS.PRE_SLASH.ARG, postSlash, DMRS.DIRECTION.DEP, argNum);
+								dmrsR = new DMRS(ep, DMRS.PRE_SLASH.ARG, postSlash, DMRS.DIRECTION.GOV, argNum);
+
 							} else {
 								dEP.addGovernorByNonArg(ep);
 								ep.addDependentByNonArg(dEP);
+								dmrsL = new DMRS(dEP, DMRS.mapPreSlash(feature), postSlash, DMRS.DIRECTION.DEP);
+								dmrsR = new DMRS(ep, DMRS.mapPreSlash(feature), postSlash, DMRS.DIRECTION.GOV);
+							}
+							ep.addDmrs(dmrsL);
+							dEP.addDmrs(dmrsR);
+						} else {
+							if (isArgFeature) {
+								// ARG*/NULL situation
+								dmrsL = new DMRS(null, DMRS.PRE_SLASH.ARG, DMRS.POST_SLASH.NULL, DMRS.DIRECTION.NULL, argNum);
+								ep.addDmrs(dmrsL);
 							}
 						}
 					}
@@ -1609,10 +1665,51 @@ public class MRS {
 				if (dEP!=null) {
 					dEP.addGovernorByNonArg(ep);
 					ep.addDependentByNonArg(dEP);
+					dmrsL = new DMRS(dEP, DMRS.PRE_SLASH.RSTR, DMRS.POST_SLASH.H, DMRS.DIRECTION.DEP);
+					dmrsR = new DMRS(ep, DMRS.PRE_SLASH.RSTR, DMRS.POST_SLASH.H, DMRS.DIRECTION.GOV);
+					ep.addDmrs(dmrsL);
+					dEP.addDmrs(dmrsR);
+				} else {
+					log.error("Debug your code! Can't find a loEP for "+ep);
 				}
 			}
 		}
+
+		// a final run to find out NULL/EQ relation
+		/*
+		 * The following code finds out NULL/EQ but doesn't take "equalities" as described in
+		 * Copestake's dmrs.pdf into account. Thus it over-produces NULL/EQ relations.
+		 * For instance, in "how many roses does Mary have", MEASURE_REL and _rose_n_1_rel
+		 * should have NULL/EQ relation (according to my theory) but LKB doesn't indicate this.
+		 * Since NULL/EQ relation is basically useless in sentence decomposition, the implementation
+		 * is not enabled here.
+		 */
+		/*
+		HashSet<String> labelSet = new HashSet<String>();
+		String label;
+		ArrayList<ElementaryPredication> list = new ArrayList<ElementaryPredication>();
+		for (ElementaryPredication ep:this.eps) {
+			label = ep.getLabel();
+			if (labelSet.contains(label)) continue;
+
+			labelSet.add(label);
+			list = this.getEPbyLabelValue(label);
+			if (list == null) continue;
+			for (int i=0; i<list.size(); i++) {
+				for (int j=i+1;j<list.size();j++) {
+					if (!list.get(i).isInDmrsSet(list.get(j))) {
+						dmrsL = new DMRS(list.get(j), DMRS.PRE_SLASH.NULL, DMRS.POST_SLASH.EQ, DMRS.DIRECTION.NULL);
+						dmrsR = new DMRS(list.get(i), DMRS.PRE_SLASH.NULL, DMRS.POST_SLASH.EQ, DMRS.DIRECTION.NULL);
+						list.get(i).addDmrs(dmrsL);
+						list.get(j).addDmrs(dmrsR);
+						log.warn("Found a NULL/EQ relation between: \n"+list.get(i)+list.get(j));
+					}
+				}
+			}
+		}
+		*/
 	}
+
 
 	/**
 	 * Find out the dependent EP from a list of EP. Usually this list of EP has the same
@@ -1622,6 +1719,7 @@ public class MRS {
 	 */
 	public static ElementaryPredication getDependentEP (ArrayList<ElementaryPredication> list) {
 		if (list==null||list.size()==0) return null;
+		if (list.size() == 1) return list.get(0);
 		ElementaryPredication dEP = null;
 
 		int nGovernor = 0;
@@ -1714,6 +1812,26 @@ public class MRS {
 			}
 		}
 		return max;
+	}
+
+	public void buildDMRS () {
+		int size = eps.size();
+		// epL ?<->? epR, the directional relation between epLeft and epRight
+		ElementaryPredication epL, epR;
+		DMRS dmrsL, dmrsR;
+		String feature, value;
+		for (int i=0; i<size;i++) {
+			epL = eps.get(i);
+			for (int j=i+1; j<size; j++) {
+				epR = eps.get(j);
+				for (FvPair fvPair:epL.getFvpair()) {
+					feature = fvPair.getFeature();
+					value = fvPair.getValue();
+					if (feature.equals("RSTR")) {
+					}
+				}
+			}
+		}
 	}
 
 	/**
