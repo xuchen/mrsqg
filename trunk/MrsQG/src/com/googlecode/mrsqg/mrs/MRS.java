@@ -1296,8 +1296,7 @@ public class MRS {
 			for (EP ep:this.eps) {
 				ep.clearDependencies();
 			}
-			mapCharacteristicVariables();
-			buildDependencies();
+			postprocessing();
 			return true;
 		} else {
 			log.error("Removing EP by flag failed!");
@@ -1559,6 +1558,10 @@ public class MRS {
 						ArrayList<EP> l=null;
 						if (value.startsWith("x") || value.startsWith("e")) {
 							dEP = this.charVariableMap.get(value);
+							if (dEP == null) {
+								log.error("NULL POINTER of value "+value+" from charVarMap: "+this.charVariableMap);
+								log.error("MRS:\n"+this);
+							}
 							if (dEP.getLabel().equals(ep.getLabel())) {
 								postSlash = DMRS.POST_SLASH.EQ;
 							} else {
