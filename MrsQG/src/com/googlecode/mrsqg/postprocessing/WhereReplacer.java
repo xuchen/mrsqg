@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import com.googlecode.mrsqg.Preprocessor;
 import com.googlecode.mrsqg.analysis.Pair;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
@@ -48,7 +48,7 @@ public class WhereReplacer extends Fallback {
 			pre.preprocess(sentence);
 			MRS mrs = oriPair.getOriMrs();
 
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 				if (ep.getTypeName().equals(inEPvalue)) {
 
 					String arg1 = ep.getValueByFeature("ARG1");
@@ -68,7 +68,7 @@ public class WhereReplacer extends Fallback {
 
 					// find out the right-most index of this in-phrase
 					int cto = ep.getCto();
-					for (ElementaryPredication e:mrs.getEps()) {
+					for (EP e:mrs.getEps()) {
 						if (e.getFlag() == false && e.getCto() > cto)
 							cto = e.getCto();
 					}

@@ -47,7 +47,11 @@ public class DMRS {
 	 */
 	protected String arg;
 
-	ElementaryPredication ep;
+	EP ep;
+
+	public PRE_SLASH getPreSlash() { return preSlash;}
+	public POST_SLASH getPostSlash() { return postSlash;}
+	public DIRECTION getDirection() { return direction;}
 
 	@Override
 	public String toString() {
@@ -80,19 +84,23 @@ public class DMRS {
 		return sb.toString();
 	}
 
-	public DMRS (ElementaryPredication ep, PRE_SLASH pre, POST_SLASH post, DIRECTION dir) {
+	public DMRS (EP ep, PRE_SLASH pre, POST_SLASH post, DIRECTION dir) {
 		this.ep = ep;
 		this.preSlash = pre;
 		this.postSlash = post;
 		this.direction = dir;
 	}
 
-	public DMRS (ElementaryPredication ep, PRE_SLASH pre, POST_SLASH post, DIRECTION dir, String arg) {
+	public DMRS (EP ep, PRE_SLASH pre, POST_SLASH post, DIRECTION dir, String arg) {
 		this(ep, pre, post, dir);
 		this.arg = arg;
 	}
 
-	public ElementaryPredication getEP() {return ep;}
+	public EP getEP() {return ep;}
+
+	public String getArgNum() {return arg;}
+
+	public boolean isPreArg2() {return preSlash==PRE_SLASH.ARG && arg.equals("2");}
 
 	public static PRE_SLASH mapPreSlash (String preSlash) {
 		PRE_SLASH p = preSlashMap.get(preSlash.toUpperCase());
@@ -103,5 +111,6 @@ public class DMRS {
 			return PRE_SLASH.OTHER;
 		}
 	}
+
 
 }

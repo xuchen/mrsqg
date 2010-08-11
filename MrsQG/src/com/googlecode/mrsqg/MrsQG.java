@@ -448,10 +448,10 @@ public class MrsQG {
 			mrxList = origMrsList;
 		}
 
+		mrxList = coordDecomposer.doIt(mrxList);
 		mrxList = whyDecomposer.doIt(mrxList);
 		mrxList = subordDecomposer.doIt(mrxList);
 		mrxList = subDecomposer.doIt(mrxList);
-		mrxList = coordDecomposer.doIt(mrxList);
 		mrxList = apposDecomposer.doIt(mrxList);
 
 		// generation

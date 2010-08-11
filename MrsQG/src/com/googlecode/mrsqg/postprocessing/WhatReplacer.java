@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import com.googlecode.mrsqg.Preprocessor;
 import com.googlecode.mrsqg.analysis.Pair;
 import com.googlecode.mrsqg.analysis.Term;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
@@ -53,7 +53,7 @@ public class WhatReplacer extends Fallback {
 				pre.preprocess(sentence);
 				MRS mrs = oriPair.getOriMrs();
 
-				for (ElementaryPredication ep:mrs.getEps()) {
+				for (EP ep:mrs.getEps()) {
 					if (ep.getTypeName().toUpperCase().contains(verbEPvalue)) {
 						for (String arg:ep.getAllARGvalueExceptARG0()) {
 							if (!arg.startsWith("x")) continue;
@@ -64,7 +64,7 @@ public class WhatReplacer extends Fallback {
 							int cfrom = -1;
 							int cto = -1;
 
-							for (ElementaryPredication e:mrs.getEps()) {
+							for (EP e:mrs.getEps()) {
 								if (e.getFlag() == false) {
 									if (cfrom == -1 && e.getCfrom()>cfrom)
 										cfrom = e.getCfrom();

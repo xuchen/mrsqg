@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 import org.apache.log4j.Logger;
 
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -46,7 +46,7 @@ public class WhyDecomposer extends MrsDecomposer {
 
 		for (MRS inMrs:inList) {
 
-			for (ElementaryPredication ep:inMrs.getEps()) {
+			for (EP ep:inMrs.getEps()) {
 				if (cueTypeNames.containsKey(ep.getTypeName())) {
 					ArrayList<MRS> l;
 					l = becauseDecompose(inMrs, ep, cueTypeNames.get(ep.getTypeName()));
@@ -60,7 +60,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		return outList.size() == 0 ? null : outList;
 	}
 
-	@Deprecated protected ArrayList<MRS> becauseMiddle(MRS inMrs, ElementaryPredication becauseEP, boolean exchange) {
+	@Deprecated protected ArrayList<MRS> becauseMiddle(MRS inMrs, EP becauseEP, boolean exchange) {
 		MRS reasonMrs = new MRS(inMrs);
 		MRS resultMrs = new MRS(inMrs);
 		ArrayList<MRS> list = new ArrayList<MRS>();
@@ -96,7 +96,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		// the event index of resultMrs is inherited from the original MRS
 		// we need to find out the event index for the reasonMrs
 		String reasonEvent = null;
-		for (ElementaryPredication ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
+		for (EP ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
 			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
 				String tense = ep.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
 				if (tense != null && !tense.equals("UNTENSED")) {
@@ -129,7 +129,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		return list.size()==0 ? null : list;
 	}
 
-	protected ArrayList<MRS> becauseDecompose(MRS inMrs, ElementaryPredication becauseEP, boolean exchange) {
+	protected ArrayList<MRS> becauseDecompose(MRS inMrs, EP becauseEP, boolean exchange) {
 //		MRS reasonMrs = new MRS(inMrs);
 //		MRS resultMrs = new MRS(inMrs);
 		ArrayList<MRS> list = new ArrayList<MRS>();
@@ -176,7 +176,7 @@ public class WhyDecomposer extends MrsDecomposer {
 			// the event index of resultMrs is inherited from the original MRS
 			// we need to find out the event index for the reasonMrs
 			String reasonEvent = null;
-			ElementaryPredication vEP = MRS.getDependentEP(reasonMrs.getEPbyLabelValue(reasonLo));
+			EP vEP = MRS.getDependentEP(reasonMrs.getEPbyLabelValue(reasonLo));
 			if (vEP != null && vEP.getArg0()!=null && vEP.getArg0().startsWith("e")) {
 				reasonEvent = vEP.getArg0();
 			}
@@ -187,7 +187,7 @@ public class WhyDecomposer extends MrsDecomposer {
 			}
 		} else {
 			String resultEvent = null;
-			ElementaryPredication vEP = MRS.getDependentEP(resultMrs.getEPbyLabelValue(resultLo));
+			EP vEP = MRS.getDependentEP(resultMrs.getEPbyLabelValue(resultLo));
 			if (vEP != null && vEP.getArg0()!=null && vEP.getArg0().startsWith("e")) {
 				resultEvent = vEP.getArg0();
 			}
@@ -239,21 +239,21 @@ public class WhyDecomposer extends MrsDecomposer {
 		// Generate the WHICH_Q_REL qeq REASON_REL pair
 		ArrayList<String> labelStore = whyMrs.generateUnusedLabel(6);
 		if (labelStore == null) return null;
-		ElementaryPredication whichEP = new ElementaryPredication("WHICH_Q_REL", "h"+labelStore.get(0));
+		EP whichEP = new EP("WHICH_Q_REL", "h"+labelStore.get(0));
 		String arg0 = "x"+labelStore.get(4);
 		whichEP.addSimpleFvpair("ARG0", arg0);
 		whichEP.addSimpleFvpair("RSTR", "h"+labelStore.get(1));
 		whichEP.addSimpleFvpair("BODY", "h"+labelStore.get(2));
-		ElementaryPredication reasonEP = new ElementaryPredication("REASON_REL", "h"+labelStore.get(3));
+		EP reasonEP = new EP("REASON_REL", "h"+labelStore.get(3));
 		reasonEP.addSimpleFvpair("ARG0", arg0);
 		whyMrs.addEPtoEPS(whichEP);
 		whyMrs.addEPtoEPS(reasonEP);
 		whyMrs.addToHCONSsimple("qeq", "h"+labelStore.get(1), "h"+labelStore.get(3));
 
 		// Generate _FOR_P_REL
-		ElementaryPredication verbEP = whyMrs.getVerbEP();
+		EP verbEP = whyMrs.getVerbEP();
 		if (verbEP == null) return null;
-		ElementaryPredication forEP = new ElementaryPredication("_FOR_P_REL", verbEP.getLabel());
+		EP forEP = new EP("_FOR_P_REL", verbEP.getLabel());
 		forEP.addSimpleFvpair("ARG0", "i"+labelStore.get(5));
 		forEP.addFvpair("ARG1", verbEP.getValueVarByFeature("ARG0"));
 		forEP.addSimpleFvpair("ARG2", arg0);
