@@ -1559,8 +1559,7 @@ public class MRS {
 						if (value.startsWith("x") || value.startsWith("e")) {
 							dEP = this.charVariableMap.get(value);
 							if (dEP == null) {
-								log.error("NULL POINTER of value "+value+" from charVarMap: "+this.charVariableMap);
-								log.error("MRS:\n"+this);
+								continue;
 							}
 							if (dEP.getLabel().equals(ep.getLabel())) {
 								postSlash = DMRS.POST_SLASH.EQ;
