@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.FvPair;
 import com.googlecode.mrsqg.mrs.MRS;
 
@@ -39,7 +39,7 @@ public class SubordinateDecomposer extends MrsDecomposer {
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
 		for (MRS mrs:inList) {
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 				if (ep.getTypeName().toUpperCase().contains(subord)) {
 					// loop through ARG1, ARG2
 					for (String arg:args) {
@@ -53,12 +53,13 @@ public class SubordinateDecomposer extends MrsDecomposer {
 						if (label==null) continue;
 
 						MRS subMrs = new MRS(mrs);
-						ElementaryPredication subEP = subMrs.getEps().get(mrs.getEps().indexOf(ep));
+						EP subEP = subMrs.getEps().get(mrs.getEps().indexOf(ep));
 
-						subMrs.keepDependentEPbyLabel(label, subEP);
+						//subMrs.keepDependentEPbyLabel(label, subEP);
+						subMrs.doDecompositionByLabel(label, subEP, true, true);
 
 						//set the index for this EP, have to be verbEP's index
-						ElementaryPredication vEP;
+						EP vEP;
 						if (label.startsWith("h")) {
 							String loLabel = subMrs.getLoLabelFromHconsList(label);
 							if (loLabel != null) label = loLabel;

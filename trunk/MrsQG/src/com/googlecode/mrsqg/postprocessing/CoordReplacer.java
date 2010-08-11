@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import com.googlecode.mrsqg.Preprocessor;
 import com.googlecode.mrsqg.analysis.Pair;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
@@ -46,7 +46,7 @@ public class CoordReplacer extends Fallback {
 			mrs = oriPair.getOriMrs();
 			pre.preprocess(sentence);
 
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 				if (ep.getTypeName().contains(coordEPname) &&
 						ep.getValueByFeature("L-INDEX") != null &&
 						ep.getValueByFeature("R-INDEX") != null &&
@@ -54,12 +54,12 @@ public class CoordReplacer extends Fallback {
 						ep.getValueByFeature("R-HNDL") == null) {
 					String arg1 = ep.getValueByFeature("L-INDEX");
 					String arg2 = ep.getValueByFeature("R-INDEX");
-					ArrayList<ElementaryPredication> argList;
+					ArrayList<EP> argList;
 					argList = mrs.getEPbyFeatAndValue("ARG0", arg1);
 					if (argList == null) continue;
 					int cfrom = argList.get(0).getCfrom();
 					// find out the left-most index
-					for (ElementaryPredication e:argList) {
+					for (EP e:argList) {
 						if (e.getCfrom()<cfrom) cfrom = e.getCfrom();
 					}
 
@@ -67,7 +67,7 @@ public class CoordReplacer extends Fallback {
 					if (argList == null) continue;
 					int cto = ep.getCto();
 					// find out the right-most index
-					for (ElementaryPredication e:argList) {
+					for (EP e:argList) {
 						if (e.getCto()>cto) cto = e.getCto();
 					}
 

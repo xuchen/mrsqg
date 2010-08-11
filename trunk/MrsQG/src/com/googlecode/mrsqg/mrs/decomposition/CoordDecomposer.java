@@ -1,10 +1,12 @@
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -33,10 +35,10 @@ public class CoordDecomposer extends MrsDecomposer {
 		String coordEPname = "_C_REL";
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
-		ElementaryPredication coordEP = null;
+		EP coordEP = null;
 
 		for (MRS mrs:inList) {
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 				String pred = ep.getTypeName();
 				if (pred.contains(coordEPname)) {
 					String lEvent = ep.getValueByFeature("L-INDEX");
@@ -46,7 +48,9 @@ public class CoordDecomposer extends MrsDecomposer {
 						MRS cMrs = new MRS(mrs);
 						coordEP = cMrs.getEps().get(mrs.getEps().indexOf(ep));
 
-						cMrs.keepDependentEPandVerbEP(cMrs.getCharVariableMap().get(event), coordEP);
+						//cMrs.keepDependentEPandVerbEP(cMrs.getCharVariableMap().get(event), coordEP);
+						cMrs.doDecomposition(new HashSet<EP>(Arrays.asList(cMrs.getCharVariableMap().get(event))),
+								new HashSet<EP>(Arrays.asList(coordEP)), true, true);
 
 						if (cMrs.removeEPbyFlag()) {
 							cMrs.setIndex(event);

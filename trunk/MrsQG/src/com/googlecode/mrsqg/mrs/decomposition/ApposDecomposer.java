@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
 
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -109,7 +109,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
 		for (MRS mrs:inList) {
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 
 				String typeName = ep.getTypeName();
 
@@ -146,7 +146,7 @@ public class ApposDecomposer extends MrsDecomposer {
 	 * @param apposEP the apposition EP, must be in <code>mrs</code>
 	 * @return a new MRS representing a simple sentence formed by apposition
 	 */
-	public MRS assembleApposition2sent (MRS mrs, ElementaryPredication apposEP) {
+	public MRS assembleApposition2sent (MRS mrs, EP apposEP) {
 
 		// There's obviously a better way to do this, which I omitted the first time.
 		//MRS apposMrs = MRS.extractByEPandArg0(apposEP, mrs);
@@ -157,7 +157,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		boolean inside = false;
 		String oriTense = mrs.getTense();
 
-		for (ElementaryPredication ep:apposMrs.getEps()) {
+		for (EP ep:apposMrs.getEps()) {
 			// There are some EP without a range <cfrom:cto>, in this case,
 			// if they are covered by the apposEP, don't remove it.
 			if (ep.getCto() == -1 && ep.getCfrom() == -1 && inside) continue;
@@ -188,7 +188,7 @@ public class ApposDecomposer extends MrsDecomposer {
 		//apposMrs.setSF2QUES();
 		apposMrs.setDecomposer("Apposition");
 		apposMrs.changeFromUnkToNamed();
-		for (ElementaryPredication ep:apposMrs.getEps()) {
+		for (EP ep:apposMrs.getEps()) {
 			if (ep.getPred()!=null && ep.getTypeName().equalsIgnoreCase("UDEF_Q_REL")) {
 				// Hurricane Katrina -> The hurricane is Katrina
 				ep.setTypeName("_THE_Q_REL");
@@ -207,7 +207,7 @@ public class ApposDecomposer extends MrsDecomposer {
 	 * @param apposEP the apposition EP, must be in <code>mrs</code>
 	 * @return a new list of MRS representing a simple sentence formed by apposition
 	 */
-	public ArrayList<MRS> divideApposition2sent (MRS mrs, ElementaryPredication apposEP) {
+	public ArrayList<MRS> divideApposition2sent (MRS mrs, EP apposEP) {
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
@@ -225,7 +225,7 @@ public class ApposDecomposer extends MrsDecomposer {
 
 		int cfrom = apposEP.getCfrom();
 		int cto = apposEP.getCto();
-		ElementaryPredication ep;
+		EP ep;
 		boolean inside = false;
 		boolean arg2Area = false;
 		// remove all arg2 in arg1Mrs and all arg1 in arg2Mrs

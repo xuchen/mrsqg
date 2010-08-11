@@ -73,10 +73,10 @@ public class MRS {
 	/** which decomposer this MRS comes from. */
 	private ArrayList<String> decomposer = null;
 
-	private ArrayList <ElementaryPredication> eps;
+	private ArrayList <EP> eps;
 	private ArrayList<HCONS> hcons;
 	/** Every characteristic variable (see dmrs.pdf) is mapped to an EP.*/
-	private HashMap<String, ElementaryPredication> charVariableMap;
+	private HashMap<String, EP> charVariableMap;
 	private MrsParser parser = new MrsParser();
 
 	public String getLTOP() {return ltop;}
@@ -84,9 +84,9 @@ public class MRS {
 	public String getIndex() {return index;}
 	public String getIndexVid() {return index_vid;}
 	public String getSentType() {return sent_type;}
-	public ArrayList <ElementaryPredication> getEps() {return eps;}
+	public ArrayList <EP> getEps() {return eps;}
 	public ArrayList<HCONS> getHcons() {return hcons;}
-	public HashMap<String, ElementaryPredication> getCharVariableMap() {return charVariableMap;}
+	public HashMap<String, EP> getCharVariableMap() {return charVariableMap;}
 	public void setSentType (String sentType) {sent_type = sentType;}
 	public void setDecomposer (String p) {decomposer.add(p);}
 	public ArrayList<String> getDecomposer () {return decomposer;}
@@ -110,11 +110,8 @@ public class MRS {
 		// INDEX: e2 [ e SF: PROP-OR-QUES TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
 		res.append("INDEX: "+index+"\n");
 		res.append("RELS: <\n");
-		for (ElementaryPredication ep: eps) {
+		for (EP ep: eps) {
 			res.append(ep);
-			res.append("\n");
-			res.append("\tDMRS: "+ep.getDmrsSet());
-			res.append("\n");
 		}
 		res.append(">\n");
 		res.append("HCONS: < ");
@@ -127,9 +124,9 @@ public class MRS {
 
 	public MRS() {
 		hcons = new ArrayList<HCONS>();
-		eps = new ArrayList<ElementaryPredication>();
+		eps = new ArrayList<EP>();
 		decomposer = new ArrayList<String>();
-		charVariableMap = new HashMap<String, ElementaryPredication>();
+		charVariableMap = new HashMap<String, EP>();
 	}
 
 	public MRS(File file) {
@@ -152,17 +149,17 @@ public class MRS {
 		this.index = old.getIndex();
 		this.index_vid = old.getIndexVid();
 		this.sent_type = old.getSentType();
-		this.eps = new ArrayList<ElementaryPredication>();
+		this.eps = new ArrayList<EP>();
 		this.decomposer = new ArrayList<String>();
 		for (String s:old.getDecomposer()) decomposer.add(s);
-		for (ElementaryPredication ep:old.getEps()) {
-			this.eps.add(new ElementaryPredication(ep));
+		for (EP ep:old.getEps()) {
+			this.eps.add(new EP(ep));
 		}
 		this.hcons = new ArrayList<HCONS>();
 		for (HCONS h:old.getHcons()) {
 			this.hcons.add(new HCONS(h));
 		}
-		charVariableMap = new HashMap<String, ElementaryPredication>();
+		charVariableMap = new HashMap<String, EP>();
 		this.postprocessing();
 	}
 
@@ -178,7 +175,7 @@ public class MRS {
 		private StringBuilder chars;
 		// whether we are processing in an <ep> element
 		private boolean inEP = false;
-		private ElementaryPredication currentEP = null;
+		private EP currentEP = null;
 
 		public MrsParser () {
 			super();
@@ -309,7 +306,7 @@ public class MRS {
 				hcons.add(hcon);
 			} else if (qName.equals("ep")) {
 				inEP = true;
-				ElementaryPredication e = new ElementaryPredication();
+				EP e = new EP();
 				eps.add(e);
 				currentEP = e;
 				currentEP.processStartElement(qName, atts);
@@ -351,10 +348,10 @@ public class MRS {
 	/**
 	 * Return all ElementaryPredication starting from cfrom and ending to cto.
 	 */
-	public ArrayList<ElementaryPredication> getEPS (int cfrom, int cto) {
-		ArrayList<ElementaryPredication> epsList= new ArrayList<ElementaryPredication>();
+	public ArrayList<EP> getEPS (int cfrom, int cto) {
+		ArrayList<EP> epsList= new ArrayList<EP>();
 
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			if (ep.getCfrom()==cfrom && ep.getCto()==cto) {
 				epsList.add(ep);
 			}
@@ -369,9 +366,9 @@ public class MRS {
 	 * @param label the label value of the EP, such as "h3"
 	 * @return an ArrayList of EP with the matching label or null if none
 	 */
-	public ArrayList<ElementaryPredication> getEPbyLabelValue (String label) {
-		ArrayList<ElementaryPredication> retEP = new ArrayList<ElementaryPredication>();
-		for (ElementaryPredication ep:eps) {
+	public ArrayList<EP> getEPbyLabelValue (String label) {
+		ArrayList<EP> retEP = new ArrayList<EP>();
+		for (EP ep:eps) {
 			if (ep.getLabel().equals(label)) {
 				retEP.add(ep);
 			}
@@ -385,9 +382,9 @@ public class MRS {
 	 * @param name a type name, such as "APPOS_REL"
 	 * @return an ArrayList of EP with a matching type name, or null if no matching.
 	 */
-	public ArrayList<ElementaryPredication> getEPbyTypeName (String name) {
-		ArrayList<ElementaryPredication> retEP = new ArrayList<ElementaryPredication>();
-		for (ElementaryPredication ep:eps) {
+	public ArrayList<EP> getEPbyTypeName (String name) {
+		ArrayList<EP> retEP = new ArrayList<EP>();
+		for (EP ep:eps) {
 			if (ep.getTypeName().equals(name)) {
 				retEP.add(ep);
 				break;
@@ -402,7 +399,7 @@ public class MRS {
 	 */
 	public ArrayList<String> getEPSfeatList () {
 		ArrayList<String> list = new ArrayList<String>();
-		for(ElementaryPredication ep:eps) {
+		for(EP ep:eps) {
 			list.add(ep.getLabel());
 		}
 
@@ -423,7 +420,7 @@ public class MRS {
 	 */
 	public ArrayList<String> getEPSvalueList () {
 		ArrayList<String> list = new ArrayList<String>();
-		for(ElementaryPredication ep:eps) {
+		for(EP ep:eps) {
 			for (FvPair fp:ep.getFvpair()) {
 				list.add(fp.getValue());
 			}
@@ -440,13 +437,13 @@ public class MRS {
 	 * those of PROPER_Q_REL returns the _IN_P_TEMP_REL EP.
 	 *
 	 */
-	public ElementaryPredication getEPbefore (int cfrom, int cto) {
-		ElementaryPredication ret = null;
-		ElementaryPredication next = null;
+	public EP getEPbefore (int cfrom, int cto) {
+		EP ret = null;
+		EP next = null;
 
 		// In a well-formed MRS, all EPs are lined up according to
 		// their position in the sentence
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			if (ep.getCfrom()==cfrom && ep.getCto()==cto) {
 				next = ep;
 				break;
@@ -474,7 +471,7 @@ public class MRS {
 	public ArrayList<FvPair> getExtraTypeByFeatAndValue (String feat, String value) {
 
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
 				if (f.getRargname().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(f);
@@ -493,7 +490,7 @@ public class MRS {
 	public ArrayList<FvPair> getExtraTypeByValue (String value) {
 
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
 				if (f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(f);
@@ -510,10 +507,10 @@ public class MRS {
 	 * @param value value name, such as "e2"
 	 * @return an ArrayList of matching EP
 	 */
-	public ArrayList<ElementaryPredication> getEPbyFeatAndValue (String feat, String value) {
+	public ArrayList<EP> getEPbyFeatAndValue (String feat, String value) {
 		if (value==null) return null;
-		ArrayList<ElementaryPredication> list = new ArrayList<ElementaryPredication>();
-		for (ElementaryPredication ep:this.eps) {
+		ArrayList<EP> list = new ArrayList<EP>();
+		for (EP ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
 				if (f.getRargname().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(ep);
@@ -531,7 +528,7 @@ public class MRS {
 	 * @param copyEP one EP in <code>copyMrs</code>
 	 * @return a corresponding EP the "same" to <code>copyEP</code>
 	 */
-	public ElementaryPredication getEPbyParallelIndex (MRS copyMrs, ElementaryPredication copyEP) {
+	public EP getEPbyParallelIndex (MRS copyMrs, EP copyEP) {
 		return this.getEps().get(copyMrs.getEps().indexOf(copyEP));
 	}
 
@@ -539,15 +536,15 @@ public class MRS {
 	 * Get the EP of the main verb
 	 * @return an EP representing the main verb in this MRS
 	 */
-	public ElementaryPredication getVerbEP () {
-		ElementaryPredication verbEP = null;
-		ElementaryPredication modalEP = null;
+	public EP getVerbEP () {
+		EP verbEP = null;
+		EP modalEP = null;
 
 		// the main event of this MRS
 		String event = this.getIndex();
-		ArrayList<ElementaryPredication> eventEPS = this.getEPbyFeatAndValue("ARG0", event);
+		ArrayList<EP> eventEPS = this.getEPbyFeatAndValue("ARG0", event);
 		if (eventEPS == null) return null;
-		for (ElementaryPredication ep:eventEPS) {
+		for (EP ep:eventEPS) {
 			if (ep.getTypeName().contains("_modal_")) {
 				// it could be that a modal verb, such as 'can'/'must',
 				// takes this event
@@ -561,7 +558,7 @@ public class MRS {
 			// the modal verb refers to the main verb by a qeq relation
 			String hiLabel = modalEP.getValueByFeature("ARG1");
 			String loLabel = this.getLoLabelFromHconsList(hiLabel);
-			ArrayList<ElementaryPredication> verbList = this.getEPbyLabelValue(loLabel);
+			ArrayList<EP> verbList = this.getEPbyLabelValue(loLabel);
 			if (verbList.size() == 1) {
 				verbEP = verbList.get(0);
 			} else {
@@ -579,7 +576,7 @@ public class MRS {
 	 * @param newValue "x6"
 	 */
 	public void changeEPvalue (String oldValue, String newValue) {
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
 				if (f.getValue() != null && f.getValue().equals(oldValue)) {
 					f.setValue(newValue);
@@ -588,7 +585,7 @@ public class MRS {
 		}
 	}
 
-	public void addEPtoEPS (ElementaryPredication ep) {
+	public void addEPtoEPS (EP ep) {
 		if (ep!=null) this.eps.add(ep);
 	}
 
@@ -668,7 +665,7 @@ public class MRS {
 		]
 		 */
 		if (loLabel == null) {
-			for (ElementaryPredication e:this.eps) {
+			for (EP e:this.eps) {
 				if (e.getLabel().equals(hiLabel)) {
 					loLabel = hiLabel;
 					break;
@@ -685,17 +682,17 @@ public class MRS {
 	 * @param mrs the MRS in which <code>eps</code> comes from
 	 * @return an ArrayList with the 0th the HiEP and the 1st the LoEP, or null if not found
 	 */
-	public static ArrayList<ElementaryPredication> determineHiLowEP (ArrayList<ElementaryPredication> eps, MRS mrs) {
-		ArrayList<ElementaryPredication> hiloEPS = new ArrayList<ElementaryPredication>();
+	public static ArrayList<EP> determineHiLowEP (ArrayList<EP> eps, MRS mrs) {
+		ArrayList<EP> hiloEPS = new ArrayList<EP>();
 
 		//TODO: totally rewrite this with DMRS
 		// it would be much simpler with a RSTR/H relation
 		// e.g. the wedding will be held Monday.
 
 		String hi=null, lo=null, rstr=null;
-		ElementaryPredication hiEP =null, loEP = null;
+		EP hiEP =null, loEP = null;
 
-		for (ElementaryPredication ep:eps) {
+		for (EP ep:eps) {
 			rstr = ep.getValueByFeature("RSTR");
 			if (rstr != null) {
 				if (hiEP != null)
@@ -709,7 +706,7 @@ public class MRS {
 		lo = mrs.getLoLabelFromHconsList(hi);
 		if (lo == null) return null;
 
-		for (ElementaryPredication ep:eps) {
+		for (EP ep:eps) {
 			if (ep.getLabel().equals(lo) && ep.getArg0().equals(hiEP.getArg0())) {
 				loEP = ep;
 				break;
@@ -753,7 +750,7 @@ public class MRS {
 	 * Changing named_unk_rel to NAMED_REL solves this (hopefully).
 	 */
 	public void changeFromUnkToNamed () {
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			if (ep.getPred()!=null && ep.getTypeName().equalsIgnoreCase("NAMED_UNK_REL")) {
 				ep.setTypeName("NAMED_REL");
 			}
@@ -830,7 +827,7 @@ public class MRS {
 
 		// erg/lkb/mrsglobals.lsp
 		// _glimpy/JJ_u_unknown_rel -> _glimpy_a_unknown_rel
-		for (ElementaryPredication ep:eps) {
+		for (EP ep:eps) {
 			typeName = ep.getTypeName();
 			if (!typeName.contains("_unknown_rel")) continue;
 			if (typeName.contains("/JJ_u"))
@@ -901,7 +898,7 @@ public class MRS {
 		ArrayList<LinkedHashMap<String, String>> list = new ArrayList<LinkedHashMap<String, String>>();
 		Var v;
 		LinkedHashMap<String, String> p;
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
 				if((v=f.getVar())!= null) {
 					if ((p=v.getExtrapair())!=null) {
@@ -921,7 +918,7 @@ public class MRS {
 	 */
 	public ArrayList<FvPair> getFvPairByValue (String value) {
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
-		for (ElementaryPredication ep:this.eps) {
+		for (EP ep:this.eps) {
 			for (FvPair p:ep.getFvpair()) {
 				if (p.getValue()!=null && p.getValue().equals(value)) {
 					list.add(p);
@@ -977,8 +974,8 @@ public class MRS {
 		MRS extracted = new MRS(mrs);
 		// targetEP is the one with a label as the label in the parameter
 
-		ElementaryPredication targetEP = null;
-		for (ElementaryPredication ep:extracted.getEPbyLabelValue(label)) {
+		EP targetEP = null;
+		for (EP ep:extracted.getEPbyLabelValue(label)) {
 			if (ep.getArg0().equals(mrs.getIndex())) {
 				// the target EP is the main predicate of this MRS
 				targetEP = ep;
@@ -1012,8 +1009,8 @@ public class MRS {
 		// recursively: other relevant EPs might be attached to EPs which are
 		// not targetEP (Currently also consider the labels of relevant
 		// EPs who have ARG0 in the argSet of targetEP -- so it's not that simple case).
-		ArrayList<ElementaryPredication> copy = new ArrayList<ElementaryPredication>(extracted.getEps());
-		for (ElementaryPredication ep:copy) {
+		ArrayList<EP> copy = new ArrayList<EP>(extracted.getEps());
+		for (EP ep:copy) {
 			if (!argSet.contains(ep.getArg0()) && !referredLabelSet.contains(ep.getLabel())) {
 				if (!extracted.removeEP(ep)) {
 					log.error("Error: EP " +ep+ " can't be removed from MRS:\n" + extracted);
@@ -1041,7 +1038,7 @@ public class MRS {
 	 * @param mrs the original mrs to be extracted from
 	 * @return a new MRS with only EPs concerning <code>targetEP</code>
 	 */
-	public static MRS extractByEPandArg0 (ElementaryPredication targetEP, MRS mrs) {
+	public static MRS extractByEPandArg0 (EP targetEP, MRS mrs) {
 
 		if (targetEP == null) {
 			log.error("Can't find the EP " + targetEP +" in MRS:\n" + mrs);
@@ -1074,7 +1071,7 @@ public class MRS {
 	 * @param exceptionEP
 	 * @return a new MRS, or null if none matches
 	 */
-	public MRS extractByLabel (String label, ElementaryPredication exceptionEP) {
+	public MRS extractByLabel (String label, EP exceptionEP) {
 		MRS mrs = new MRS(this);
 		HashSet<String> set = new HashSet<String>();
 		HashSet<String> moreSet = new HashSet<String>();
@@ -1087,9 +1084,9 @@ public class MRS {
 
 		// get all h* and x* referred by label and loLabel
 		for (String l:set) {
-			ArrayList<ElementaryPredication> list = mrs.getEPbyLabelValue(l);
+			ArrayList<EP> list = mrs.getEPbyLabelValue(l);
 			if (list == null) continue;
-			for (ElementaryPredication ep:list) {
+			for (EP ep:list) {
 				for (String v:ep.getAllValue()) {
 					if (v.startsWith("h") || v.startsWith("x")) {
 						moreSet.add(v);
@@ -1104,7 +1101,7 @@ public class MRS {
 		// loop recursively to find out all referred EPs.
 		while (oldSize < set.size()) {
 			oldSize = set.size();
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 				if (ep.getFlag()) continue;
 				for (String v:ep.getAllValueAndLabel()) {
 					if (v.startsWith("h")) {
@@ -1122,7 +1119,7 @@ public class MRS {
 			}
 		}
 
-		for (ElementaryPredication ep:mrs.getEps()) {
+		for (EP ep:mrs.getEps()) {
 			if (ep.getFlag()) continue;
 			boolean flag = true;
 			for (String v:ep.getAllValue()) {
@@ -1151,7 +1148,7 @@ public class MRS {
 	 * @param exceptionEP
 	 * @return a range {cfrom, cto}
 	 */
-	public int[] extractRangeByXValue (String value, ElementaryPredication exceptionEP) {
+	public int[] extractRangeByXValue (String value, EP exceptionEP) {
 		MRS mrs = this;
 		HashSet<String> set = new HashSet<String>();
 		HashSet<String> moreSet = new HashSet<String>();
@@ -1164,7 +1161,7 @@ public class MRS {
 		// loop recursively to find out all referred EPs.
 		while (oldSize < set.size()) {
 			oldSize = set.size();
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 				if (ep.getFlag()) continue;
 				for (String v:ep.getAllValueAndLabel()) {
 					if (v.startsWith("h")) {
@@ -1182,7 +1179,7 @@ public class MRS {
 			}
 		}
 
-		for (ElementaryPredication ep:mrs.getEps()) {
+		for (EP ep:mrs.getEps()) {
 			if (ep.getFlag()) continue;
 			boolean flag = true;
 			for (String v:ep.getAllValue()) {
@@ -1196,7 +1193,7 @@ public class MRS {
 
 
 		int cfrom=10000, cto=0;
-		for (ElementaryPredication ep:mrs.getEps()) {
+		for (EP ep:mrs.getEps()) {
 			if (!ep.getFlag()) {
 				if (ep.getCfrom()<cfrom) cfrom = ep.getCfrom();
 				if (ep.getCto() > cto) cto = ep.getCto();
@@ -1231,13 +1228,13 @@ public class MRS {
 	 * @param ep An EP which has ARG* entries
 	 * @return a HashSet of labels referred by the ARG0 of this ep
 	 */
-	public HashSet<String> getAllReferredLabelByEP (ElementaryPredication ep) {
+	public HashSet<String> getAllReferredLabelByEP (EP ep) {
 		HashSet<String> labelSet = new HashSet<String>();
 
 		labelSet.add(ep.getLabel());
 		HashSet<String> argList = ep.getAllARGvalue();
 
-		for (ElementaryPredication e:getEps()) {
+		for (EP e:getEps()) {
 			if (e==ep) continue;
 			for (String label:argList) {
 				if (e.getArg0().equals(label)) {
@@ -1255,11 +1252,11 @@ public class MRS {
 	 * any ARG* values of <code>ep</code>
 	 * @param ep An EP which has ARG* entries
 	 */
-	public void markDeletionByEPref (ElementaryPredication ep) {
+	public void markDeletionByEPref (EP ep) {
 
 		HashSet<String> argList = ep.getAllARGvalue();
 
-		for (ElementaryPredication e:getEps()) {
+		for (EP e:getEps()) {
 			if (e==ep) continue;
 			if (!argList.contains(e.getArg0())) {
 				e.setFlag(true);
@@ -1272,7 +1269,7 @@ public class MRS {
 	 * @param ep the ep to be removed
 	 * @return success status
 	 */
-	public boolean removeEP (ElementaryPredication ep) {
+	public boolean removeEP (EP ep) {
 
 		if (eps.remove(ep)==false) {
 			log.error("Can't remove ep:\n"+ep+"\nfrom EPS list:\n"+eps);
@@ -1286,27 +1283,21 @@ public class MRS {
 	 * @return a boolean success status
 	 */
 	public boolean removeEPbyFlag () {
-		ArrayList<ElementaryPredication> removedList = new ArrayList<ElementaryPredication>();
-		for (ElementaryPredication ep:this.eps) {
+		ArrayList<EP> removedList = new ArrayList<EP>();
+		for (EP ep:this.eps) {
 			if (ep.getFlag() == true) {
 				removedList.add(ep);
 			}
 		}
-//		for (ElementaryPredication ep:this.eps) {
-//			if (ep.getFlag() == true) {
-//				removedList.add(ep);
-//				mod = false;
-//				span = ep.getCto() - ep.getCfrom();
-//				// for any EP after ep, reduce its range by span.
-//				for (ElementaryPredication eep:this.eps) {
-//					if (eep==ep) mod=true;
-//					if (mod && eep!=ep && eep.getFlag()==false) {
-//						eep.shiftRange(-span);
-//					}
-//				}
-//			}
-//		}
+
 		if(this.eps.removeAll(removedList)) {
+			// rebuild dependencies since something is removed
+			this.charVariableMap.clear();
+			for (EP ep:this.eps) {
+				ep.clearDependencies();
+			}
+			mapCharacteristicVariables();
+			buildDependencies();
 			return true;
 		} else {
 			log.error("Removing EP by flag failed!");
@@ -1315,14 +1306,7 @@ public class MRS {
 			}
 			return false;
 		}
-		// the following code contains a bug and thus is depreciated.
-//		ArrayList<ElementaryPredication> concurrentList = new ArrayList<ElementaryPredication> (this.eps);
-//
-//		for (ElementaryPredication ep:concurrentList) {
-//			if (ep.getFlag() == true) {
-//				this.eps.remove(concurrentList.indexOf(ep));
-//			}
-//		}
+
 	}
 
 	/**
@@ -1330,7 +1314,7 @@ public class MRS {
 	 * @param flag a boolean value
 	 */
 	public void setAllFlag (boolean flag) {
-		for (ElementaryPredication ep:this.getEps()) {
+		for (EP ep:this.getEps()) {
 			ep.setFlag(flag);
 		}
 	}
@@ -1340,9 +1324,9 @@ public class MRS {
 	 * @param list an ArrayList of EP
 	 * @return success status
 	 */
-	public boolean removeEPlist (ArrayList<ElementaryPredication> list) {
+	public boolean removeEPlist (ArrayList<EP> list) {
 		boolean ret = false;
-		for (ElementaryPredication ep:list) {
+		for (EP ep:list) {
 			ret = eps.remove(ep);
 			if (!ret) {
 				log.error("Can't remove ep:\n"+ep+"\nfrom EPS list:\n"+eps);
@@ -1374,7 +1358,7 @@ public class MRS {
 
 		// LKB takes index globally, so we count everything under "h/x/e/p..."
 		// http://lists.delph-in.net/archive/developers/2010/001402.html
-		for (ElementaryPredication e:getEps()) {
+		for (EP e:getEps()) {
 			for (String value:e.getAllValue()) {
 				valueSet.add(Integer.parseInt(value.substring(1)));
 			}
@@ -1434,7 +1418,7 @@ public class MRS {
 			hd.startElement("", "", "var", atts);
 			hd.endElement("", "", "var");
 			// <ep>
-			for (ElementaryPredication e: eps) {
+			for (EP e: eps) {
 				e.serializeXML(hd);
 			}
 			// <hcons>
@@ -1461,7 +1445,7 @@ public class MRS {
 		HashMap<String, Var> varM = new HashMap<String, Var>();
 		String label;
 		Var v;
-		for (ElementaryPredication ep: eps) {
+		for (EP ep: eps) {
 			for (FvPair p:ep.getFvpair()) {
 				v = p.getVar();
 				// only deal with argument
@@ -1486,14 +1470,14 @@ public class MRS {
 	 */
 	public void mapCharacteristicVariables () {
 		String arg0;
-		for (ElementaryPredication ep: eps) {
+		for (EP ep: eps) {
 			arg0 = ep.getArg0();
 			if (!arg0.startsWith("x") && !arg0.startsWith("e")) continue;
-			ArrayList<ElementaryPredication> arg0EPlist = this.getEPbyFeatAndValue("ARG0", arg0);
+			ArrayList<EP> arg0EPlist = this.getEPbyFeatAndValue("ARG0", arg0);
 			if (arg0EPlist.size()==1) {
 				this.charVariableMap.put(arg0, arg0EPlist.get(0));
 			} else if (arg0EPlist.size()==2) {
-				for (ElementaryPredication charEP: arg0EPlist) {
+				for (EP charEP: arg0EPlist) {
 					/*
 					 * Multiple EPs can have arg0 as their ARG0. Usually these multiple
 					 * EPs are in a qeq relation.
@@ -1535,11 +1519,11 @@ public class MRS {
 		String rstr;
 		DMRS.PRE_SLASH preSlash = DMRS.PRE_SLASH.NOTHING;
 		DMRS.POST_SLASH postSlash = DMRS.POST_SLASH.NOTHING;
-		ElementaryPredication dEP = null;
+		EP dEP = null;
 		DMRS dmrsL, dmrsR;
 		String argNum;
 
-		for (ElementaryPredication ep: eps) {
+		for (EP ep: eps) {
 			rstr = null;
 			dEP = null;
 			for (FvPair p:ep.getFvpair()) {
@@ -1572,7 +1556,7 @@ public class MRS {
 						}
 						if (feature.equals("RSTR")) continue;
 						if (feature.equals("BODY")) continue;
-						ArrayList<ElementaryPredication> l=null;
+						ArrayList<EP> l=null;
 						if (value.startsWith("x") || value.startsWith("e")) {
 							dEP = this.charVariableMap.get(value);
 							if (dEP.getLabel().equals(ep.getLabel())) {
@@ -1655,8 +1639,8 @@ L-HNDL:h8 -> _like_v-1_rel
 				 * in the case of qeq relations. To choose loEP from multiple ones, rule out
 				 * others by the fact that loEP has the same ARG0 with hiEP
 				 */
-				ArrayList<ElementaryPredication> loList = getEPbyLabelValue(loLabel);
-				for (ElementaryPredication eep:loList) {
+				ArrayList<EP> loList = getEPbyLabelValue(loLabel);
+				for (EP eep:loList) {
 					if (eep.getArg0().equals(ep.getArg0())) {
 						dEP = eep;
 					}
@@ -1717,10 +1701,10 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * @param list An non-empty ElementaryPredication list
 	 * @return the dependent EP, or null if not found
 	 */
-	public static ElementaryPredication getDependentEP (ArrayList<ElementaryPredication> list) {
+	public static EP getDependentEP (ArrayList<EP> list) {
 		if (list==null||list.size()==0) return null;
 		if (list.size() == 1) return list.get(0);
-		ElementaryPredication dEP = null;
+		EP dEP = null;
 
 		int nGovernor = 0;
 		HashSet<String> valueSet = new HashSet<String>();
@@ -1731,7 +1715,7 @@ L-HNDL:h8 -> _like_v-1_rel
 			nGovernor = 0;
 			valueSet.add(dEP.getLabel());
 			valueSet.add(dEP.getArg0());
-			for (ElementaryPredication ep:list) {
+			for (EP ep:list) {
 				if (ep==dEP) continue;
 				for (String v:ep.getAllValue()) {
 					if (valueSet.contains(v)) {
@@ -1750,9 +1734,9 @@ L-HNDL:h8 -> _like_v-1_rel
 			// first try to build dependencies for the EPs in the list
 			String arg0;
 			HashSet<String> argSet;
-			for (ElementaryPredication ep1:list) {
+			for (EP ep1:list) {
 				arg0 = ep1.getArg0();
-				for (ElementaryPredication ep2:list) {
+				for (EP ep2:list) {
 					if (ep2==ep1) continue;
 					argSet = ep2.getAllARGvalueExceptARG0();
 					if (argSet.contains(arg0)) {
@@ -1764,7 +1748,7 @@ L-HNDL:h8 -> _like_v-1_rel
 			}
 
 			dEP = null;
-			for (ElementaryPredication ep:list) {
+			for (EP ep:list) {
 				if (getLevelGovernors(ep, 0) == list.size()-1) {
 					dEP = ep;
 					break;
@@ -1783,7 +1767,7 @@ L-HNDL:h8 -> _like_v-1_rel
 				}
 				if (shareSameLabel) {
 					// Bingo, we have a very rare /EQ relation here
-					for (ElementaryPredication e:list) {
+					for (EP e:list) {
 						// every EP has the same equalLabelSet
 						e.addAllEqualLabelSet(list);
 					}
@@ -1800,11 +1784,11 @@ L-HNDL:h8 -> _like_v-1_rel
 		}
 	}
 
-	public static int getLevelGovernors (ElementaryPredication ep, int level) {
-		HashSet<ElementaryPredication> set = ep.getGovernorsByArg();
+	public static int getLevelGovernors (EP ep, int level) {
+		HashSet<EP> set = ep.getGovernorsByArg();
 		int max = level, n;
-		ElementaryPredication maxEP;
-		for (ElementaryPredication e:set) {
+		EP maxEP;
+		for (EP e:set) {
 			n = getLevelGovernors(e, level+1);
 			if (n > max) {
 				max = n;
@@ -1814,24 +1798,93 @@ L-HNDL:h8 -> _like_v-1_rel
 		return max;
 	}
 
-	public void buildDMRS () {
-		int size = eps.size();
-		// epL ?<->? epR, the directional relation between epLeft and epRight
-		ElementaryPredication epL, epR;
-		DMRS dmrsL, dmrsR;
-		String feature, value;
-		for (int i=0; i<size;i++) {
-			epL = eps.get(i);
-			for (int j=i+1; j<size; j++) {
-				epR = eps.get(j);
-				for (FvPair fvPair:epL.getFvpair()) {
-					feature = fvPair.getFeature();
-					value = fvPair.getValue();
-					if (feature.equals("RSTR")) {
+	public void doDecomposition (HashSet<EP> rEPS, HashSet<EP> eEPS, boolean relaxEQ, boolean keepEQ) {
+
+		if (eEPS == null)
+			eEPS = new HashSet<EP>();
+
+		this.setAllFlag(true);
+		HashSet<EP> retEPS = decompose(rEPS, eEPS, relaxEQ, keepEQ);
+		for (EP ep:retEPS)
+			ep.setFlag(false);
+	}
+
+	public void doDecompositionByLabel (String label, EP eEP, boolean relaxEQ, boolean keepEQ) {
+		HashSet<EP> rEPS = new HashSet<EP>();
+
+		// find out all the EPs label governs, these are EPs we'd like to keep
+		if (label.startsWith("h")) {
+			String loLabel = this.getLoLabelFromHconsList(label);
+			if (loLabel != null) label = loLabel;
+			rEPS.addAll(this.getEPbyLabelValue(label));
+		} else {
+			rEPS.add(this.charVariableMap.get(label));
+		}
+
+		HashSet<EP> eEPS = new HashSet<EP>();
+		eEPS.add(eEP);
+
+		this.setAllFlag(true);
+		HashSet<EP> retEPS = decompose(rEPS, eEPS, relaxEQ, keepEQ);
+		for (EP ep:retEPS)
+			ep.setFlag(false);
+	}
+
+	public HashSet<EP> decompose(HashSet<EP> rEPS, HashSet<EP> eEPS,
+			boolean relaxEQ, boolean keepEQ) {
+		HashSet<EP> retEPS = new HashSet<EP>();
+		if (eEPS == null) eEPS = new HashSet<EP>();
+		if (rEPS.size() == 0) return rEPS;
+		EP ep;
+		DMRS.PRE_SLASH preSlash;
+		DMRS.POST_SLASH postSlash;
+		DMRS.DIRECTION direction;
+
+		for (EP tEP: rEPS) {
+			if (eEPS.contains(tEP)) continue;
+			for (DMRS dmrs:tEP.getDmrsSet()) {
+
+				preSlash = dmrs.getPreSlash();
+				if (preSlash == DMRS.PRE_SLASH.NULL) continue;
+				ep = dmrs.getEP();
+				if (rEPS.contains(ep) || eEPS.contains(ep)) continue;
+				postSlash = dmrs.getPostSlash();
+				direction = dmrs.getDirection();
+				//!ep.getTypeName().equals("PARG_D_REL")
+				if (direction == DMRS.DIRECTION.DEP) {
+					// ep is the dependant of tEP
+					if (relaxEQ && postSlash == DMRS.POST_SLASH.EQ &&
+							(tEP.isVerbEP() || (tEP.isPrepositionEP() && dmrs.isPreArg2())) ) {
+						/*
+						 *  assign tEP a new label. we could have assigned ep a new label but in
+						 *  this way we have to fix the qeq relations since in most cases ep is
+						 *  an NP. tEP is usually a verb EP or preposition EP that doesn't involve
+						 *  qeq relations.
+						 */
+						String newLabel = "h"+this.generateUnusedLabel(1).get(0);
+						EP.assignNewLabel(tEP, ep, newLabel);
 					}
+					retEPS.add(ep);
+				} else if (direction == DMRS.DIRECTION.GOV) {
+					if (!keepEQ && (ep.isVerbEP() || ep.isPrepositionEP()) &&
+							postSlash == DMRS.POST_SLASH.EQ && !ep.hasEPemptyArgs()) {
+						continue;
+					}
+					if (!(postSlash == DMRS.POST_SLASH.NEQ && ep.isVerbEP())) {
+						retEPS.add(ep);
+					}
+				} else {
 				}
+
 			}
 		}
+
+
+		if (retEPS.size() != 0) {
+			rEPS.addAll(retEPS);
+			return decompose(rEPS, eEPS, false, true);
+		} else
+			return rEPS;
 	}
 
 	/**
@@ -1840,8 +1893,8 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * @param label a String indicating an EP, starting with an "h" or "x".
 	 * @param excepEP an exception EP, whose flag is always set to true.
 	 */
-	public void keepDependentEPbyLabel (String label, ElementaryPredication excepEP) {
-		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
+	public void keepDependentEPbyLabel (String label, EP excepEP) {
+		HashSet<EP> depSet = new HashSet<EP>();
 
 		this.setAllFlag(true);
 
@@ -1860,9 +1913,9 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * Used to extract all dependents from a verb EP. vEP is kept.
 	 * @param vEP
 	 */
-	public void keepDependentEPfromVerbEP (ElementaryPredication vEP) {
+	public void keepDependentEPfromVerbEP (EP vEP) {
 		this.setAllFlag(true);
-		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
+		HashSet<EP> depSet = new HashSet<EP>();
 
 		// keep all vEP's governors
 		depSet.addAll(vEP.getGovernorsByArg());
@@ -1872,7 +1925,7 @@ L-HNDL:h8 -> _like_v-1_rel
 
 		setAllConnectionsFlag(depSet, vEP, false);
 
-		for (ElementaryPredication ep:vEP.getDependentsByArg()) {
+		for (EP ep:vEP.getDependentsByArg()) {
 			depSet.clear();
 			// keep all dependents EP after vEP
 			if (ep.getCfrom() >= vEP.getCfrom() && vEP.getDependentsByArg().size() != 1) {
@@ -1897,9 +1950,9 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * @param vEP
 	 * @param excepEP
 	 */
-	public void keepDependentEPandVerbEP (ElementaryPredication vEP, ElementaryPredication excepEP) {
+	public void keepDependentEPandVerbEP (EP vEP, EP excepEP) {
 		this.setAllFlag(true);
-		HashSet<ElementaryPredication> depSet = new HashSet<ElementaryPredication>();
+		HashSet<EP> depSet = new HashSet<EP>();
 
 		// keep all vEP's governors
 		if (vEP==null)
@@ -1912,7 +1965,7 @@ L-HNDL:h8 -> _like_v-1_rel
 		if (depSet.contains(excepEP)) depSet.remove(excepEP);
 		setAllConnectionsFlag(depSet, vEP, false);
 
-		for (ElementaryPredication ep:vEP.getDependentsByArg()) {
+		for (EP ep:vEP.getDependentsByArg()) {
 			depSet.clear();
 			// keep all dependents EP after vEP
 			if (ep.getCfrom() >= vEP.getCfrom() && vEP.getDependentsByArg().size() != 1) {
@@ -1939,9 +1992,9 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * @param excepEP
 	 * @param flag
 	 */
-	public static void setAllConnectionsFlag (HashSet<ElementaryPredication> depSet,
-			ElementaryPredication excepEP, boolean flag) {
-		for (ElementaryPredication ep:depSet) {
+	public static void setAllConnectionsFlag (HashSet<EP> depSet,
+			EP excepEP, boolean flag) {
+		for (EP ep:depSet) {
 			if (ep!=excepEP && ep.getFlag() != flag && !ep.getTypeName().equals("PARG_D_REL")) {
 				ep.setFlag(flag);
 				setAllConnectionsFlag(ep.getAllConnections(), excepEP, flag);
@@ -1951,9 +2004,9 @@ L-HNDL:h8 -> _like_v-1_rel
 		}
 	}
 
-	public static void setAllConnectionsFlagExceptPP (HashSet<ElementaryPredication> depSet,
-			ElementaryPredication excepEP, boolean flag) {
-		for (ElementaryPredication ep:depSet) {
+	public static void setAllConnectionsFlagExceptPP (HashSet<EP> depSet,
+			EP excepEP, boolean flag) {
+		for (EP ep:depSet) {
 			if (ep!=excepEP && ep.getFlag() != flag && !ep.getTypeName().equals("PARG_D_REL")
 					&& !ep.getTypeName().toLowerCase().contains("_p_")
 					&& !ep.getTypeName().toLowerCase().contains("_v_")) {

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import com.googlecode.mrsqg.Preprocessor;
 import com.googlecode.mrsqg.analysis.Pair;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
@@ -44,10 +44,10 @@ public class NumReplacer extends Fallback {
 			pre.preprocess(sentence);
 			MRS mrs = oriPair.getOriMrs();
 
-			ElementaryPredication oldEP = null;
+			EP oldEP = null;
 
-			ArrayList<ElementaryPredication> eps = mrs.getEps();
-			ElementaryPredication ep;
+			ArrayList<EP> eps = mrs.getEps();
+			EP ep;
 
 			for (int i=0; i<eps.size(); i++) {
 				ep = eps.get(i);

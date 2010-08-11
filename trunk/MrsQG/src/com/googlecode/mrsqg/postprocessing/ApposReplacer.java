@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import com.googlecode.mrsqg.Preprocessor;
 import com.googlecode.mrsqg.analysis.Pair;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
@@ -58,7 +58,7 @@ public class ApposReplacer extends Fallback {
 			pre.preprocess(sentence);
 
 			MRS mrs = oriPair.getOriMrs();
-			for (ElementaryPredication ep:mrs.getEps()) {
+			for (EP ep:mrs.getEps()) {
 				if (ep.getTypeName().equals(apposEPvalue)) {
 					/*
 					 * pipe: The man after Hurricane Katrina did not cause a big collapse.
@@ -69,18 +69,18 @@ public class ApposReplacer extends Fallback {
 					// Katrina, Anna
 					String arg2 = ep.getValueByFeature("ARG2");
 
-					ElementaryPredication arg1EP = mrs.getCharVariableMap().get(arg1);
-					ElementaryPredication arg2EP = mrs.getCharVariableMap().get(arg2);
+					EP arg1EP = mrs.getCharVariableMap().get(arg1);
+					EP arg2EP = mrs.getCharVariableMap().get(arg2);
 
 					if (arg1EP==null || arg2EP==null) continue;
 
-					HashSet<ElementaryPredication>  arg1Set = arg1EP.getGovernorsByNonArg();
-					HashSet<ElementaryPredication>  arg2Set = arg2EP.getGovernorsByNonArg();
+					HashSet<EP>  arg1Set = arg1EP.getGovernorsByNonArg();
+					HashSet<EP>  arg2Set = arg2EP.getGovernorsByNonArg();
 					arg2Set.add(arg2EP);
 
 					// we need to find the range of arg2Set to delete it.
 					int deleteArg2From = aLargeNum, deleteArg2To = -1;
-					for (ElementaryPredication e:arg2Set) {
+					for (EP e:arg2Set) {
 						if (e.getCfrom()<deleteArg2From) deleteArg2From = e.getCfrom();
 						if (e.getCto()>deleteArg2To) deleteArg2To = e.getCto();
 					}
@@ -90,7 +90,7 @@ public class ApposReplacer extends Fallback {
 					 * or ("girls") insert "which" before it if no quantifier is present.
 					 */
 					int deleteArg1From = aLargeNum, deleteArg1To = -1;
-					for (ElementaryPredication e:arg1Set) {
+					for (EP e:arg1Set) {
 						if (e.getTypeName().contains("_Q_") && e.getCto() < arg1EP.getCfrom()) {
 							deleteArg1From = e.getCfrom();
 							deleteArg1To = e.getCto();

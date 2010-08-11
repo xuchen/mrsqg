@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.analysis.Term;
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -128,7 +128,7 @@ public class MrsTransformer {
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 		MRS q_mrs;
-		ArrayList<ElementaryPredication> eps;
+		ArrayList<EP> eps;
 
 		for (Term term:terms) {
 			for (String neType:term.getNeTypes()) {
@@ -142,7 +142,7 @@ public class MrsTransformer {
 				q_mrs = new MRS(this.ori_mrs);
 				eps = q_mrs.getEPS(term.getCfrom(), term.getCto());
 				String hi, lo;
-				ElementaryPredication hiEP, loEP;
+				EP hiEP, loEP;
 				if (eps == null || eps.size() == 0) {
 					continue;
 				} else if (eps.size() == 1) {
@@ -151,7 +151,7 @@ public class MrsTransformer {
 					// hiEP should be found through a qeq relation
 					hi = MRS.getHiLabelFromHconsList(lo, q_mrs.getHcons());
 					if (hi == null) continue;
-					ArrayList<ElementaryPredication> rstr = q_mrs.getEPbyFeatAndValue("RSTR", hi);
+					ArrayList<EP> rstr = q_mrs.getEPbyFeatAndValue("RSTR", hi);
 					if (rstr==null) continue;
 					hiEP = rstr.get(0);
 					if (hi==null||hiEP==null) {
@@ -165,7 +165,7 @@ public class MrsTransformer {
 					}
 				} else {
 					// one is hi, the other is lo in a qeq relation
-					ArrayList<ElementaryPredication> hiloEPS = MRS.determineHiLowEP (eps, q_mrs);
+					ArrayList<EP> hiloEPS = MRS.determineHiLowEP (eps, q_mrs);
 					if (hiloEPS == null) continue;
 					hiEP = hiloEPS.get(0);
 					loEP = hiloEPS.get(1);
@@ -175,8 +175,8 @@ public class MrsTransformer {
 					log.warn("the size of eps isn't 1 or 2 (but maybe I can manage): \n"+eps);
 				}
 
-				ArrayList<ElementaryPredication> removed = new ArrayList<ElementaryPredication>();
-				for (ElementaryPredication ep:q_mrs.getEps()) {
+				ArrayList<EP> removed = new ArrayList<EP>();
+				for (EP ep:q_mrs.getEps()) {
 					if (ep != loEP && ep.getLabel().equals(loEP.getLabel())
 							&& !ep.getTypeName().toLowerCase().contains("_p_") && !ep.getTypeName().toLowerCase().contains("_v_")) {
 						// possibly adjective, such as "next" in "next Monday".
@@ -326,7 +326,7 @@ public class MrsTransformer {
 					MRS placeMrs = new MRS(q_mrs);
 					// set hiEP to _WHICH_Q_REL and loEP to _place_n_of_rel
 					placeMrs.getEPbyParallelIndex(q_mrs, hiEP).setTypeName("_WHICH_Q_REL");
-					ElementaryPredication placeEP = placeMrs.getEPbyParallelIndex(q_mrs, loEP);
+					EP placeEP = placeMrs.getEPbyParallelIndex(q_mrs, loEP);
 					placeEP.setTypeName("_place_n_of_rel");
 					placeEP.addSimpleFvpair("ARG1", "i"+placeMrs.generateUnusedLabel(1).get(0));
 					placeEP.getValueVarByFeature("ARG0").addExtrapair("IND", "+");
@@ -339,7 +339,7 @@ public class MrsTransformer {
 
 				if (neType.equals("NElocation") || neType.equals("NEdate"))
 				{
-					ElementaryPredication ppEP = q_mrs.getEPbefore(term.getCfrom(), term.getCto());
+					EP ppEP = q_mrs.getEPbefore(term.getCfrom(), term.getCto());
 					String pp = this.pre.getPrepositionBeforeTerm(term, 0);
 					// change the preposition (if any) before the term
 					if (pp!=null && ppEP != null && ppEP.getPred()!=null &&
@@ -381,7 +381,7 @@ public class MrsTransformer {
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 		MRS q_mrs;
-		ArrayList<ElementaryPredication> eps, hiloEPS;
+		ArrayList<EP> eps, hiloEPS;
 
 		for (Term term:terms) {
 			for (String neType:term.getNeTypes()) {
@@ -400,7 +400,7 @@ public class MrsTransformer {
 						continue;
 					}
 
-					ElementaryPredication hiEP, loEP;
+					EP hiEP, loEP;
 
 					// one is hi, the other is lo in a qeq relation
 					hiloEPS = MRS.determineHiLowEP (eps, q_mrs);
@@ -428,12 +428,12 @@ public class MrsTransformer {
 			            BODY: h10 ]
 					 */
 					ArrayList<String> labelStore = q_mrs.generateUnusedLabel(6);
-					ElementaryPredication whichEP = new ElementaryPredication("WHICH_Q_REL", "h"+labelStore.get(0));
+					EP whichEP = new EP("WHICH_Q_REL", "h"+labelStore.get(0));
 					String arg0 = "x"+labelStore.get(4);
 					whichEP.addSimpleFvpair("ARG0", arg0);
 					whichEP.addSimpleFvpair("RSTR", "h"+labelStore.get(1));
 					whichEP.addSimpleFvpair("BODY", "h"+labelStore.get(2));
-					ElementaryPredication abstrEP = new ElementaryPredication("ABSTR_DEG_REL", "h"+labelStore.get(3));
+					EP abstrEP = new EP("ABSTR_DEG_REL", "h"+labelStore.get(3));
 					abstrEP.addSimpleFvpair("ARG0", arg0);
 					q_mrs.addEPtoEPS(whichEP);
 					q_mrs.addEPtoEPS(abstrEP);
@@ -449,7 +449,7 @@ public class MrsTransformer {
 			            ARG1: e14 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]
 			            ARG2: x8 ]
 					 */
-					ElementaryPredication measureEP = new ElementaryPredication("MEASURE_REL", loEP.getLabel());
+					EP measureEP = new EP("MEASURE_REL", loEP.getLabel());
 					String[] extraPairs = {"SF", "PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"};
 					measureEP.addFvpair("ARG0", "e"+labelStore.get(5), extraPairs);
 					measureEP.addFvpair("ARG1", loEP.getArg0(), extraPairs);

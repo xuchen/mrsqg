@@ -12,8 +12,13 @@ import org.xml.sax.helpers.AttributesImpl;
 
 import com.googlecode.mrsqg.util.StringUtils;
 
+/**
+ * A class for Elementary Predication
+ * @author Xuchen Yao
+ *
+ */
 
-public class ElementaryPredication {
+public class EP {
 //	<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //	<!ATTLIST ep
 //	          cfrom CDATA #IMPLIED
@@ -26,7 +31,7 @@ public class ElementaryPredication {
 	 * Any new field added to this class must also be added to the copy constructor.
 	 */
 
-	private static Logger log = Logger.getLogger(ElementaryPredication.class);
+	private static Logger log = Logger.getLogger(EP.class);
 
 	private int cfrom = -1;
 	private int cto = -1;
@@ -43,23 +48,23 @@ public class ElementaryPredication {
 	/** A set of EPs which govern the current EP by ARG*. In the theory of a
 	 * A -> B relation, A is called a head and B is its dependent. We call
 	 * A a governor here since "head" is ambiguous if used alone. */
-	private HashSet <ElementaryPredication> governorsByArg = null;
+	private HashSet <EP> governorsByArg = null;
 	/** A set of EPs which govern the current EP by relations other
 	 * than ARG*, such as RSTR */
-	private HashSet<ElementaryPredication> governorsByNonArg = null;
+	private HashSet<EP> governorsByNonArg = null;
 
-	private HashSet <ElementaryPredication> dependentsByArg = null;
-	private HashSet<ElementaryPredication> dependentsByNonArg = null;
+	private HashSet <EP> dependentsByArg = null;
+	private HashSet<EP> dependentsByNonArg = null;
 
 	/** the rare /EQ relation as in dmrs.pdf */
-	private HashSet<ElementaryPredication> equalLabelSet = null;
+	private HashSet<EP> equalLabelSet = null;
 
 	private HashSet<DMRS> dmrsSet = null;
 
 	/**
 	* Copy constructor.
 	*/
-	public ElementaryPredication(ElementaryPredication old) {
+	public EP(EP old) {
 		if (old == null) return;
 		this.cfrom = old.getCfrom();
 		this.cto = old.getCto();
@@ -74,26 +79,26 @@ public class ElementaryPredication {
 		for(FvPair p:old.getFvpair()) {
 			this.fvpair.add(new FvPair(p));
 		}
-		governorsByArg = new HashSet<ElementaryPredication>();
-		governorsByNonArg = new HashSet<ElementaryPredication>();
-		dependentsByArg = new HashSet<ElementaryPredication>();
-		dependentsByNonArg = new HashSet<ElementaryPredication>();
-		equalLabelSet = new HashSet<ElementaryPredication>();
+		governorsByArg = new HashSet<EP>();
+		governorsByNonArg = new HashSet<EP>();
+		dependentsByArg = new HashSet<EP>();
+		dependentsByNonArg = new HashSet<EP>();
+		equalLabelSet = new HashSet<EP>();
 		dmrsSet = new HashSet<DMRS>();
 	}
 
 
-	public ElementaryPredication() {
+	public EP() {
 		fvpair = new ArrayList<FvPair>();
-		governorsByArg = new HashSet<ElementaryPredication>();
-		governorsByNonArg = new HashSet<ElementaryPredication>();
-		dependentsByArg = new HashSet<ElementaryPredication>();
-		dependentsByNonArg = new HashSet<ElementaryPredication>();
-		equalLabelSet = new HashSet<ElementaryPredication>();
+		governorsByArg = new HashSet<EP>();
+		governorsByNonArg = new HashSet<EP>();
+		dependentsByArg = new HashSet<EP>();
+		dependentsByNonArg = new HashSet<EP>();
+		equalLabelSet = new HashSet<EP>();
 		dmrsSet = new HashSet<DMRS>();
 	}
 
-	public ElementaryPredication(String typeName, String label) {
+	public EP(String typeName, String label) {
 		this();
 		if (StringUtils.containsUppercase(typeName))
 			this.pred = typeName;
@@ -129,17 +134,17 @@ public class ElementaryPredication {
 	public void setLabelVid(String s) {label_vid=s;label="h"+s;}
 	public void setLabel(String s) {label=s; label_vid=s.substring(1);}
 
-	public HashSet<ElementaryPredication> getGovernorsByArg () { return governorsByArg;}
-	public HashSet<ElementaryPredication> getGovernorsByNonArg () { return governorsByNonArg;}
-	public HashSet<ElementaryPredication> getDependentsByArg () { return dependentsByArg;}
-	public HashSet<ElementaryPredication> getDependentsByNonArg () { return dependentsByNonArg;}
-	public HashSet<ElementaryPredication> getEqualLabelSet () { return equalLabelSet;}
+	public HashSet<EP> getGovernorsByArg () { return governorsByArg;}
+	public HashSet<EP> getGovernorsByNonArg () { return governorsByNonArg;}
+	public HashSet<EP> getDependentsByArg () { return dependentsByArg;}
+	public HashSet<EP> getDependentsByNonArg () { return dependentsByNonArg;}
+	public HashSet<EP> getEqualLabelSet () { return equalLabelSet;}
 	public HashSet<DMRS> getDmrsSet () {return dmrsSet;}
 	/**
 	 * Add an EP to the set of governors which refer to the current EP by ARG*.
 	 * @param ep An EP
 	 */
-	public void addGovernorByArg (ElementaryPredication ep) {
+	public void addGovernorByArg (EP ep) {
 		if (ep != this)
 			governorsByArg.add(ep);
 	}
@@ -149,7 +154,7 @@ public class ElementaryPredication {
 	 * other than ARG*.
 	 * @param ep An EP
 	 */
-	public void addGovernorByNonArg (ElementaryPredication ep) {
+	public void addGovernorByNonArg (EP ep) {
 		if (ep != this)
 			governorsByNonArg.add(ep);
 	}
@@ -158,7 +163,7 @@ public class ElementaryPredication {
 	 * Add an EP to the set of dependents referred by the current EP by ARG*.
 	 * @param ep An EP
 	 */
-	public void addDependentByArg (ElementaryPredication ep) {
+	public void addDependentByArg (EP ep) {
 		if (ep != this)
 			dependentsByArg.add(ep);
 	}
@@ -168,7 +173,7 @@ public class ElementaryPredication {
 	 * other than ARG*.
 	 * @param ep An EP
 	 */
-	public void addDependentByNonArg (ElementaryPredication ep) {
+	public void addDependentByNonArg (EP ep) {
 		if (ep != this)
 			dependentsByNonArg.add(ep);
 	}
@@ -178,7 +183,7 @@ public class ElementaryPredication {
 	 * other than ARG*.
 	 * @param ep An EP
 	 */
-	public void addEqualLabelSet (ElementaryPredication ep) {
+	public void addEqualLabelSet (EP ep) {
 		if (ep != this)
 			equalLabelSet.add(ep);
 	}
@@ -188,8 +193,8 @@ public class ElementaryPredication {
 	 * other than ARG*.
 	 * @param ep An EP
 	 */
-	public void addAllEqualLabelSet (Collection<ElementaryPredication> epCollection) {
-		for (ElementaryPredication ep:epCollection) {
+	public void addAllEqualLabelSet (Collection<EP> epCollection) {
+		for (EP ep:epCollection) {
 			if (ep != this)
 				equalLabelSet.add(ep);
 		}
@@ -199,13 +204,22 @@ public class ElementaryPredication {
 		dmrsSet.add(d);
 	}
 
+	public void clearDependencies () {
+		governorsByArg.clear();
+		governorsByNonArg.clear();
+		dependentsByArg.clear();
+		dependentsByNonArg.clear();
+		equalLabelSet.clear();
+		dmrsSet.clear();
+	}
+
 
 	/**
 	 * Check whether <code>ep</code> is in the dmrsSet of this EP.
 	 * @param ep
 	 * @return
 	 */
-	public boolean isInDmrsSet (ElementaryPredication ep) {
+	public boolean isInDmrsSet (EP ep) {
 		boolean ret = false;
 		for (DMRS d:dmrsSet) {
 			if (d.getEP() == ep) {
@@ -220,8 +234,8 @@ public class ElementaryPredication {
 	 * Return all EPs that are the governor or dependent of this EP
 	 * @return a HashSet of EPs
 	 */
-	public HashSet<ElementaryPredication> getAllConnections() {
-		HashSet<ElementaryPredication> connections = new HashSet<ElementaryPredication>();
+	public HashSet<EP> getAllConnections() {
+		HashSet<EP> connections = new HashSet<EP>();
 		connections.addAll(governorsByArg);
 		connections.addAll(governorsByNonArg);
 		connections.addAll(dependentsByArg);
@@ -353,8 +367,120 @@ public class ElementaryPredication {
 	 * @return a boolean value
 	 */
 	public boolean isVerbEP() {
-		return this.getTypeName().contains("_v_") && this.getArg0().startsWith("e");
+		return this.getTypeName().toLowerCase().contains("_v_") && this.getArg0().startsWith("e");
 	}
+
+	/**
+	 * Whether this EP is an EP for prepositions, whose type name matches "_p_".
+	 * @return a boolean value
+	 */
+	public boolean isPrepositionEP() {
+		return this.getTypeName().toLowerCase().contains("_p_");
+	}
+
+	/**
+	 * whether ep has any ARG/EQ dependency
+	 * @return a boolean value
+	 */
+	public boolean hasEQarg() {
+		boolean ret = false;
+		for (DMRS dmrs:this.dmrsSet) {
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.EQ) {
+				ret = true;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * whether ep has any ARG/EQ dependency to any non-prepositions or non-verbs
+	 * @return a boolean value
+	 */
+	public boolean hasEQargToNonPPorVerb() {
+		boolean ret = false;
+		for (DMRS dmrs:this.dmrsSet) {
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.EQ &&
+					!dmrs.getEP().isVerbEP() && !dmrs.getEP().isPrepositionEP()) {
+				ret = true;
+				break;
+			}
+		}
+		return ret;
+	}
+
+
+	/**
+	 * whether ep has any empty ARG*
+	 * @return a boolean value
+	 */
+	public boolean hasEPemptyArgs () {
+		boolean ret = false;
+		for (DMRS dmrs:this.dmrsSet) {
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.NULL) {
+				ret = true;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	/**
+	 * Given a preposition EP, finds out the verb EP it modifies
+	 * @return a verb EP
+	 */
+	public static EP getVerbEP (EP pEP) {
+		EP vEP = null;
+
+		if (!pEP.isPrepositionEP()) {
+			log.error("must be a preposition EP: "+pEP);
+			return null;
+		}
+
+		for (DMRS dmrs:pEP.getDmrsSet()) {
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.EQ) {
+				if (dmrs.getEP().isVerbEP()) {
+					vEP =  dmrs.getEP();
+					break;
+				} else if (dmrs.getEP().isPrepositionEP()) {
+					vEP = EP.getVerbEP(dmrs.getEP());
+					break;
+				}
+			}
+		}
+
+		return vEP;
+	}
+
+	/**
+	 * Set the label of <code>tEP</code> to a new label without modifying
+	 * <code>eEP<code>'s label. Usually tEP and eEP have the same label but
+	 * we want them different
+	 * @param tEP the target EP
+	 * @param eEP an exception EP
+	 * @param label a new label
+	 */
+	public static void assignNewLabel(EP tEP, EP eEP, String label) {
+		EP ep;
+		for (DMRS dmrs:tEP.getDmrsSet()) {
+			ep = dmrs.getEP();
+			if (ep==eEP) continue;
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.EQ &&
+					ep.getLabel().equals(tEP.getLabel()) && !ep.getLabel().equals(label)) {
+				tEP.setLabel(label);
+				/*
+				 *  we have to do it recursively since in the cases of prepositions, tEP might involve
+				 *  multiple ARG/EQ relations through a transitive chain. e.g.
+				 *  the girl with who John fell in love.
+				 *  "with", "in" and "fall" share the same label but "with" only connects with "fall"
+				 *  through "in". A recursion is needed in this case.
+				 */
+				assignNewLabel(ep, eEP, label);
+			}
+		}
+		tEP.setLabel(label);
+	}
+
 
 	/**
 	 * Return the value of a feature.
@@ -553,6 +679,8 @@ public class ElementaryPredication {
 			res.append("  "+p+"\n");
 		}
 		res.append("]");
+		res.append("\n\tDMRS: "+this.getDmrsSet());
+		res.append("\n");
 		return res.toString();
 	}
 

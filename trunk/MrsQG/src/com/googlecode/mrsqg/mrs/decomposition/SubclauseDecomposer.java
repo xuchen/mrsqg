@@ -13,11 +13,13 @@ pipe: There are three ways in which businesses can respond to the green imperati
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
-import com.googlecode.mrsqg.mrs.ElementaryPredication;
+import com.googlecode.mrsqg.mrs.DMRS;
+import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.HCONS;
 import com.googlecode.mrsqg.mrs.MRS;
 
@@ -41,84 +43,83 @@ public class SubclauseDecomposer extends MrsDecomposer {
 
 		for (MRS inMrs:inList) {
 
-			ElementaryPredication verbEP = null;
+			EP tEP = null;
 			String oneArg = null;
 
-			for (ElementaryPredication ep:inMrs.getEps()) {
+			for (EP ep:inMrs.getEps()) {
 				MRS mrs = null;
 				String oriTense = null;
 				// find out all verb EPs who are not the main verb of the sentence
 				// not main verb: ARG0 value isn't the index of this mrs
-				/*
-				 * TODO: these EPs also should share some /EQ relation with
-				 * their ARG1 or ARG2
-				 *
-				 * TODO: work with prepositions
-				 */
-				if (ep.isVerbEP() && !ep.getArg0().equals(inMrs.getIndex()) &&
-						ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP")) {
+
+				if ((ep.isVerbEP() || ep.isPrepositionEP())&& !ep.getArg0().equals(inMrs.getIndex()) &&
+						ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP") &&
+						!ep.hasEPemptyArgs() && ep.hasEQarg()) {
+
+					if (!ep.hasEQargToNonPPorVerb()) {
+						/*
+						 * In the case of "Mary is the girl John fell in love with"
+						 * we don't want to go through 'fell' and 'in'
+						 */
+						continue;
+					}
 
 					mrs = new MRS(inMrs);
 					oriTense = mrs.getTense();
-					// remove all verb EPs which don't have an ARG* in front of it
-					// e.g. "a generated sentence" (doesn't really work)
-					HashSet<String> argSet = ep.getAllARGvalue();
+					tEP = mrs.getEps().get(inMrs.getEps().indexOf(ep));
 
-					for (ElementaryPredication e:inMrs.getEps()) {
-						// don't loop after ep
-						if (e==ep) break;
-						if (argSet.contains(e.getArg0())) {
-							verbEP = mrs.getEps().get(inMrs.getEps().indexOf(ep));
-							oneArg = e.getArg0();
-							break;
-						}
-					}
-
-					if (verbEP == null) continue;
-					if (mrs == null) continue;
-
-					mrs.keepDependentEPfromVerbEP(verbEP);
+					//mrs.keepDependentEPfromVerbEP(verbEP);
+					mrs.doDecomposition(new HashSet<EP>(Arrays.asList(tEP)), null, true, true);
 
 					/*
 					 *  set the lowEP of oneArg (verbEP's ARG1, usually before verbEP) to a different label
 					 */
-					ArrayList<ElementaryPredication> argList = mrs.getEPbyFeatAndValue("ARG0", oneArg);
-					if (argList == null) continue;
-					if (argList.size() == 1 && argList.get(0).getLabel().equals(verbEP.getLabel())) {
-						argList.get(0).setLabel("h"+mrs.generateUnusedLabel(1).get(0));
-					} else if (argList.size() == 2) {
-						ArrayList<ElementaryPredication> hiloEPS = MRS.determineHiLowEP (argList, mrs);
-						if (hiloEPS == null) continue;
-						ElementaryPredication hiEP = hiloEPS.get(0);
-						ElementaryPredication lowEP = hiloEPS.get(1);
-						if (lowEP.getLabel().equals(verbEP.getLabel())) {
-							String oldLowLabel = lowEP.getLabel();
-							// correct the HCONS list
-							String newLowLabel = "h"+mrs.generateUnusedLabel(1).get(0);
-							lowEP.setLabel(newLowLabel);
-							for (ElementaryPredication cEP:lowEP.getAllConnections()) {
-								if (cEP!=verbEP && cEP.getLabel().equals(oldLowLabel)
-										&& !cEP.getTypeName().contains("_D_")) {
-									/*
-									 * This is a pretty fish eaten by the cat.
-									 * "pretty" and "eaten" have the same label with "fish",
-									 * we must also change "pretty"'s label, but not "eaten"'s label
-									 */
-									cEP.setLabel(newLowLabel);
-								}
-							}
-							for (HCONS h:mrs.getHcons()) {
-								if (h.getHi().equals(hiEP.getValueByFeature("RSTR")) && h.getLo().equals(oldLowLabel)) {
-									h.getLoVar().setLabel(newLowLabel);
-									break;
-								}
-							}
-						}
-					} else {
-						log.error("the size of one arg list of the subclause verb isn't 1 or 2:\n"+argList);
-					}
+//					ArrayList<EP> argList = mrs.getEPbyFeatAndValue("ARG0", oneArg);
+//					if (argList == null) continue;
+//					if (argList.size() == 1 && argList.get(0).getLabel().equals(verbEP.getLabel())) {
+//						argList.get(0).setLabel("h"+mrs.generateUnusedLabel(1).get(0));
+//					} else if (argList.size() == 2) {
+//						ArrayList<EP> hiloEPS = MRS.determineHiLowEP (argList, mrs);
+//						if (hiloEPS == null) continue;
+//						EP hiEP = hiloEPS.get(0);
+//						EP lowEP = hiloEPS.get(1);
+//						if (lowEP.getLabel().equals(verbEP.getLabel())) {
+//							String oldLowLabel = lowEP.getLabel();
+//							// correct the HCONS list
+//							String newLowLabel = "h"+mrs.generateUnusedLabel(1).get(0);
+//							lowEP.setLabel(newLowLabel);
+//							for (EP cEP:lowEP.getAllConnections()) {
+//								if (cEP!=verbEP && cEP.getLabel().equals(oldLowLabel)
+//										&& !cEP.getTypeName().contains("_D_")) {
+//									/*
+//									 * This is a pretty fish eaten by the cat.
+//									 * "pretty" and "eaten" have the same label with "fish",
+//									 * we must also change "pretty"'s label, but not "eaten"'s label
+//									 */
+//									cEP.setLabel(newLowLabel);
+//								}
+//							}
+//							for (HCONS h:mrs.getHcons()) {
+//								if (h.getHi().equals(hiEP.getValueByFeature("RSTR")) && h.getLo().equals(oldLowLabel)) {
+//									h.getLoVar().setLabel(newLowLabel);
+//									break;
+//								}
+//							}
+//						}
+//					} else {
+//						log.error("the size of one arg list of the subclause verb isn't 1 or 2:\n"+argList);
+//					}
 
-					mrs.setIndex(verbEP.getArg0());
+					if (tEP.isVerbEP()) {
+						mrs.setIndex(tEP.getArg0());
+					} else {
+						// is preposition
+						EP vEP = EP.getVerbEP(tEP);
+						if (vEP != null)
+							mrs.setIndex(vEP.getArg0());
+						else
+							continue;
+					}
 					if (mrs.getTense().equals("UNTENSED"))
 						mrs.setTense(oriTense);
 					if (mrs.removeEPbyFlag()) {
