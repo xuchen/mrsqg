@@ -448,16 +448,23 @@ public class MrsQG {
 			mrxList = origMrsList;
 		}
 
-		mrxList = coordDecomposer.doIt(mrxList);
-		mrxList = whyDecomposer.doIt(mrxList);
-		mrxList = subordDecomposer.doIt(mrxList);
-		mrxList = subDecomposer.doIt(mrxList);
-		mrxList = apposDecomposer.doIt(mrxList);
+//		MrsTransformer2 t3;
+//		for (MRS m:mrxList) {
+//		t3 = new MrsTransformer2(m, p);
+//		t3.transform(false);
+//		}
+
+//		mrxList = coordDecomposer.doIt(mrxList);
+//		mrxList = whyDecomposer.doIt(mrxList);
+//		mrxList = subordDecomposer.doIt(mrxList);
+//		mrxList = subDecomposer.doIt(mrxList);
+//		mrxList = apposDecomposer.doIt(mrxList);
 
 		// generation
 		if (mrxList != null && lkb != null) {
 			String mrx;
 			MrsTransformer t;
+			MrsTransformer2 t2;
 			int i=0;
 			for (MRS m:mrxList) {
 				int countType = 0;
@@ -514,8 +521,10 @@ public class MrsQG {
 				}
 
 				// transform
-				t = new MrsTransformer(m, p);
-				ArrayList<MRS> trMrsList = t.transform(false);
+//				t = new MrsTransformer(m, p);
+//				ArrayList<MRS> trMrsList = t.transform(false);
+				t2 = new MrsTransformer2(m, p);
+				ArrayList<MRS> trMrsList = t2.transform(false);
 
 				if (trMrsList == null) continue;
 				// generate question

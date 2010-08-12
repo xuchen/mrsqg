@@ -18,9 +18,7 @@ import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
-import com.googlecode.mrsqg.mrs.DMRS;
 import com.googlecode.mrsqg.mrs.EP;
-import com.googlecode.mrsqg.mrs.HCONS;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
@@ -44,7 +42,6 @@ public class SubclauseDecomposer extends MrsDecomposer {
 		for (MRS inMrs:inList) {
 
 			EP tEP = null;
-			String oneArg = null;
 
 			for (EP ep:inMrs.getEps()) {
 				MRS mrs = null;
@@ -54,7 +51,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 
 				if ((ep.isVerbEP() || ep.isPrepositionEP())&& !ep.getArg0().equals(inMrs.getIndex()) &&
 						ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP") &&
-						!ep.hasEPemptyArgs() && ep.hasEQarg()) {
+						!ep.hasEPemptyArgsExceptPassive() && ep.hasEQarg()) {
 
 					if (!ep.hasEQargToNonPPorVerb()) {
 						/*
@@ -122,8 +119,8 @@ public class SubclauseDecomposer extends MrsDecomposer {
 					}
 					if (mrs.getTense().equals("UNTENSED"))
 						mrs.setTense(oriTense);
-					if (mrs.removeEPbyFlag()) {
-						mrs.setDecomposer("Subclause");
+					mrs.setDecomposer("Subclause");
+					if (mrs.removeEPbyFlag(true)) {
 						mrs.cleanHCONS();
 						outList.add(mrs);
 					}

@@ -379,6 +379,14 @@ public class EP {
 	}
 
 	/**
+	 * Whether this EP is an EP for passive form, i.e. "PARG_D_REL"
+	 * @return a boolean value
+	 */
+	public boolean isPassiveEP() {
+		return this.getTypeName().toLowerCase().equals("parg_d_rel");
+	}
+
+	/**
 	 * whether ep has any ARG/EQ dependency
 	 * @return a boolean value
 	 */
@@ -418,6 +426,18 @@ public class EP {
 		boolean ret = false;
 		for (DMRS dmrs:this.dmrsSet) {
 			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.NULL) {
+				ret = true;
+				break;
+			}
+		}
+		return ret;
+	}
+
+	public boolean hasEPemptyArgsExceptPassive () {
+		boolean ret = false;
+		for (DMRS dmrs:this.dmrsSet) {
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.NULL
+					&& !dmrs.getEP().isPassiveEP()) {
 				ret = true;
 				break;
 			}
@@ -596,15 +616,16 @@ public class EP {
 	/**
 	 * Keep some extrapair in fvpair and remove all others.
 	 *
-	 * @param fv can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
+	 * @param feature can be "ARG0", "RSTR", "BODY", "ARG1", "ARG2"...
 	 * @param extra extrapair to be kept, such as {"NUM", "PERS"}
 	 */
-	public void keepExtrapairInFvpair(String fv, String[] extra) {
-		fv = fv.toUpperCase();
+	public void keepExtrapairInFvpair(String feature, String[] extra) {
+		feature = feature.toUpperCase();
 
 		for (FvPair p:fvpair) {
-			if (p.getRargname().equals(fv)) {
-				p.getVar().keepExtrapair(extra);
+			if (p.getFeature().equals(feature)) {
+				if (p.getVar() != null)
+					p.getVar().keepExtrapair(extra);
 				break;
 			}
 		}

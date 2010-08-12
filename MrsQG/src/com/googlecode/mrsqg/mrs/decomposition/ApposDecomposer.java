@@ -169,7 +169,7 @@ public class ApposDecomposer extends MrsDecomposer {
 			}
 
 		}
-		if (!apposMrs.removeEPbyFlag()) return null;
+		if (!apposMrs.removeEPbyFlag(true)) return null;
 
 		// It should contain only 1 EP. We have 3 steps here:
 		// 1. change APPOS_REL to _BE_V_ID_REL
@@ -259,8 +259,8 @@ public class ApposDecomposer extends MrsDecomposer {
 			}
 		}
 
-		if(!arg1Mrs.removeEPbyFlag()) return null;
-		if(!arg2Mrs.removeEPbyFlag()) return null;
+		if(!arg1Mrs.removeEPbyFlag(true)) return null;
+		if(!arg2Mrs.removeEPbyFlag(true)) return null;
 
 		arg1Mrs.changeEPvalue(arg2Value, arg1Value);
 		arg2Mrs.changeEPvalue(arg1Value, arg2Value);

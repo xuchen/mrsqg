@@ -20,18 +20,18 @@ public class MrsTransformer {
 
 	private static Logger log = Logger.getLogger(MrsTransformer.class);
 
-	private Preprocessor pre;
+	protected Preprocessor pre;
 
 	/**
 	 * MRS for the original sentence
 	 */
-	private MRS ori_mrs;
+	protected MRS ori_mrs;
 
 	/**
 	 * a list of MRS for the generated questions.
 	 * Each question is represented by one MRS
 	 */
-	private ArrayList<MRS> gen_mrs;
+	protected ArrayList<MRS> gen_mrs;
 
 	public MrsTransformer (File file, Preprocessor p) {
 		this.ori_mrs = new MRS(file);
@@ -189,136 +189,7 @@ public class MrsTransformer {
 					log.warn("Removed EP with the same label as loEP:\n" + removed);
 				}
 
-				// change hiEP to which_q_rel
-				hiEP.setTypeName("WHICH_Q_REL");
-
-				// change loEP to person_rel
-				if (neType.equals("NEperson")||neType.equals("NEfirstName")
-						||neType.equals("NEmathematician")||neType.equals("NEplaywright")) {
-					loEP.setTypeName("PERSON_REL");
-					q_mrs.setSentType("WHO");
-
-				} else if (neType.equals("NElocation")) {
-					loEP.setTypeName("PLACE_N_REL");
-					loEP.getValueVarByFeature("ARG0").setExtrapairValue("NUM", "SG");
-					q_mrs.setSentType("WHERE");
-//					loEP.setTypeName("THING_REL");
-//					q_mrs.setSentType("WHAT");
-				} else if (neType.equals("NEdate")||neType.equals("NEtime")||neType.equals("NEweekday")) {
-					loEP.setTypeName("TIME_N_REL");
-					q_mrs.setSentType("WHEN");
-
-				} else {
-					hiEP.setTypeName("_WHICH_Q_REL");
-					q_mrs.setSentType("WHAT");
-					if (neType.equals("NEanimal")) {
-						loEP.setTypeName("_animal_n_1_rel");
-					} else if (neType.equals("NEsport")) {
-						loEP.setTypeName("_sport_n_1_rel");
-					} else if (neType.equals("NEairport")) {
-						loEP.setTypeName("_airport_n_1_rel");
-					} else if (neType.equals("NEaward")) {
-						loEP.setTypeName("_award_n_for_rel");
-					} else if (neType.equals("NEbacteria")) {
-						loEP.setTypeName("_bacteria_n_1_rel");
-					} else if (neType.equals("NEbird")) {
-						loEP.setTypeName("_bird_n_1_rel");
-					} else if (neType.equals("NEbook")) {
-						loEP.setTypeName("_book_n_of_rel");
-					} else if (neType.equals("NEcanal")) {
-						loEP.setTypeName("_canal_n_1_rel");
-					} else if (neType.equals("NEcity")) {
-						loEP.setTypeName("_city_n_1_rel");
-					} else if (neType.equals("NEcompetition")) {
-						loEP.setTypeName("_game_n_1_rel");
-					} else if (neType.equals("NEconflict")) {
-						loEP.setTypeName("_war_n_1_rel");
-					} else if (neType.equals("NEcountry")) {
-						loEP.setTypeName("_country_n_of_rel");
-					} else if (neType.equals("NEdirector")) {
-						loEP.setTypeName("_director_n_of_rel");
-					} else if (neType.equals("NEdisease")) {
-						loEP.setTypeName("_disease_n_1_rel");
-					} else if (neType.equals("NEdrug")) {
-						loEP.setTypeName("_drug_n_1_rel");
-					} else if (neType.equals("NEeducationalInstitution")) {
-						loEP.setTypeName("_school_n_1_rel");
-					} else if (neType.equals("NEfestival")) {
-						loEP.setTypeName("_festival_n_1_rel");
-					} else if (neType.equals("NEfilm")) {
-						loEP.setTypeName("_film_n_1_rel");
-					} else if (neType.equals("NEflower")) {
-						loEP.setTypeName("_flower_n_1_rel");
-					} else if (neType.equals("NEisland")) {
-						loEP.setTypeName("_island_n_1_rel");
-					} else if (neType.equals("NElake")) {
-						loEP.setTypeName("_lake_n_1_rel");
-					} else if (neType.equals("NEmineral")) {
-						loEP.setTypeName("_mineral_n_1_rel");
-					} else if (neType.equals("NEmetal")) {
-						loEP.setTypeName("_metal_n_1_rel");
-					} else if (neType.equals("NEdepartment")) {
-						loEP.setTypeName("_department_n_1_rel");
-					} else if (neType.equals("NEministry")) {
-						loEP.setTypeName("_ministry_n_1_rel");
-					} else if (neType.equals("NEmountain")) {
-						loEP.setTypeName("_mountain_n_1_rel");
-					} else if (neType.equals("NEmusicalInstrument")) {
-						loEP.setTypeName("_instrument_n_of_rel");
-					} else if (neType.equals("NEmusical")) {
-						loEP.setTypeName("_musical_n_1_rel");
-					} else if (neType.equals("NEnarcotic")) {
-						loEP.setTypeName("_drug_n_1_rel");
-					} else if (neType.equals("NEnationalPark")) {
-						loEP.setTypeName("_park_n_1_rel");
-					} else if (neType.equals("NEocean")) {
-						loEP.setTypeName("_ocean_n_1_rel");
-					} else if (neType.equals("NEorganization")) {
-						loEP.setTypeName("_organization_n_1_rel");
-					} else if (neType.equals("NEpeninsula")) {
-						loEP.setTypeName("_peninsula_n_1_rel");
-					} else if (neType.equals("NEplant")) {
-						loEP.setTypeName("_plant_n_1_rel");
-					} else if (neType.equals("NEpoliticalParty")) {
-						loEP.setTypeName("_party_n_of_rel");
-					} else if (neType.equals("NEriver")) {
-						loEP.setTypeName("_river_n_of_rel");
-					} else if (neType.equals("NEscientist")) {
-						loEP.setTypeName("_scientist_n_1_rel");
-					} else if (neType.equals("NEsea")) {
-						loEP.setTypeName("_sea_n_of_rel");
-					} else if (neType.equals("NEsport")) {
-						loEP.setTypeName("_sport_n_1_rel");
-					} else if (neType.equals("NEstadium")) {
-						loEP.setTypeName("_stadium_n_1_rel");
-					} else if (neType.equals("NEstate")) {
-						loEP.setTypeName("_state_n_of_rel");
-					} else if (neType.equals("NEtherapy")) {
-						loEP.setTypeName("_therapy_n_1_rel");
-					} else if (neType.equals("NEusPresident")) {
-						loEP.setTypeName("_president_n_of_rel");
-					} else if (neType.equals("NEvirus")) {
-						loEP.setTypeName("_virus_n_1_rel");
-					} else if (neType.equals("NEsoftware")) {
-						loEP.setTypeName("_software_n_1_rel");
-					} else {
-						hiEP.setTypeName("WHICH_Q_REL");
-						loEP.setTypeName("THING_REL");
-						// only keep "ARG0" as the feature
-						loEP.keepFvpair(new String[]{"ARG0"});
-						// also "ARG0" should be the same with hiEP
-						loEP.setFvpairByFeatAndValue("ARG0", hiEP.getValueVarByFeature("ARG0"));
-						q_mrs.setSentType("WHAT");
-					}
-					if (loEP.getTypeName().contains("_of_rel") || loEP.getTypeName().contains("_for_rel")) {
-						// add an dumb ARG1 to "_of_rel" and "_for_rel"
-						String value=q_mrs.generateUnusedLabel(1).get(0);
-						loEP.addSimpleFvpair("ARG1", "i"+value);
-					}
-				}
-				loEP.delFvpair("CARG");
-				String[] extra = {"NUM", "PERS"};
-				loEP.keepExtrapairInFvpair("ARG0", extra);
+				setupHiLoEP(q_mrs, hiEP, loEP, neType);
 
 				if (neType.equals("NElocation")) {
 					// NElocation generates two types of questions: where and which place
@@ -469,5 +340,138 @@ public class MrsTransformer {
 		return outList.size() == 0 ? null : outList;
 	}
 
+	protected void setupHiLoEP (MRS q_mrs, EP hiEP, EP loEP, String neType) {
+
+		// change hiEP to which_q_rel
+		hiEP.setTypeName("WHICH_Q_REL");
+
+		// change loEP to person_rel
+		if (neType.equals("NEperson")||neType.equals("NEfirstName")
+				||neType.equals("NEmathematician")||neType.equals("NEplaywright")) {
+			loEP.setTypeName("PERSON_REL");
+			q_mrs.setSentType("WHO");
+
+		} else if (neType.equals("NElocation")) {
+			loEP.setTypeName("PLACE_N_REL");
+			loEP.getValueVarByFeature("ARG0").setExtrapairValue("NUM", "SG");
+			q_mrs.setSentType("WHERE");
+//			loEP.setTypeName("THING_REL");
+//			q_mrs.setSentType("WHAT");
+		} else if (neType.equals("NEdate")||neType.equals("NEtime")||neType.equals("NEweekday")) {
+			loEP.setTypeName("TIME_N_REL");
+			q_mrs.setSentType("WHEN");
+
+		} else {
+			hiEP.setTypeName("_WHICH_Q_REL");
+			q_mrs.setSentType("WHAT");
+			if (neType.equals("NEanimal")) {
+				loEP.setTypeName("_animal_n_1_rel");
+			} else if (neType.equals("NEsport")) {
+				loEP.setTypeName("_sport_n_1_rel");
+			} else if (neType.equals("NEairport")) {
+				loEP.setTypeName("_airport_n_1_rel");
+			} else if (neType.equals("NEaward")) {
+				loEP.setTypeName("_award_n_for_rel");
+			} else if (neType.equals("NEbacteria")) {
+				loEP.setTypeName("_bacteria_n_1_rel");
+			} else if (neType.equals("NEbird")) {
+				loEP.setTypeName("_bird_n_1_rel");
+			} else if (neType.equals("NEbook")) {
+				loEP.setTypeName("_book_n_of_rel");
+			} else if (neType.equals("NEcanal")) {
+				loEP.setTypeName("_canal_n_1_rel");
+			} else if (neType.equals("NEcity")) {
+				loEP.setTypeName("_city_n_1_rel");
+			} else if (neType.equals("NEcompetition")) {
+				loEP.setTypeName("_game_n_1_rel");
+			} else if (neType.equals("NEconflict")) {
+				loEP.setTypeName("_war_n_1_rel");
+			} else if (neType.equals("NEcountry")) {
+				loEP.setTypeName("_country_n_of_rel");
+			} else if (neType.equals("NEdirector")) {
+				loEP.setTypeName("_director_n_of_rel");
+			} else if (neType.equals("NEdisease")) {
+				loEP.setTypeName("_disease_n_1_rel");
+			} else if (neType.equals("NEdrug")) {
+				loEP.setTypeName("_drug_n_1_rel");
+			} else if (neType.equals("NEeducationalInstitution")) {
+				loEP.setTypeName("_school_n_1_rel");
+			} else if (neType.equals("NEfestival")) {
+				loEP.setTypeName("_festival_n_1_rel");
+			} else if (neType.equals("NEfilm")) {
+				loEP.setTypeName("_film_n_1_rel");
+			} else if (neType.equals("NEflower")) {
+				loEP.setTypeName("_flower_n_1_rel");
+			} else if (neType.equals("NEisland")) {
+				loEP.setTypeName("_island_n_1_rel");
+			} else if (neType.equals("NElake")) {
+				loEP.setTypeName("_lake_n_1_rel");
+			} else if (neType.equals("NEmineral")) {
+				loEP.setTypeName("_mineral_n_1_rel");
+			} else if (neType.equals("NEmetal")) {
+				loEP.setTypeName("_metal_n_1_rel");
+			} else if (neType.equals("NEdepartment")) {
+				loEP.setTypeName("_department_n_1_rel");
+			} else if (neType.equals("NEministry")) {
+				loEP.setTypeName("_ministry_n_1_rel");
+			} else if (neType.equals("NEmountain")) {
+				loEP.setTypeName("_mountain_n_1_rel");
+			} else if (neType.equals("NEmusicalInstrument")) {
+				loEP.setTypeName("_instrument_n_of_rel");
+			} else if (neType.equals("NEmusical")) {
+				loEP.setTypeName("_musical_n_1_rel");
+			} else if (neType.equals("NEnarcotic")) {
+				loEP.setTypeName("_drug_n_1_rel");
+			} else if (neType.equals("NEnationalPark")) {
+				loEP.setTypeName("_park_n_1_rel");
+			} else if (neType.equals("NEocean")) {
+				loEP.setTypeName("_ocean_n_1_rel");
+			} else if (neType.equals("NEorganization")) {
+				loEP.setTypeName("_organization_n_1_rel");
+			} else if (neType.equals("NEpeninsula")) {
+				loEP.setTypeName("_peninsula_n_1_rel");
+			} else if (neType.equals("NEplant")) {
+				loEP.setTypeName("_plant_n_1_rel");
+			} else if (neType.equals("NEpoliticalParty")) {
+				loEP.setTypeName("_party_n_of_rel");
+			} else if (neType.equals("NEriver")) {
+				loEP.setTypeName("_river_n_of_rel");
+			} else if (neType.equals("NEscientist")) {
+				loEP.setTypeName("_scientist_n_1_rel");
+			} else if (neType.equals("NEsea")) {
+				loEP.setTypeName("_sea_n_of_rel");
+			} else if (neType.equals("NEsport")) {
+				loEP.setTypeName("_sport_n_1_rel");
+			} else if (neType.equals("NEstadium")) {
+				loEP.setTypeName("_stadium_n_1_rel");
+			} else if (neType.equals("NEstate")) {
+				loEP.setTypeName("_state_n_of_rel");
+			} else if (neType.equals("NEtherapy")) {
+				loEP.setTypeName("_therapy_n_1_rel");
+			} else if (neType.equals("NEusPresident")) {
+				loEP.setTypeName("_president_n_of_rel");
+			} else if (neType.equals("NEvirus")) {
+				loEP.setTypeName("_virus_n_1_rel");
+			} else if (neType.equals("NEsoftware")) {
+				loEP.setTypeName("_software_n_1_rel");
+			} else {
+				hiEP.setTypeName("WHICH_Q_REL");
+				loEP.setTypeName("THING_REL");
+				// only keep "ARG0" as the feature
+				loEP.keepFvpair(new String[]{"ARG0"});
+				// also "ARG0" should be the same with hiEP
+				loEP.setFvpairByFeatAndValue("ARG0", hiEP.getValueVarByFeature("ARG0"));
+				q_mrs.setSentType("WHAT");
+			}
+			if (loEP.getTypeName().contains("_of_rel") || loEP.getTypeName().contains("_for_rel")) {
+				// add an dumb ARG1 to "_of_rel" and "_for_rel"
+				String value=q_mrs.generateUnusedLabel(1).get(0);
+				loEP.addSimpleFvpair("ARG1", "i"+value);
+			}
+		}
+		loEP.delFvpair("CARG");
+		String[] extra = {"NUM", "PERS"};
+		loEP.keepExtrapairInFvpair("ARG0", extra);
+	}
 
 }

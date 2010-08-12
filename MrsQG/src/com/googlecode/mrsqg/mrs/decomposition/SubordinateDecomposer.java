@@ -75,7 +75,7 @@ public class SubordinateDecomposer extends MrsDecomposer {
 							subMrs.setIndex(vEP.getArg0());
 						}
 
-						if (subMrs.removeEPbyFlag()) {
+						if (subMrs.removeEPbyFlag(true)) {
 							subMrs.cleanHCONS();
 							subMrs.setDecomposer("Subordinate");
 							outList.add(subMrs);
