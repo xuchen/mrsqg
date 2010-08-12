@@ -1055,7 +1055,7 @@ public class MRS {
 
 		extracted.markDeletionByEPref(targetEP);
 
-		extracted.removeEPbyFlag();
+		extracted.removeEPbyFlag(true);
 		// clean up HCONS list
 		extracted.cleanHCONS();
 
@@ -1131,7 +1131,7 @@ public class MRS {
 			ep.setFlag(flag);
 		}
 
-		if (mrs.removeEPbyFlag()) {
+		if (mrs.removeEPbyFlag(true)) {
 			mrs.cleanHCONS();
 			mrs.postprocessing();
 			return mrs;
@@ -1279,13 +1279,13 @@ public class MRS {
 	}
 
 	/**
-	 * remove all EPs whose flag is set to true from the EPS list
+	 * remove all EPs whose flag is set to <code>flat</code> from the EPS list
 	 * @return a boolean success status
 	 */
-	public boolean removeEPbyFlag () {
+	public boolean removeEPbyFlag (boolean flag) {
 		ArrayList<EP> removedList = new ArrayList<EP>();
 		for (EP ep:this.eps) {
-			if (ep.getFlag() == true) {
+			if (ep.getFlag() == flag) {
 				removedList.add(ep);
 			}
 		}
@@ -1434,6 +1434,7 @@ public class MRS {
 		}
 
 	}
+
 
 	/**
 	 * This method builds cross references for an MRS representation.
@@ -1800,7 +1801,15 @@ L-HNDL:h8 -> _like_v-1_rel
 		return max;
 	}
 
-	public void doDecomposition (HashSet<EP> rEPS, HashSet<EP> eEPS, boolean relaxEQ, boolean keepEQ) {
+	public HashSet<EP> doDecompositionbyEP (EP rEP, EP eEP, boolean relaxEQ, boolean keepEQ) {
+		HashSet<EP> rEPS = new HashSet<EP>();
+		HashSet<EP> eEPS = new HashSet<EP>();
+		if (rEP!=null) rEPS.add(rEP);
+		if (eEP!=null) eEPS.add(eEP);
+		return doDecomposition(rEPS, eEPS, relaxEQ, keepEQ);
+	}
+
+	public HashSet<EP> doDecomposition (HashSet<EP> rEPS, HashSet<EP> eEPS, boolean relaxEQ, boolean keepEQ) {
 
 		if (eEPS == null)
 			eEPS = new HashSet<EP>();
@@ -1809,9 +1818,10 @@ L-HNDL:h8 -> _like_v-1_rel
 		HashSet<EP> retEPS = decompose(rEPS, eEPS, relaxEQ, keepEQ);
 		for (EP ep:retEPS)
 			ep.setFlag(false);
+		return retEPS;
 	}
 
-	public void doDecompositionByLabel (String label, EP eEP, boolean relaxEQ, boolean keepEQ) {
+	public HashSet<EP> doDecompositionByLabel (String label, EP eEP, boolean relaxEQ, boolean keepEQ) {
 		HashSet<EP> rEPS = new HashSet<EP>();
 
 		// find out all the EPs label governs, these are EPs we'd like to keep
@@ -1830,6 +1840,7 @@ L-HNDL:h8 -> _like_v-1_rel
 		HashSet<EP> retEPS = decompose(rEPS, eEPS, relaxEQ, keepEQ);
 		for (EP ep:retEPS)
 			ep.setFlag(false);
+		return retEPS;
 	}
 
 	public HashSet<EP> decompose(HashSet<EP> rEPS, HashSet<EP> eEPS,
@@ -1872,7 +1883,7 @@ L-HNDL:h8 -> _like_v-1_rel
 							postSlash == DMRS.POST_SLASH.EQ && !ep.hasEPemptyArgs()) {
 						continue;
 					}
-					if (!(postSlash == DMRS.POST_SLASH.NEQ && ep.isVerbEP())) {
+					if (!(postSlash == DMRS.POST_SLASH.NEQ && (ep.isVerbEP() || ep.isPassiveEP()))) {
 						retEPS.add(ep);
 					}
 				} else {

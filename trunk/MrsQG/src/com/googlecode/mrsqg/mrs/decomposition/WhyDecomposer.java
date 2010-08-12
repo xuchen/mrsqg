@@ -60,74 +60,6 @@ public class WhyDecomposer extends MrsDecomposer {
 		return outList.size() == 0 ? null : outList;
 	}
 
-	@Deprecated protected ArrayList<MRS> becauseMiddle(MRS inMrs, EP becauseEP, boolean exchange) {
-		MRS reasonMrs = new MRS(inMrs);
-		MRS resultMrs = new MRS(inMrs);
-		ArrayList<MRS> list = new ArrayList<MRS>();
-		String resultHi, reasonHi;
-
-		if (exchange) {
-			resultHi = becauseEP.getValueByFeature("ARG1");
-			reasonHi = becauseEP.getValueByFeature("ARG2");
-		} else {
-			resultHi = becauseEP.getValueByFeature("ARG2");
-			reasonHi = becauseEP.getValueByFeature("ARG1");
-		}
-		String resultLo = inMrs.getLoLabelFromHconsList(resultHi);
-		String reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
-		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
-
-
-		boolean beforeBecause = true;
-
-		for (int i=0; i<inMrs.getEps().size(); i++) {
-			if (inMrs.getEps().get(i) == becauseEP) {
-				reasonMrs.getEps().get(i).setFlag(true);
-				resultMrs.getEps().get(i).setFlag(true);
-				beforeBecause = false;
-			}
-			if (beforeBecause) {
-				reasonMrs.getEps().get(i).setFlag(true);
-			} else {
-				resultMrs.getEps().get(i).setFlag(true);
-			}
-		}
-
-		// the event index of resultMrs is inherited from the original MRS
-		// we need to find out the event index for the reasonMrs
-		String reasonEvent = null;
-		for (EP ep:reasonMrs.getEPbyLabelValue(reasonLo)) {
-			if (ep.getArg0()!=null && ep.getArg0().startsWith("e")) {
-				String tense = ep.getValueVarByFeature("ARG0").getExtrapair().get("TENSE");
-				if (tense != null && !tense.equals("UNTENSED")) {
-					reasonEvent = ep.getArg0();
-					break;
-				}
-			}
-		}
-
-		if (reasonEvent != null) reasonMrs.setIndex(reasonEvent);
-
-		if (reasonMrs.removeEPbyFlag()) {
-			reasonMrs.cleanHCONS();
-			reasonMrs.setDecomposer("WhyDecomposerReason");
-			reasonMrs.changeFromUnkToNamed();
-			list.add(reasonMrs);
-		}
-
-		if (resultMrs.removeEPbyFlag()) {
-			resultMrs.cleanHCONS();
-			resultMrs.setDecomposer("WhyDecomposerResult");
-			resultMrs.changeFromUnkToNamed();
-			list.add(resultMrs);
-		}
-
-		MRS whyMrs = constructWhyMrs(resultMrs);
-		if (whyMrs != null)
-			list.add(whyMrs);
-
-		return list.size()==0 ? null : list;
-	}
 
 	protected ArrayList<MRS> becauseDecompose(MRS inMrs, EP becauseEP, boolean exchange) {
 //		MRS reasonMrs = new MRS(inMrs);
@@ -157,17 +89,19 @@ public class WhyDecomposer extends MrsDecomposer {
 		MRS reasonMrs = null;
 		if (reasonHi!=null || reasonLo!=null) {
 			reasonMrs= new MRS(inMrs);
-			reasonMrs.keepDependentEPbyLabel(reasonHi, reasonMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
+			//reasonMrs.keepDependentEPbyLabel(reasonHi, reasonMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
+			reasonMrs.doDecompositionByLabel(reasonHi, reasonMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)), true, true);
 		}
 		MRS resultMrs = new MRS(inMrs);
-		resultMrs.keepDependentEPbyLabel(resultHi, resultMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
+		//resultMrs.keepDependentEPbyLabel(resultHi, resultMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
+		resultMrs.doDecompositionByLabel(resultHi, resultMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)), true, true);
 
-		if (reasonMrs!=null && reasonMrs.removeEPbyFlag()) {
+		if (reasonMrs!=null && reasonMrs.removeEPbyFlag(true)) {
 			reasonMrs.cleanHCONS();
 			reasonMrs.postprocessing();
 		}
 
-		if (resultMrs.removeEPbyFlag()) {
+		if (resultMrs.removeEPbyFlag(true)) {
 			resultMrs.cleanHCONS();
 			resultMrs.postprocessing();
 		}
@@ -265,7 +199,7 @@ public class WhyDecomposer extends MrsDecomposer {
 		whyMrs.setDecomposer("WhyDecomposerWhy");
 		whyMrs.changeFromUnkToNamed();
 		// build cross references?
-		whyMrs.buildCoref();
+		whyMrs.postprocessing();
 
 		return whyMrs;
 	}

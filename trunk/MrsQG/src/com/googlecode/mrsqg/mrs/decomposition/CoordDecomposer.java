@@ -52,7 +52,7 @@ public class CoordDecomposer extends MrsDecomposer {
 						cMrs.doDecomposition(new HashSet<EP>(Arrays.asList(cMrs.getCharVariableMap().get(event))),
 								new HashSet<EP>(Arrays.asList(coordEP)), true, true);
 
-						if (cMrs.removeEPbyFlag()) {
+						if (cMrs.removeEPbyFlag(true)) {
 							cMrs.setIndex(event);
 							cMrs.cleanHCONS();
 							cMrs.changeFromUnkToNamed();

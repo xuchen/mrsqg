@@ -296,6 +296,8 @@ NIL
 			genStr = m.group(1);
 		} else return null;
 
+		if (genStr.contains("NIL")) return null;
+
 		String[] list = genStr.split("\\s+");
 
 		if(list==null) {
