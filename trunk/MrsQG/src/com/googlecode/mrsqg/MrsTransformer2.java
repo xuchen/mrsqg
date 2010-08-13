@@ -109,7 +109,6 @@ public class MrsTransformer2 extends MrsTransformer {
 		// newly constructed hiEP and loEP
 		EP hiEP, loEP;
 		HashSet<String> neTypes;
-		String neType;
 		Var var;
 
 		/*
@@ -125,9 +124,9 @@ public class MrsTransformer2 extends MrsTransformer {
 ]
 HCONS: < ...h17 qeq h14 >
 		 */
-		ArrayList<String> labels = this.ori_mrs.generateUnusedLabel(4);
+		ArrayList<String> labels = this.ori_mrs.generateUnusedLabel(5);
 		String hiLabel = "h"+labels.get(0), loLabel = "h"+labels.get(1),
-			rstr = "h"+labels.get(2), body = "h"+labels.get(3);
+			rstr = "h"+labels.get(2), body = "h"+labels.get(3), arg0value = "x"+labels.get(4);
 
 
 		for (EP ep:this.ori_mrs.getEps()) {
@@ -146,15 +145,33 @@ HCONS: < ...h17 qeq h14 >
 				dEPS = q_mrs.doDecompositionbyEP(dEP, gEP, false, true);
 
 				hiEP = new EP("WHICH_Q_REL", hiLabel);
-				// inherit the extra feature value pair to Arg0
-				var = gEP.getValueVarByFeature("ARG"+dmrs.getArgNum());
-				hiEP.addFvpair("ARG0", var);
+				loEP = new EP("THING_REL", loLabel);
+				if (dmrs.getPostSlash() == DMRS.POST_SLASH.H) {
+					/*
+					 * A rare case of qeq relation, such as "John told Peter he loves Mary ."
+[ _tell_v_1_rel<5:9>
+  LBL: h8
+  ARG0: e2 [ e SF: PROP TENSE: PAST MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG1: x6 [ x PERS: 3 NUM: SG GEND: M IND: + ]
+  ARG2: x9 [ x PERS: 3 NUM: SG IND: + ]
+  ARG3: h10
+]
+    DMRS: [ --ARG3/H-> _love_v_1_rel,  --ARG2/NEQ-> NAMED_REL(Peter),  --ARG1/NEQ-> NAMED_REL(John)]
+					 *
+					 * we don't want "h10" to be the ARG0 value, so generate a new 'x' one
+					 */
+					hiEP.addSimpleFvpair("ARG0", arg0value);
+					loEP.addSimpleFvpair("ARG0", arg0value);
+					gEP.setSimpleFvpairByFeatAndValue("ARG"+dmrs.getArgNum(), arg0value);
+				} else {
+					// inherit the extra feature value pair to Arg0
+					var = gEP.getValueVarByFeature("ARG"+dmrs.getArgNum());
+					hiEP.addFvpair("ARG0", var);
+					loEP.addFvpair("ARG0", var);
+				}
 
 				hiEP.addSimpleFvpair("RSTR", rstr);
 				hiEP.addSimpleFvpair("BODY", body);
-
-				loEP = new EP("THING_REL", loLabel);
-				loEP.addFvpair("ARG0", var);
 
 				q_mrs.addToHCONSsimple("qeq", rstr, loLabel);
 
@@ -169,61 +186,81 @@ HCONS: < ...h17 qeq h14 >
 
 				neTypes = neTypeInEPS(dEPS, terms);
 
+				if (neTypes.size() > 1) {
+					// generate a "what" question for multiple neTypes
+					neTypes.add("");
+				}
+
 				if (neTypes.size() == 1) {
-					neType = (String)neTypes.toArray()[0];
-				} else
-					neType = "";
-				setupHiLoEP(q_mrs, hiEP, loEP, neType);
-
-
-				if (gEP.isPrepositionEP() && (neType.equals("NElocation") || neType.equals("NEdate")))
-				{
-					EP ppEP = gEP;
-					// change the preposition (if any) before the term
-
-					ppEP.setTypeName("LOC_NONSP_REL");
-					if (neType.equals("NElocation")) {
-						loEP.setTypeName("PLACE_N_REL");
-						loEP.getValueVarByFeature("ARG0").setExtrapairValue("NUM", "SG");
-						// only keep "ARG0" as the feature
-						loEP.keepFvpair(new String[]{"ARG0"});
-						// also "ARG0" should be the same with hiEP
-						loEP.setFvpairByFeatAndValue("ARG0", hiEP.getValueVarByFeature("ARG0"));
-						q_mrs.setSentType("WHERE");
+					// generate a "what" question if no NEs are found
+					outList.addAll(setupHiLoEPAll(q_mrs, hiEP, loEP, "", gEP));
+				} else {
+					for (String neType:neTypes) {
+						MRS qMrs = new MRS(q_mrs);
+						EP qhiEP = qMrs.getEPbyParallelIndex(q_mrs, hiEP);
+						EP qloEP = qMrs.getEPbyParallelIndex(q_mrs, loEP);
+						EP qgEP = qMrs.getEPbyParallelIndex(q_mrs, gEP);
+						outList.addAll(setupHiLoEPAll(qMrs, qhiEP, qloEP, neType, qgEP));
 					}
 				}
-
-				// change SF to "QUES"
-				q_mrs.setSF2QUES();
-				q_mrs.changeFromUnkToNamed();
-				if(q_mrs.removeEPbyFlag(false)) {
-					outList.add(q_mrs);
-				} else
-					continue;
-
-
-				if (neType.equals("NElocation") && !gEP.isPrepositionEP()) {
-					// NElocation generates two types of questions: where and which place
-					// this scope of code generates the "which place" question
-					MRS placeMrs = new MRS(q_mrs);
-					// set hiEP to _WHICH_Q_REL and loEP to _place_n_of_rel
-					placeMrs.getEPbyParallelIndex(q_mrs, hiEP).setTypeName("_WHICH_Q_REL");
-					EP placeEP = placeMrs.getEPbyParallelIndex(q_mrs, loEP);
-					placeEP.setTypeName("_place_n_of_rel");
-					placeEP.addSimpleFvpair("ARG1", "i"+placeMrs.generateUnusedLabel(1).get(0));
-					placeEP.getValueVarByFeature("ARG0").addExtrapair("IND", "+");
-					placeMrs.setSF2QUES();
-					placeMrs.changeFromUnkToNamed();
-					placeMrs.setSentType("WHICH");
-					outList.add(placeMrs);
-				}
-
 
 			}
 		}
 
 
 		return outList.size() == 0 ? null : outList;
+	}
+
+	protected ArrayList<MRS> setupHiLoEPAll (MRS q_mrs, EP hiEP, EP loEP, String neType, EP gEP) {
+		ArrayList<MRS> outList = new ArrayList<MRS>();
+
+		setupHiLoEP(q_mrs, hiEP, loEP, neType);
+
+
+		if (gEP.isPrepositionEP() && (neType.equals("NElocation") || neType.equals("NEdate")))
+		{
+			EP ppEP = gEP;
+			// change the preposition (if any) before the term
+
+			ppEP.setTypeName("LOC_NONSP_REL");
+			if (neType.equals("NElocation")) {
+				loEP.setTypeName("PLACE_N_REL");
+				loEP.getValueVarByFeature("ARG0").setExtrapairValue("NUM", "SG");
+				// only keep "ARG0" as the feature
+				loEP.keepFvpair(new String[]{"ARG0"});
+				// also "ARG0" should be the same with hiEP
+				loEP.setFvpairByFeatAndValue("ARG0", hiEP.getValueVarByFeature("ARG0"));
+				q_mrs.setSentType("WHERE");
+			}
+		}
+
+		// change SF to "QUES"
+		q_mrs.setSF2QUES();
+		q_mrs.changeFromUnkToNamed();
+		if(q_mrs.removeEPbyFlag(false)) {
+			outList.add(q_mrs);
+		} else
+			return outList;
+
+
+		if (neType.equals("NElocation") && !gEP.isPrepositionEP()) {
+			// NElocation generates two types of questions: where and which place
+			// this scope of code generates the "which place" question
+			MRS placeMrs = new MRS(q_mrs);
+			// set hiEP to _WHICH_Q_REL and loEP to _place_n_of_rel
+			placeMrs.getEPbyParallelIndex(q_mrs, hiEP).setTypeName("_WHICH_Q_REL");
+			EP placeEP = placeMrs.getEPbyParallelIndex(q_mrs, loEP);
+			placeEP.setTypeName("_place_n_of_rel");
+			placeEP.addSimpleFvpair("ARG1", "i"+placeMrs.generateUnusedLabel(1).get(0));
+			placeEP.getValueVarByFeature("ARG0").addExtrapair("IND", "+");
+			placeMrs.setSF2QUES();
+			placeMrs.changeFromUnkToNamed();
+			placeMrs.setSentType("WHICH");
+			outList.add(placeMrs);
+		}
+
+		return outList;
+
 	}
 
 	/**
