@@ -463,7 +463,8 @@ public class EP {
 		}
 
 		for (DMRS dmrs:pEP.getDmrsSet()) {
-			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.EQ) {
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.EQ &&
+					dmrs.getDirection() == DMRS.DIRECTION.DEP) {
 				if (dmrs.getEP().isVerbEP()) {
 					vEP =  dmrs.getEP();
 					break;
