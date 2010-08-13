@@ -1519,7 +1519,6 @@ public class MRS {
 		 * indicating whether the RSTR feature exists
 		 */
 		String rstr;
-		DMRS.PRE_SLASH preSlash = DMRS.PRE_SLASH.NOTHING;
 		DMRS.POST_SLASH postSlash = DMRS.POST_SLASH.NOTHING;
 		EP dEP = null;
 		DMRS dmrsL, dmrsR;
@@ -1700,6 +1699,12 @@ L-HNDL:h8 -> _like_v-1_rel
 			}
 		}
 		*/
+		for (EP ep:this.eps) {
+			if (ep.getDmrsSet().size() == 0) {
+				log.error("EP "+ep+" doesn't have any dependencies from MRS: "+this.toString());
+				log.error("YOU MIGHT HAVE FOUND A BUG FROM ERG!");
+			}
+		}
 	}
 
 
