@@ -136,7 +136,8 @@ HCONS: < ...h17 qeq h14 >
 			}
 			for (DMRS dmrs:ep.getDmrsSet()) {
 				dEP = dmrs.getEP();
-				if ( !(dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && (dmrs.getPostSlash() == DMRS.POST_SLASH.NEQ || dmrs.getPostSlash() == DMRS.POST_SLASH.H)))
+				if ( !(dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getDirection() == DMRS.DIRECTION.DEP &&
+						(dmrs.getPostSlash() == DMRS.POST_SLASH.NEQ || dmrs.getPostSlash() == DMRS.POST_SLASH.H)))
 					continue;
 				q_mrs = new MRS(this.ori_mrs);
 				dEP = q_mrs.getEPbyParallelIndex(this.ori_mrs, dEP);

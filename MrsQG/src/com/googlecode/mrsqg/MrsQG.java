@@ -448,11 +448,11 @@ public class MrsQG {
 			mrxList = origMrsList;
 		}
 
-//		MrsTransformer2 t3;
-//		for (MRS m:mrxList) {
-//		t3 = new MrsTransformer2(m, p);
-//		t3.transform(false);
-//		}
+		MrsTransformer2 t3;
+		for (MRS m:mrxList) {
+		t3 = new MrsTransformer2(m, p);
+		t3.transform(false);
+		}
 
 		mrxList = coordDecomposer.doIt(mrxList);
 		mrxList = whyDecomposer.doIt(mrxList);

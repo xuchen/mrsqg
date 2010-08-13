@@ -1645,6 +1645,9 @@ L-HNDL:h8 -> _like_v-1_rel
 				 * others by the fact that loEP has the same ARG0 with hiEP
 				 */
 				ArrayList<EP> loList = getEPbyLabelValue(loLabel);
+				// possible bug from LKB to parse the sentence "there was a problem with the laws in the 1700s in England."
+				//
+				if (loList == null) continue;
 				for (EP eep:loList) {
 					if (eep.getArg0().equals(ep.getArg0())) {
 						dEP = eep;
