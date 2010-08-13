@@ -218,7 +218,7 @@ HCONS: < ...h17 qeq h14 >
 
 		setupHiLoEP(q_mrs, hiEP, loEP, neType);
 
-		if (neType.equals("NElocation") && !gEP.isPrepositionEP()) {
+		if (neType.equals("NElocation") && gEP.isPrepositionEP()) {
 			// NElocation generates two types of questions: where and which place
 			// this scope of code generates the "which place" question
 			MRS placeMrs = new MRS(q_mrs);

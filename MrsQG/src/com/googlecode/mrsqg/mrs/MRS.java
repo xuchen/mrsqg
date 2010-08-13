@@ -93,6 +93,7 @@ public class MRS {
 	public void setIndex (String index) {
 		if (!index.startsWith("e")) {
 			log.warn("the main event of this MRS doesn't start with an e: "+index+"!");
+			log.warn(this.toString());
 		}
 		this.index = index;
 		// index usually looks like "e2".
@@ -1883,7 +1884,7 @@ L-HNDL:h8 -> _like_v-1_rel
 							postSlash == DMRS.POST_SLASH.EQ && !ep.hasEPemptyArgs()) {
 						continue;
 					}
-					if (!(postSlash == DMRS.POST_SLASH.NEQ && (ep.isVerbEP() || ep.isPassiveEP()))) {
+					if (!((postSlash == DMRS.POST_SLASH.NEQ || postSlash == DMRS.POST_SLASH.H) && (ep.isVerbEP() || ep.isPassiveEP()))) {
 						retEPS.add(ep);
 					}
 				} else {
