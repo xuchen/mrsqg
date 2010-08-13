@@ -953,7 +953,8 @@ public class MRS {
 			}
 		} catch (java.lang.NullPointerException e) {
 			log.error("Error:", e);
-			log.error("MRS is malformed!");
+			log.error("MRS is malformed with index: "+getIndex());
+			log.error(this.toString());
 		}
 	}
 

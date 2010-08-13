@@ -68,17 +68,17 @@ public class MrsTransformer2 extends MrsTransformer {
 		// generate yes/no question
 		// change SF to "QUES"
 		// e2
-		//MRS q_mrs = transformYNques();
+		MRS q_mrs = transformYNques();
 
-		//this.gen_mrs.add(q_mrs);
+		this.gen_mrs.add(q_mrs);
 
 		trMrsList = transformWHques(terms);
 		if (trMrsList != null)
 			this.gen_mrs.addAll(trMrsList);
 
-//		trMrsList = transformHOWques(terms);
-//		if (trMrsList != null)
-//			this.gen_mrs.addAll(trMrsList);
+		trMrsList = transformHOWques(terms);
+		if (trMrsList != null)
+			this.gen_mrs.addAll(trMrsList);
 
 		if (print) {
 			for (MRS m:this.gen_mrs) {
