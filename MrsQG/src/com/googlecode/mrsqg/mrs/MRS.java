@@ -1865,6 +1865,7 @@ L-HNDL:h8 -> _like_v-1_rel
 
 		for (EP tEP: rEPS) {
 			if (eEPS.contains(tEP)) continue;
+			if (tEP == null) continue;
 			for (DMRS dmrs:tEP.getDmrsSet()) {
 
 				preSlash = dmrs.getPreSlash();
