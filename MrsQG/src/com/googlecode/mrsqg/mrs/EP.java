@@ -342,8 +342,8 @@ public class EP {
 		TreeMap<String, String> map = new TreeMap<String, String>();
 		ArrayList<String> list = new ArrayList<String>();
 		for (FvPair fp:fvpair) {
-			if (fp.getRargname().startsWith("ARG")) {
-				map.put(fp.getRargname(), fp.getVar().getLabel());
+			if (fp.getFeature().startsWith("ARG")) {
+				map.put(fp.getFeature(), fp.getVar().getLabel());
 			}
 		}
 		for (String v:(String[])map.values().toArray(new String[0])) {
@@ -512,7 +512,7 @@ public class EP {
 		String label = null;
 		s = s.toUpperCase();
 		for (FvPair p:fvpair) {
-			if (p.getRargname().equals(s)) {
+			if (p.getFeature().equals(s)) {
 				label = p.getValue();
 				break;
 			}
@@ -529,7 +529,7 @@ public class EP {
 		Var v = null;
 
 		for (FvPair p:fvpair) {
-			if (p.getRargname().equalsIgnoreCase(feat)) {
+			if (p.getFeature().equalsIgnoreCase(feat)) {
 				v = p.getVar();
 				break;
 			}
@@ -545,7 +545,7 @@ public class EP {
 	public void delFvpair(String s) {
 		s = s.toUpperCase();
 		for (FvPair p:fvpair) {
-			if (p.getRargname().equals(s)) {
+			if (p.getFeature().equals(s)) {
 				fvpair.remove(p);
 				break;
 			}
@@ -608,6 +608,22 @@ public class EP {
 		for (FvPair p:fvpair) {
 			if (p.getFeature().equals(feature)) {
 				p.setVar(value);
+				break;
+			}
+		}
+	}
+
+
+	/**
+	 * Set the value of a feature. For instance, set the value of
+	 * <code>feature</code> "ARG0" to "x3" (a Var).
+	 * @param feature feature's name
+	 * @param value a Var
+	 */
+	public void setSimpleFvpairByFeatAndValue (String feature, String value) {
+		for (FvPair p:fvpair) {
+			if (p.getFeature().equals(feature)) {
+				p.setValue(value);
 				break;
 			}
 		}

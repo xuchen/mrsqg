@@ -454,11 +454,11 @@ public class MrsQG {
 //		t3.transform(false);
 //		}
 
-//		mrxList = coordDecomposer.doIt(mrxList);
-//		mrxList = whyDecomposer.doIt(mrxList);
-//		mrxList = subordDecomposer.doIt(mrxList);
-//		mrxList = subDecomposer.doIt(mrxList);
-//		mrxList = apposDecomposer.doIt(mrxList);
+		mrxList = coordDecomposer.doIt(mrxList);
+		mrxList = whyDecomposer.doIt(mrxList);
+		mrxList = subordDecomposer.doIt(mrxList);
+		mrxList = subDecomposer.doIt(mrxList);
+		mrxList = apposDecomposer.doIt(mrxList);
 
 		// generation
 		if (mrxList != null && lkb != null) {
