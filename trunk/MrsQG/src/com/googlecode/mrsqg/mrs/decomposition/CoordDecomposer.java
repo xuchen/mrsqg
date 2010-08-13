@@ -44,6 +44,11 @@ public class CoordDecomposer extends MrsDecomposer {
 					String lEvent = ep.getValueByFeature("L-INDEX");
 					String rEvent = ep.getValueByFeature("R-INDEX");
 
+					if (lEvent.startsWith("x") && rEvent.startsWith("x")) {
+						// don't decompose coordination of NPs
+						continue;
+					}
+
 					for (String event: new String[]{lEvent, rEvent}) {
 						MRS cMrs = new MRS(mrs);
 						coordEP = cMrs.getEps().get(mrs.getEps().indexOf(ep));

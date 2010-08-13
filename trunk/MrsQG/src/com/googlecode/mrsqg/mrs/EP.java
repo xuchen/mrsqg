@@ -436,9 +436,14 @@ public class EP {
 	public boolean hasEPemptyArgsExceptPassive () {
 		boolean ret = false;
 		for (DMRS dmrs:this.dmrsSet) {
-			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.NULL
-					&& !dmrs.getEP().isPassiveEP()) {
+			if (dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG && dmrs.getPostSlash() == DMRS.POST_SLASH.NULL) {
 				ret = true;
+				break;
+			}
+		}
+		for (DMRS dmrs:this.dmrsSet) {
+			if (dmrs.getEP()!=null && dmrs.getEP().isPassiveEP()) {
+				ret = false;
 				break;
 			}
 		}
