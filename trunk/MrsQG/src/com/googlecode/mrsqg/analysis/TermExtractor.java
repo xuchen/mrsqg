@@ -204,6 +204,15 @@ public class TermExtractor {
 					}
 				if (skip) continue;
 
+				/*
+				 * X. Yao. 2010-08-13. Comma in ERG seems to be important.
+				 * e.g. "in Germany , Austria , Switzerland , and Slovakia , beer is usually made from just hops, malt, water, and yeast."
+				 * if "Germany , Austria ," or "Slovakia ," is recognized as NElocation, ERG sometimes doesn't parse
+				 * so we rule out any NEs that start or end with a comma.
+				 */
+				if (pos[id].equals(",")) continue;
+				if (pos[id+length-1].equals(",")) continue;
+
 				// get phrase spanning the tokens
 				String text = tokens[id];
 				String untokText;
