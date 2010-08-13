@@ -191,7 +191,7 @@ HCONS: < ...h17 qeq h14 >
 					neTypes.add("");
 				}
 
-				if (neTypes.size() == 1) {
+				if (neTypes.size() == 0) {
 					// generate a "what" question if no NEs are found
 					outList.addAll(setupHiLoEPAll(q_mrs, hiEP, loEP, "", gEP));
 				} else {
@@ -216,6 +216,21 @@ HCONS: < ...h17 qeq h14 >
 
 		setupHiLoEP(q_mrs, hiEP, loEP, neType);
 
+		if (neType.equals("NElocation") && !gEP.isPrepositionEP()) {
+			// NElocation generates two types of questions: where and which place
+			// this scope of code generates the "which place" question
+			MRS placeMrs = new MRS(q_mrs);
+			// set hiEP to _WHICH_Q_REL and loEP to _place_n_of_rel
+			placeMrs.getEPbyParallelIndex(q_mrs, hiEP).setTypeName("_WHICH_Q_REL");
+			EP placeEP = placeMrs.getEPbyParallelIndex(q_mrs, loEP);
+			placeEP.setTypeName("_place_n_of_rel");
+			placeEP.addSimpleFvpair("ARG1", "i"+placeMrs.generateUnusedLabel(1).get(0));
+			placeEP.getValueVarByFeature("ARG0").addExtrapair("IND", "+");
+			placeMrs.setSF2QUES();
+			placeMrs.changeFromUnkToNamed();
+			placeMrs.setSentType("WHICH");
+			outList.add(placeMrs);
+		}
 
 		if (gEP.isPrepositionEP() && (neType.equals("NElocation") || neType.equals("NEdate")))
 		{
@@ -242,22 +257,6 @@ HCONS: < ...h17 qeq h14 >
 		} else
 			return outList;
 
-
-		if (neType.equals("NElocation") && !gEP.isPrepositionEP()) {
-			// NElocation generates two types of questions: where and which place
-			// this scope of code generates the "which place" question
-			MRS placeMrs = new MRS(q_mrs);
-			// set hiEP to _WHICH_Q_REL and loEP to _place_n_of_rel
-			placeMrs.getEPbyParallelIndex(q_mrs, hiEP).setTypeName("_WHICH_Q_REL");
-			EP placeEP = placeMrs.getEPbyParallelIndex(q_mrs, loEP);
-			placeEP.setTypeName("_place_n_of_rel");
-			placeEP.addSimpleFvpair("ARG1", "i"+placeMrs.generateUnusedLabel(1).get(0));
-			placeEP.getValueVarByFeature("ARG0").addExtrapair("IND", "+");
-			placeMrs.setSF2QUES();
-			placeMrs.changeFromUnkToNamed();
-			placeMrs.setSentType("WHICH");
-			outList.add(placeMrs);
-		}
 
 		return outList;
 
