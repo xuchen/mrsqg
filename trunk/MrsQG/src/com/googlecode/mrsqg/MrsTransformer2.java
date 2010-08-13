@@ -254,14 +254,9 @@ HCONS: < ...h17 qeq h14 >
 		// change SF to "QUES"
 		q_mrs.setSF2QUES();
 		q_mrs.changeFromUnkToNamed();
-		if(q_mrs.removeEPbyFlag(false)) {
-			outList.add(q_mrs);
-		} else
-			return outList;
-
+		outList.add(q_mrs);
 
 		return outList;
-
 	}
 
 	/**
