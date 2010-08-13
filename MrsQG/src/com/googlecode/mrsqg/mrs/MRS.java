@@ -1301,7 +1301,7 @@ public class MRS {
 		} else {
 			log.error("Removing EP by flag failed!");
 			if (removedList.size() == 0) {
-				log.error("None of EPS is set to have a true flag!");
+				log.error("None of EPS is set to have a "+ flag +" flag!");
 			}
 			return false;
 		}
