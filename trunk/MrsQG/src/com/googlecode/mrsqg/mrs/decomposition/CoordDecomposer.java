@@ -50,6 +50,8 @@ public class CoordDecomposer extends MrsDecomposer {
 					}
 
 					for (String event: new String[]{lEvent, rEvent}) {
+						// could be empty index such as from a _BUT_C_REL "conjunction"
+						if (event.startsWith("i") || event.startsWith("u")) continue;
 						MRS cMrs = new MRS(mrs);
 						coordEP = cMrs.getEps().get(mrs.getEps().indexOf(ep));
 
