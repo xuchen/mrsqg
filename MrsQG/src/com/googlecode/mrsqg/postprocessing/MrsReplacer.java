@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.googlecode.mrsqg.postprocessing;
 
@@ -18,15 +18,15 @@ import com.googlecode.mrsqg.nlp.LKB;
  * @since 2010-04-05
  */
 public abstract class MrsReplacer {
-	
+
 	protected static Logger log = Logger.getLogger(MrsReplacer.class);
 	protected Cheap parser;
 	protected LKB generator;
 	protected Preprocessor pre;
 	protected ArrayList<MRS> origList;
-	
+
 	protected ArrayList<Pair> pairs;
-	
+
 	public MrsReplacer (Cheap cheap, LKB lkb, ArrayList<MRS> list) {
 		this.parser = cheap;
 		this.generator = lkb;
@@ -34,15 +34,15 @@ public abstract class MrsReplacer {
 		this.origList = list;
 		this.pairs = new ArrayList<Pair>();
 	}
-	
+
 
 	public abstract void doIt ();
-	
+
 	protected void genFromParse () {
 		Preprocessor pre;
 		for (Pair p:this.pairs) {
 			pre = new Preprocessor();
-			String fsc = pre.getFSCbyTerms(p.getTranSent(), true);
+			String fsc = pre.getFSCbyTerms(p.getTranSent(), true, true);
 			log.info("Transformed sentence:");
 			log.info(p.getTranSent());
 //			log.info("\nFSC XML from preprocessing:\n");

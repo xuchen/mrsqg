@@ -43,7 +43,7 @@ import com.googlecode.mrsqg.nlp.LKB;
 				sentence = oriPair.getOriSent();
 			}
 
-			pre.preprocess(sentence);
+			pre.preprocess(sentence, true);
 			MRS mrs = oriPair.getOriMrs();
 
 			// we can't care which is reason, which is result...

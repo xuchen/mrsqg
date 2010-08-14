@@ -63,7 +63,7 @@ public class Fallback {
 				sentence = oriPair.getOriSent();
 			}
 
-			pre.preprocess(sentence);
+			pre.preprocess(sentence, false);
 
 			Term[] terms = pre.getTerms()[0];
 			//sentence = pre.getSentences()[0];
@@ -151,7 +151,7 @@ public class Fallback {
 		if (tranSent == null) return;
 		Preprocessor pre = new Preprocessor();
 
-		String fsc = pre.getFSCbyTerms(tranSent, true);
+		String fsc = pre.getFSCbyTerms(tranSent, true, true);
 		log.info("Fallback sentence:");
 		log.info(tranSent);
 

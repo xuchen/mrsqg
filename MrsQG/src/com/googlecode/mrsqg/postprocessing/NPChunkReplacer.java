@@ -46,7 +46,7 @@ public class NPChunkReplacer extends Fallback {
 				sentence = oriPair.getOriSent();
 			}
 
-			pre.preprocess(sentence);
+			pre.preprocess(sentence, true);
 			chunks = pre.getNpChunks()[0];
 			tokens = pre.getTokens()[0];
 			if (chunks==null || chunks.length==0) continue;
