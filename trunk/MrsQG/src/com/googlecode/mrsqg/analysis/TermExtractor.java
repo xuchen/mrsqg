@@ -213,6 +213,11 @@ public class TermExtractor {
 				if (pos[id].equals(",")) continue;
 				if (pos[id+length-1].equals(",")) continue;
 
+				// PUNCTUATION IN CM
+				// http://lists.delph-in.net/archive/pet/2010-August/000139.html
+//				if (pos[id+length-1].equals("''") && !pos[id].equals("``")) continue;
+//				if (!pos[id+length-1].equals("''") && pos[id].equals("``")) continue;
+
 				// get phrase spanning the tokens
 				String text = tokens[id];
 				String untokText;

@@ -161,6 +161,7 @@ public class Preprocessor {
 	 *
 	 */
 
+	@Deprecated
 	public void outputFSC () {
 
 		if (countOfSents == 0) {
@@ -298,6 +299,16 @@ public class Preprocessor {
 		String[] tokens = this.tokens[0];
 		Term[] terms = this.terms[0];
 		String[] pos = this.pos[0];
+		/*
+		 * OpenNLP POS tagger use `` as the opening double quote and
+		 * '' as the closing double quote, but ERG only accepts "???
+		 */
+		// PUNCTUATION IN CM
+		// http://lists.delph-in.net/archive/pet/2010-August/000139.html
+//		for (int i=0; i<pos.length; i++) {
+//			if (pos[i].equals("''")) pos[i]="\"";
+//			else if (pos[i].equals("``")) pos[i]="\"";
+//		}
 
 		OutputFormat of = new OutputFormat("XML","UTF-8",true);
 		// a bug in PET requires CDATA
@@ -518,6 +529,14 @@ public class Preprocessor {
 		Preprocessor t = new Preprocessor();
 		// possibly fail because of dict is not loaded
 		t.preprocess(answers);
+	}
+
+	public static String cleanInput (String input) {
+		input = input.replaceAll("\\(.*?\\)", "");
+		// PUNCTUATION IN CM
+		// http://lists.delph-in.net/archive/pet/2010-August/000139.html
+		input = input.replaceAll("\"", "");
+		return input;
 	}
 
 }

@@ -28,7 +28,7 @@ import opennlp.tools.postag.POSDictionary;
 /**
  * <p>This class provides a common interface to the
  * <a href="http://opennlp.sourceforge.net/">OpenNLP</a> toolkit.</p>
- * 
+ *
  * <p>It supports the following natural language processing tools:
  * <ul>
  * <li>Sentence detection</li>
@@ -39,7 +39,7 @@ import opennlp.tools.postag.POSDictionary;
  * <li>Coreference resolution</li>
  * </ul>
  * </p>
- * 
+ *
  * @author Nico Schlaefer
  * @version 2006-05-20
  */
@@ -55,7 +55,7 @@ public class OpenNLP {
 		" (-|/) "					+ "|" +  // one - third -> one-third
 		"(\\(|\\[|\\{) "			+ "|" +  // ( ... ) -> (... )
 		" (\\.|,|:|\\)|\\]|\\})"	+ ")");  // Prof . -> Prof.
-	
+
 	/** Sentence detector from the OpenNLP project. */
 	private static SentenceDetector sentenceDetector;
 	/** Tokenizer from the OpenNLP project. */
@@ -68,10 +68,10 @@ public class OpenNLP {
 	private static ParserME parser;
 	/** Linker from the OpenNLP project. */
 	private static TreebankLinker linker;
-	
+
 	/**
 	 * Creates the sentence detector from a model file.
-	 * 
+	 *
 	 * @param model model file
 	 * @return true, iff the sentence detector was created successfully
 	 */
@@ -81,13 +81,13 @@ public class OpenNLP {
 		} catch (IOException e) {
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Creates the tokenizer from a model file.
-	 * 
+	 *
 	 * @param model model file
 	 * @return true, iff the tokenizer was created successfully
 	 */
@@ -97,14 +97,14 @@ public class OpenNLP {
 		} catch (IOException e) {
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Creates the part of speech tagger from a model file and a case sensitive
 	 * tag dictionary.
-	 * 
+	 *
 	 * @param model model file
 	 * @param tagdict case sensitive tag dictionary
 	 * @return true, iff the POS tagger was created successfully
@@ -116,13 +116,13 @@ public class OpenNLP {
 		} catch (IOException e) {
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Creates the chunker from a model file.
-	 * 
+	 *
 	 * @param model model file
 	 * @return true, iff the chunker was created successfully
 	 */
@@ -132,13 +132,13 @@ public class OpenNLP {
 		} catch (IOException e) {
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Creates the parser from a directory containing models.
-	 * 
+	 *
 	 * @param dir model directory
 	 * @return true, iff the parser was created successfully
 	 */
@@ -149,13 +149,13 @@ public class OpenNLP {
 		} catch (IOException e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
 	/**
 	 * Creates the linker from a directory containing models.
-	 * 
+	 *
 	 * @param dir model directory
 	 * @return true, iff the linker was created successfully
 	 */
@@ -166,13 +166,13 @@ public class OpenNLP {
 		} catch (IOException e) {
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Splits a text into sentences.
-	 * 
+	 *
 	 * @param text sequence of sentences
 	 * @return array of sentences in the text or <code>null</code>, if the
 	 * 		   sentence detector is not initialized
@@ -182,22 +182,48 @@ public class OpenNLP {
 			? sentenceDetector.sentDetect(text)
 			: null;
 	}
-	
+
 	/**
 	 * A model-based tokenizer used to prepare a sentence for POS tagging.
-	 * 
+	 *
 	 * @param text text to tokenize
 	 * @return array of tokens or <code>null</code>, if the tokenizer is not
 	 * 		   initialized
 	 */
 	public static String[] tokenize(String text) {
 		return (tokenizer != null) ? tokenizer.tokenize(text) : null;
+		/*
+		 * X. Yao. 2010-08-14. Double quotes are sometimes not correctly tokenized.
+		 * e.g. Rome had been a Republic ruled by a council called the "Senate".
+		 * "Senate is treated as a token and " alone is treated as another.
+		 * We need to manually reconstruct this from tokenizer output.
+		 */
+		// PUNCTUATION IN CM
+		// http://lists.delph-in.net/archive/pet/2010-August/000139.html
+//
+//		String[] tokens;
+//		tokens = tokenizer.tokenize(text);
+//		ArrayList<String> tokenList = new ArrayList<String>();
+//
+//		if (tokens == null) return null;
+//
+//		for (String t:tokens) {
+//			if (t.contains("\"") && t.length()>1) {
+//				t = t.replaceAll("\"", " \" ");
+//				for (String s:t.split("\\s+")) {
+//					tokenList.add(s);
+//				}
+//			} else
+//				tokenList.add(t);
+//		}
+//
+//		return tokenList.toArray(new String[tokenList.size()]);
 	}
-	
+
 	/**
 	 * Applies the model-based tokenizer and concatenates the tokens with
 	 * spaces.
-	 * 
+	 *
 	 * @param text text to tokenize
 	 * @return string of space-delimited tokens or <code>null</code>, if the
 	 * 		   tokenizer is not initialized
@@ -206,13 +232,13 @@ public class OpenNLP {
 		String[] tokens = tokenize(text);
 		return (tokens != null) ? StringUtils.concatWithSpaces(tokens) : null;
 	}
-	
+
 	/**
 	 * <p>Untokenizes a text by removing abundant blanks.</p>
-	 * 
+	 *
 	 * <p>Note that it is not guaranteed that this method exactly reverts the
 	 * effect of <code>tokenize()</code>.</p>
-	 * 
+	 *
 	 * @param text text to untokenize
 	 * @return text without abundant blanks
 	 */
@@ -225,14 +251,14 @@ public class OpenNLP {
 		}
 		return text;
 	}
-	
+
 	/**
 	 * <p>Untokenizes a text by mapping it to a string that contains the
 	 * original text as a subsequence.</p>
-	 * 
+	 *
 	 * <p>Note that it is not guaranteed that this method exactly reverts the
 	 * effect of <code>tokenize()</code>.</p>
-	 * 
+	 *
 	 * @param text text to untokenize
 	 * @param original string that contains the original text as a subsequence
 	 * @return subsequence of the original string or the input text, iff there
@@ -244,20 +270,20 @@ public class OpenNLP {
 		regex = regex.replace(" ", "\\s*+");
 		Matcher m = Pattern.compile(regex).matcher(original);
 		if (m.find()) return m.group(0);
-		
+
 		// try without boundary matchers
 		regex = RegexConverter.strToRegex(text);
 		regex = regex.replace(" ", "\\s*+");
 		m = Pattern.compile(regex).matcher(original);
 		if (m.find()) return m.group(0);
-		
+
 		// untokenization failed
 		return text;
 	}
-	
+
 	/**
 	 * Assigns POS tags to a sentence of space-delimited tokens.
-	 * 
+	 *
 	 * @param sentence sentence to be annotated with POS tags
 	 * @return tagged sentence or <code>null</code>, if the tagger is not
 	 * 		   initialized
@@ -265,10 +291,10 @@ public class OpenNLP {
 	public static String tagPos(String sentence) {
 		return (tagger != null) ? tagger.tag(sentence) : null;
 	}
-	
+
 	/**
 	 * Assigns POS tags to an array of tokens that form a sentence.
-	 * 
+	 *
 	 * @param sentence array of tokens to be annotated with POS tags
 	 * @return array of POS tags or <code>null</code>, if the tagger is not
 	 * 		   initialized
@@ -276,10 +302,10 @@ public class OpenNLP {
 	public static String[] tagPos(String[] sentence) {
 		return (tagger != null) ? tagger.tag(sentence) : null;
 	}
-	
+
 	/**
 	 * Assigns chunk tags to an array of tokens and POS tags.
-	 * 
+	 *
 	 * @param tokens array of tokens
 	 * @param pos array of corresponding POS tags
 	 * @return array of chunk tags or <code>null</code>, if the chunker is not
@@ -288,10 +314,10 @@ public class OpenNLP {
 	public static String[] tagChunks(String[] tokens, String[] pos) {
 		return (chunker != null) ? chunker.chunk(tokens, pos) : null;
 	}
-	
+
 	/**
 	 * Peforms a full parsing on a sentence of space-delimited tokens.
-	 * 
+	 *
 	 * @param sentence the sentence
 	 * @return parse of the sentence or <code>null</code>, if the parser is not
 	 * 		   initialized or the sentence is empty
@@ -302,20 +328,20 @@ public class OpenNLP {
 			? TreebankParser.parseLine(sentence, parser, 1)[0]
 			: null;
 	}
-	
+
 	/**
 	 * Identifies coreferences in an array of full parses of sentences.
-	 * 
+	 *
 	 * @param parses array of full parses of sentences
 	 */
 	public static void link(Parse[] parses) {
 		int sentenceNumber = 0;
 		List<Mention> document = new ArrayList<Mention>();
-		
+
 		for (Parse parse : parses) {
 			DefaultParse dp = new DefaultParse(parse, sentenceNumber);
 			Mention[] extents =	linker.getMentionFinder().getMentions(dp);
-			
+
 			//construct new parses for mentions which do not have constituents
 			for (int i = 0; i < extents.length; i++)
 				if (extents[i].getParse() == null) {
@@ -324,19 +350,19 @@ public class OpenNLP {
 					parse.insert(snp);
 					extents[i].setParse(new DefaultParse(snp,sentenceNumber));
 				}
-			
+
 			document.addAll(Arrays.asList(extents));
 			sentenceNumber++;
 	    }
-		
+
 		if (document.size() > 0) {
 //			Mention[] ms = document.toArray(new Mention[document.size()]);
 //			DiscourseEntity[] entities = linker.getEntities(ms);
 //			TODO return results in an appropriate data structure
 		}
 	}
-	
-	private static HashSet<String> unJoinablePrepositions = new HashSet<String>(); 
+
+	private static HashSet<String> unJoinablePrepositions = new HashSet<String>();
 	static {
 		unJoinablePrepositions.add("that");
 		unJoinablePrepositions.add("than");
@@ -349,7 +375,7 @@ public class OpenNLP {
 		unJoinablePrepositions.add("where");
 		unJoinablePrepositions.add("who");
 	}
-	
+
 	/**
 	 * John NP with PP to get a larger chunk.
 	 * @param tokens
@@ -358,10 +384,10 @@ public class OpenNLP {
 	 */
 	public static String[] joinNounPhrases(String[] tokens, String[] chunkTags) {
 		if (chunkTags.length < 2) return chunkTags;
-		
+
 		String[] newChunkTags = new String[chunkTags.length];
 		newChunkTags[0] = chunkTags[0];
-		
+
 		for (int t = 1; t < chunkTags.length; t++) {
 			if ("B-NP".equals(chunkTags[t]) && ("B-NP".equals(chunkTags[t - 1]) || "I-NP".equals(chunkTags[t - 1]))) {
 				newChunkTags[t] = "I-NP";
@@ -369,17 +395,17 @@ public class OpenNLP {
 				newChunkTags[t - 1] = "I-NP";
 				newChunkTags[t] = "I-NP";
 			} else newChunkTags[t] = chunkTags[t];
-			if (chunkTags[t].equals("O") && tokens[t].length()!=1 && chunkTags[t-1].contains("NP") && 
+			if (chunkTags[t].equals("O") && tokens[t].length()!=1 && chunkTags[t-1].contains("NP") &&
 					t+1 < chunkTags.length && chunkTags[t+1].contains("NP")) {
 				newChunkTags[t] = "I-NP";
 				if (chunkTags[t+1].equals("B-NP"))
 					newChunkTags[t+1] = "I-NP";
 			}
 		}
-		
+
 		return newChunkTags;
 	}
-	
+
 	/**
 	 * John coordination phrases, such as "John and Mary" are tagged as a bigger NP.
 	 * @param tokens
@@ -388,13 +414,13 @@ public class OpenNLP {
 	 */
 	public static String[] joinCoordPhrases(String[] tokens, String[] chunkTags) {
 		if (chunkTags.length < 2) return chunkTags;
-		
+
 		String[] newChunkTags = new String[chunkTags.length];
 		newChunkTags[0] = chunkTags[0];
-		
+
 		for (int t = 1; t < chunkTags.length; t++) {
 
-			if (chunkTags[t].equals("O") && tokens[t].length()!=1 && chunkTags[t-1].contains("NP") && 
+			if (chunkTags[t].equals("O") && tokens[t].length()!=1 && chunkTags[t-1].contains("NP") &&
 					t+1 < chunkTags.length && chunkTags[t+1].contains("NP")) {
 				newChunkTags[t] = "I-NP";
 				if (chunkTags[t+1].equals("B-NP"))
@@ -402,8 +428,8 @@ public class OpenNLP {
 			} else
 				newChunkTags[t] = chunkTags[t];
 		}
-		
+
 		return newChunkTags;
 	}
-	
+
 }
