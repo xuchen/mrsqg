@@ -44,7 +44,7 @@ public class CoordReplacer extends Fallback {
 				mrs = oriPair.getOriMrs();
 			}
 			mrs = oriPair.getOriMrs();
-			pre.preprocess(sentence);
+			pre.preprocess(sentence, true);
 
 			for (EP ep:mrs.getEps()) {
 				if (ep.getTypeName().contains(coordEPname) &&

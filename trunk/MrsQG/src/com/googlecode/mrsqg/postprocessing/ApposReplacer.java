@@ -55,7 +55,7 @@ public class ApposReplacer extends Fallback {
 				sentence = oriPair.getOriSent();
 			}
 
-			pre.preprocess(sentence);
+			pre.preprocess(sentence, true);
 
 			MRS mrs = oriPair.getOriMrs();
 			for (EP ep:mrs.getEps()) {

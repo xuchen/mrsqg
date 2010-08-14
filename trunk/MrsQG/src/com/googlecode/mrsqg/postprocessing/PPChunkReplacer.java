@@ -44,7 +44,7 @@ import com.googlecode.mrsqg.util.StringUtils;
 				sentence = oriPair.getOriSent();
 			}
 
-			pre.preprocess(sentence);
+			pre.preprocess(sentence, true);
 			chunks = pre.getPpChunks()[0];
 			tokens = pre.getTokens()[0];
 			pos = pre.getPos()[0];

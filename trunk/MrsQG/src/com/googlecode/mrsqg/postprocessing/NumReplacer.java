@@ -41,7 +41,7 @@ public class NumReplacer extends Fallback {
 				sentence = oriPair.getOriSent();
 			}
 
-			pre.preprocess(sentence);
+			pre.preprocess(sentence, true);
 			MRS mrs = oriPair.getOriMrs();
 
 			EP oldEP = null;
