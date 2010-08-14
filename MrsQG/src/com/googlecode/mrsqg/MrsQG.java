@@ -177,6 +177,7 @@ public class MrsQG {
 				log.info(lkb.getRawOutput());
 			} else if (input.toLowerCase().startsWith("pet:")) {
 				input = input.substring(4).trim();
+				input = Preprocessor.cleanInput(input);
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
 				String fsc = p.getFSCbyTerms(input, true);
@@ -200,6 +201,7 @@ public class MrsQG {
 				//if (!parser.isSuccess()) continue;
 			} else if (input.toLowerCase().startsWith("pg:")) {
 				input = input.substring(3).trim();
+				input = Preprocessor.cleanInput(input);
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
 				String fsc = p.getFSCbyTerms(input, true);
@@ -233,8 +235,10 @@ public class MrsQG {
 				}
 
 			} else if (input.toLowerCase().startsWith("pre:")) {
+				input = input.substring(4).trim();
+				input = Preprocessor.cleanInput(input);
 				p = new Preprocessor();
-				p.preprocess(input.substring(4).trim());
+				p.preprocess(input);
 				p.outputFSCbyTerms(System.out, true);
 			} else if (input.toLowerCase().startsWith("file:")) {
                 // when input is the following format:
@@ -265,7 +269,7 @@ public class MrsQG {
 	public void runTest() {
 
 		ArrayList<Instance> instanceList = QGSTEC2010processor.getInstanceList();
-		String text, questionType, question;
+		String text, questionType;
 		ArrayList <String> quesList;
 		HashMap<String, Pair> success;
 		try {
@@ -405,7 +409,7 @@ public class MrsQG {
 		// FIXED by chart mapping?
 		// if (!(input.indexOf("'") == input.lastIndexOf("'")))
 		//	input = input.replaceAll("'", "");
-		input = input.replaceAll("\\(.*?\\)", "");
+		input = Preprocessor.cleanInput(input);
 
 		SubordinateDecomposer subordDecomposer = new SubordinateDecomposer();
 		CoordDecomposer coordDecomposer = new CoordDecomposer();
@@ -448,17 +452,22 @@ public class MrsQG {
 			mrxList = origMrsList;
 		}
 
-		MrsTransformer2 t3;
-		for (MRS m:mrxList) {
-		t3 = new MrsTransformer2(m, p);
-		t3.transform(false);
-		}
-
 		mrxList = coordDecomposer.doIt(mrxList);
 		mrxList = whyDecomposer.doIt(mrxList);
 		mrxList = subordDecomposer.doIt(mrxList);
 		mrxList = subDecomposer.doIt(mrxList);
 		mrxList = apposDecomposer.doIt(mrxList);
+
+		if (lkb==null) {
+			// debug in MrsTransformer2
+			MrsTransformer2 t3;
+			if (mrxList != null) {
+				for (MRS m:mrxList) {
+					t3 = new MrsTransformer2(m, p);
+					t3.transform(false);
+				}
+			}
+		}
 
 		// generation
 		if (mrxList != null && lkb != null) {

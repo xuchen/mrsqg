@@ -1305,6 +1305,7 @@ public class MRS {
 			if (removedList.size() == 0) {
 				log.error("None of EPS is set to have a "+ flag +" flag!");
 			}
+			log.error(this.toString());
 			return false;
 		}
 
