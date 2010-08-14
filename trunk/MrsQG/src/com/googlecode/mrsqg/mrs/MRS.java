@@ -1480,31 +1480,50 @@ public class MRS {
 			if (arg0EPlist.size()==1) {
 				this.charVariableMap.put(arg0, arg0EPlist.get(0));
 			} else if (arg0EPlist.size()==2) {
-				for (EP charEP: arg0EPlist) {
+				/*
+				 * Multiple EPs can have arg0 as their ARG0. Usually these multiple
+				 * EPs are in a qeq relation.
+				 */
+				boolean ep0HasRstr = arg0EPlist.get(0).hasFeature("RSTR");
+				boolean ep1HasRstr = arg0EPlist.get(1).hasFeature("RSTR");
+				if (ep0HasRstr && !ep1HasRstr) {
+					this.charVariableMap.put(arg0, arg0EPlist.get(0));
+				} else if (ep1HasRstr && !ep0HasRstr) {
+					this.charVariableMap.put(arg0, arg0EPlist.get(1));
+				} else {
 					/*
-					 * Multiple EPs can have arg0 as their ARG0. Usually these multiple
-					 * EPs are in a qeq relation.
+					 * in some cases, the 2 EPs are not in a qeq relation.
+					 * e.g. It uses swords that are much closer to blades.
+[ _close_a_to_rel<46:52>
+  LBL: h8
+  ARG0: e23 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG1: x4 [ x PERS: 3 NUM: PL IND: + ]
+  ARG2: x24 [ x PERS: 3 NUM: PL IND: + ]
+]
+[ COMP_REL<46:52>
+  LBL: h8
+  ARG0: e23 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG1: e23 [ e SF: PROP TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+]
+					 *
 					 */
-					/*
-					 * whether this EP is a hiEP in a qeq relation, by
-					 * indicating whether the RSTR feature exists
-					 */
-					boolean isHiEP = false;
-					for (FvPair p:charEP.getFvpair()) {
-						if (p.getFeature().equals("RSTR")) {
-							isHiEP = true;
-							break;
-						}
-					}
-					if (isHiEP) continue;
+					EP dEP = MRS.getDependentEP(arg0EPlist);
+					if (dEP != null)
+						this.charVariableMap.put(arg0, dEP);
 					else {
-						this.charVariableMap.put(arg0, charEP);
-						break;
+						log.error("MapCharacteristicVarariable error, debug your code!");
+						log.error(arg0EPlist);
 					}
 				}
+
 			} else {
-				log.error("arg0EPlist's size isn't 1 or 2, debug your code!");
-				log.error(arg0EPlist);
+				EP dEP = MRS.getDependentEP(arg0EPlist);
+				if (dEP != null)
+					this.charVariableMap.put(arg0, dEP);
+				else {
+					log.error("MapCharacteristicVarariable error, debug your code!");
+					log.error(arg0EPlist);
+				}
 			}
 
 		}
@@ -1552,7 +1571,7 @@ public class MRS {
 						argNum = "";
 						dEP = null;
 						boolean isArgFeature = feature.startsWith("ARG");
-						if (value.equals(arg0)) continue;
+						if (feature.equals("ARG0")) continue;
 						if (isArgFeature) {
 							argNum = pair.getFeature().substring(3);
 						}
@@ -1731,7 +1750,7 @@ L-HNDL:h8 -> _like_v-1_rel
 			valueSet.add(dEP.getArg0());
 			for (EP ep:list) {
 				if (ep==dEP) continue;
-				for (String v:ep.getAllValue()) {
+				for (String v:ep.getAllValueExceptArg0()) {
 					if (valueSet.contains(v)) {
 						nGovernor++;
 						break;
@@ -1824,6 +1843,9 @@ L-HNDL:h8 -> _like_v-1_rel
 
 		if (eEPS == null)
 			eEPS = new HashSet<EP>();
+		if (rEPS.size() == 1 && rEPS.contains(null)) {
+			return new HashSet<EP>();
+		}
 
 		this.setAllFlag(true);
 		HashSet<EP> retEPS = decompose(rEPS, eEPS, relaxEQ, keepEQ);
@@ -1839,7 +1861,10 @@ L-HNDL:h8 -> _like_v-1_rel
 		if (label.startsWith("h")) {
 			String loLabel = this.getLoLabelFromHconsList(label);
 			if (loLabel != null) label = loLabel;
-			rEPS.addAll(this.getEPbyLabelValue(label));
+			ArrayList<EP> tmp = this.getEPbyLabelValue(label);
+			if (tmp == null) return rEPS;
+			else
+				rEPS.addAll(tmp);
 		} else {
 			rEPS.add(this.charVariableMap.get(label));
 		}

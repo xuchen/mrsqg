@@ -295,7 +295,7 @@ public class EP {
 
 		HashSet<String> set = new HashSet<String>();
 		for (FvPair fp:fvpair) {
-			if (fp.getFeature().startsWith("ARG") && !fp.getFeature().equals("ARG")) {
+			if (fp.getFeature().startsWith("ARG") && !fp.getFeature().equals("ARG0")) {
 				set.add(fp.getVar().getLabel());
 			}
 		}
@@ -305,7 +305,7 @@ public class EP {
 
 	/**
 	 * Get all values in an EP, such as "x9", "e2", etc.
-	 * @return a HashSet containing all "ARG*" values
+	 * @return a HashSet containing all values
 	 */
 	public HashSet<String> getAllValue() {
 
@@ -318,6 +318,21 @@ public class EP {
 		return set;
 	}
 
+
+	/**
+	 * Get all values in an EP, such as "x9", "e2", etc, except ARG0
+	 * @return a HashSet containing all "ARG*" values
+	 */
+	public HashSet<String> getAllValueExceptArg0() {
+
+		HashSet<String> set = new HashSet<String>();
+		for (FvPair fp:fvpair) {
+			if (fp.getVar() != null && !fp.getFeature().equals("ARG0"))
+				set.add(fp.getVar().getLabel());
+		}
+
+		return set;
+	}
 
 	/**
 	 * Get all values and label in an EP, such as "x9", "e2", etc.
@@ -524,6 +539,22 @@ public class EP {
 			}
 		}
 		return label;
+	}
+
+	/**
+	 * Whether this EP has a certain feature <code>f</code>
+	 * @param f a feature name, such as "RSTR"
+	 * @return a boolean value
+	 */
+	public boolean hasFeature (String f) {
+		boolean ret = false;
+		for (FvPair p:fvpair) {
+			if (p.getFeature().equals(f)) {
+				ret = true;
+				break;
+			}
+		}
+		return ret;
 	}
 
 	/**

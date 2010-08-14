@@ -125,6 +125,7 @@ public class MrsTransformer2 extends MrsTransformer {
 HCONS: < ...h17 qeq h14 >
 		 */
 		ArrayList<String> labels = this.ori_mrs.generateUnusedLabel(5);
+		if (labels == null) return null;
 		String hiLabel = "h"+labels.get(0), loLabel = "h"+labels.get(1),
 			rstr = "h"+labels.get(2), body = "h"+labels.get(3), arg0value = "x"+labels.get(4);
 
