@@ -50,8 +50,11 @@ public class SubclauseDecomposer extends MrsDecomposer {
 				// not main verb: ARG0 value isn't the index of this mrs
 
 				if ((ep.isVerbEP() || ep.isPrepositionEP())&& !ep.getArg0().equals(inMrs.getIndex()) &&
-						ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP") &&
 						!ep.hasEPemptyArgsExceptPassive() && ep.hasEQarg()) {
+
+					if (ep.getValueVarByFeature("ARG0").getExtrapair().get("SF") != null)
+						if (!ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP"))
+							continue;
 
 					if (!ep.hasEQargToNonPPorVerb()) {
 						/*

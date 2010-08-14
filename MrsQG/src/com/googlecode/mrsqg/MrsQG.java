@@ -180,7 +180,7 @@ public class MrsQG {
 				input = Preprocessor.cleanInput(input);
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
-				String fsc = p.getFSCbyTerms(input, true);
+				String fsc = p.getFSCbyTerms(input, true, false);
 				log.info("\nFSC XML from preprocessing:\n");
 				log.info(fsc);
 
@@ -204,7 +204,7 @@ public class MrsQG {
 				input = Preprocessor.cleanInput(input);
 				// pre-processing, get the output FSC XML in a string fsc
 				p = new Preprocessor();
-				String fsc = p.getFSCbyTerms(input, true);
+				String fsc = p.getFSCbyTerms(input, true, false);
 				//log.info("\nFSC XML from preprocessing:\n");
 				//log.info(fsc);
 
@@ -238,7 +238,7 @@ public class MrsQG {
 				input = input.substring(4).trim();
 				input = Preprocessor.cleanInput(input);
 				p = new Preprocessor();
-				p.preprocess(input);
+				p.preprocess(input, false);
 				p.outputFSCbyTerms(System.out, true);
 			} else if (input.toLowerCase().startsWith("file:")) {
                 // when input is the following format:
@@ -260,7 +260,7 @@ public class MrsQG {
 				input = input.trim();
 
 				// generate questions based on text
-				runPipe(input);
+				runPipe(input, false);
 
 			}
 		}
@@ -279,7 +279,7 @@ public class MrsQG {
 				text = ins.getText();
 
 				// generate questions based on text
-				success = runPipe(text);
+				success = runPipe(text, true);
 
 				if (success==null) continue;
 				log.info("runPipe is done");
@@ -398,9 +398,10 @@ public class MrsQG {
 	/**
 	 * run the pipeline of question generation
 	 * @param input a sentence string
+	 * @param singleSentence whether the input is a single sentence or not
 	 * @return a mapping between a question and its Pair instance
 	 */
-	private HashMap<String, Pair> runPipe(String input) {
+	private HashMap<String, Pair> runPipe(String input, boolean singleSentence) {
 		input = input.trim();
 		boolean usePreSelector = false;
 		double[] scores;
@@ -427,7 +428,7 @@ public class MrsQG {
 
 		// pre-processing, get the output FSC XML in a string fsc
 		Preprocessor p = new Preprocessor();
-		String fsc = p.getFSCbyTerms(input, true);
+		String fsc = p.getFSCbyTerms(input, true, singleSentence);
 		input = p.getOriginalSentence();
 		//log.info("\nFSC XML from preprocessing:\n");
 		//log.info(fsc);
@@ -508,7 +509,7 @@ public class MrsQG {
 							 * re-generate the MRS
 							 */
 							Preprocessor pp = new Preprocessor();
-							fsc = pp.getFSCbyTerms(pair.getGenOriCand(), true);
+							fsc = pp.getFSCbyTerms(pair.getGenOriCand(), true, singleSentence);
 
 							parser.parse(fsc);
 
@@ -702,7 +703,8 @@ public class MrsQG {
 				for (String q:quesMapbyGrade.keySet()) {
 					ppair = quesMapbyQues.get(q);
 					grade = quesMapbyGrade.get(q);
-					if (grade != ppair.getGenQuesCandGrade()) {
+					if (grade != ppair.getGenQuesCandGrade() &&
+							! (grade.isNaN() && Double.isNaN(ppair.getGenQuesCandGrade()))) {
 						log.error(grade+"!="+ppair.getGenQuesCandGrade()+
 								"Debug your code for "+q);
 					}
@@ -778,7 +780,7 @@ public class MrsQG {
 
 				try {
 					for (String sentence:sentences) {
-						quesMapPair = runPipe(sentence);
+						quesMapPair = runPipe(sentence, true);
 						if (quesMapPair==null) continue;
 
 						for (String question:quesMapPair.keySet()) {
