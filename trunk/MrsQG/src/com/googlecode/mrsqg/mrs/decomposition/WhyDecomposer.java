@@ -98,12 +98,10 @@ public class WhyDecomposer extends MrsDecomposer {
 
 		if (reasonMrs!=null && reasonMrs.removeEPbyFlag(true)) {
 			reasonMrs.cleanHCONS();
-			reasonMrs.postprocessing();
 		}
 
 		if (resultMrs.removeEPbyFlag(true)) {
 			resultMrs.cleanHCONS();
-			resultMrs.postprocessing();
 		}
 
 		if (exchange && reasonMrs!=null) {

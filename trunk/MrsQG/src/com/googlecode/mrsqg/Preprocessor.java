@@ -56,10 +56,15 @@ public class Preprocessor {
 	public String[][] getChunks() {return this.chunks;}
 	public String[][] getPos() {return this.pos;}
 
-	public boolean preprocess (String sents) {
+	public boolean preprocess (String sents, boolean singleSentence) {
 		log.info("Preprocessing");
+		String[] originalSentences;
 
-		String[] originalSentences = OpenNLP.sentDetect(sents);
+		if (singleSentence) {
+			originalSentences = new String[]{sents};
+		} else {
+			originalSentences = OpenNLP.sentDetect(sents);
+		}
 		this.countOfSents = originalSentences.length;
 		log.info("Count of original one: "+countOfSents);
 
@@ -306,8 +311,8 @@ public class Preprocessor {
 		// PUNCTUATION IN CM
 		// http://lists.delph-in.net/archive/pet/2010-August/000139.html
 //		for (int i=0; i<pos.length; i++) {
-//			if (pos[i].equals("''")) pos[i]="\"";
-//			else if (pos[i].equals("``")) pos[i]="\"";
+//			if (pos[i].equals("''")) pos[i]="”";
+//			else if (pos[i].equals("``")) pos[i]="“";
 //		}
 
 		OutputFormat of = new OutputFormat("XML","UTF-8",true);
@@ -493,12 +498,14 @@ public class Preprocessor {
 	 * @param input a raw sentence
 	 * @param tokenPos a boolean value, whether to also output the POS tags of tokens.
 	 *  If set to false, then only output POS of terms.
+	 * @param singleSentence whether the input is a single sentence or not. If not,
+	 * sentence detection is performed.
 	 * @return a string representing FSC in XML
 	 */
-	public String getFSCbyTerms(String input, boolean tokenPos) {
+	public String getFSCbyTerms(String input, boolean tokenPos, boolean singleSentence) {
 
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		preprocess(input);
+		preprocess(input, singleSentence);
 		outputFSCbyTerms(os, tokenPos);
 		String fsc = os.toString();
 
@@ -528,7 +535,7 @@ public class Preprocessor {
 		String answers  = "Al Gore was born in Washington DC. Al Gore lives in Washington DC.";
 		Preprocessor t = new Preprocessor();
 		// possibly fail because of dict is not loaded
-		t.preprocess(answers);
+		t.preprocess(answers, false);
 	}
 
 	public static String cleanInput (String input) {
