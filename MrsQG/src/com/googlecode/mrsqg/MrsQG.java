@@ -487,13 +487,14 @@ public class MrsQG {
 				mrx = m.toMRXstring();
 
 				// generate from original sentence
+
+				log.info("\nGenerate from the following MRS:\n");
+				log.info(mrx);
+				log.info(m);
 				log.info("\nGenerate from the original/decomposed sentence:\n");
 				ArrayList<String> genOriSentList = lkb.doGeneration(mrx);
 				log.info(genOriSentList);
 				lkb.printMaxEntScores();
-				log.info("\nFrom the following MRS:\n");
-				log.info(mrx);
-				log.info(m);
 
 				ArrayList<String> genOriSentFailedList = null;
 				if (genOriSentList == null) {
@@ -544,6 +545,9 @@ public class MrsQG {
 					mrx = qmrs.toMRXstring();
 
 					// generate from transformed sentence
+					log.info("\nGeneration from the following MRS:\n");
+					log.info(mrx);
+					log.info(qmrs);
 					log.info("\nGenerated Questions:");
 					ArrayList<String> genQuesList = lkb.doGeneration(mrx);
 					scores = lkb.getMaxEntScores();
@@ -562,9 +566,6 @@ public class MrsQG {
 							log.warn(genQuesFailedList);
 						}
 					}
-					log.info("\nFrom the following MRS:\n");
-					log.info(mrx);
-					log.info(qmrs);
 
 					// Add to pair list
 					if (!(genQuesList==null && genQuesFailedList==null)) {
