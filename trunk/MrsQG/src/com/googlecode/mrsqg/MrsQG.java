@@ -229,8 +229,7 @@ public class MrsQG {
 					// generate from original sentence
 					m.changeFromUnkToNamed();
 					mrx = m.toMRXstring();
-					lkb.sendMrxToGen(mrx);
-					log.info(lkb.getGenSentences());
+					log.info(lkb.doGeneration(mrx));
 					lkb.printMaxEntScores();
 				}
 
@@ -405,6 +404,10 @@ public class MrsQG {
 		input = input.trim();
 		boolean usePreSelector = false;
 		double[] scores;
+		long t0, tf;
+
+		log.info("RunPipe starts at "+getTimestamp());
+		t0 = System.currentTimeMillis();
 
 		// TODO: a better way is to check whether ' is in between letters such as "he'll", "won't"
 		// FIXED by chart mapping?
@@ -484,9 +487,8 @@ public class MrsQG {
 				mrx = m.toMRXstring();
 
 				// generate from original sentence
-				lkb.sendMrxToGen(mrx);
 				log.info("\nGenerate from the original/decomposed sentence:\n");
-				ArrayList<String> genOriSentList = lkb.getGenSentences();
+				ArrayList<String> genOriSentList = lkb.doGeneration(mrx);
 				log.info(genOriSentList);
 				lkb.printMaxEntScores();
 				log.info("\nFrom the following MRS:\n");
@@ -542,9 +544,8 @@ public class MrsQG {
 					mrx = qmrs.toMRXstring();
 
 					// generate from transformed sentence
-					lkb.sendMrxToGen(mrx);
 					log.info("\nGenerated Questions:");
-					ArrayList<String> genQuesList = lkb.getGenSentences();
+					ArrayList<String> genQuesList = lkb.doGeneration(mrx);
 					scores = lkb.getMaxEntScores();
 					ArrayList<String> genQuesFailedList = null;
 					if (genQuesList != null) {
@@ -729,14 +730,25 @@ public class MrsQG {
 					}
 				}
 				log.info("\nGenerated "+nQ+" questions of "+nType+" types.");
+				log.info("RunPipe ends at "+getTimestamp());
+				tf = System.currentTimeMillis();
+				log.info("runtime = "+((tf-t0)/1000.0)+" sec");
 				return quesMapbyQues.size()==0?null:quesMapbyQues;
 			} else {
+				log.info("RunPipe ends at "+getTimestamp());
+				tf = System.currentTimeMillis();
+				log.info("runtime = "+((tf-t0)/1000.0)+" sec");
 				return null;
 			}
 		} else {
 			log.info("No questions generated.");
+			log.info("RunPipe ends at "+getTimestamp());
+			tf = System.currentTimeMillis();
+			log.info("runtime = "+((tf-t0)/1000.0)+" sec");
 			return null;
 		}
+
+
 	}
 
 	public void producePList(String inFile, String outFile) {
@@ -779,7 +791,9 @@ public class MrsQG {
 				Pair pair;
 
 				try {
+					int sentCount = 0;
 					for (String sentence:sentences) {
+						sentCount++;
 						quesMapPair = runPipe(sentence, true);
 						if (quesMapPair==null) continue;
 
