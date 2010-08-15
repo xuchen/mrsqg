@@ -112,9 +112,14 @@ public class Pair {
 	public double getGenQuesCandGrade () {return genQuesCandGrade;}
 	public double[] getOverallScores () {return overallScores;}
 
+	/**
+	 * Get the generated "original" declarative sentence. It could come from a decomposed
+	 * sentence thus it might be different from the original sentence.
+	 * @return a sentence string, or null if not found
+	 */
 	public String getGenOriCand() {
 		if (genOriCand != null) return genOriCand;
-		if (genOriSentList == null) return null;
+		if (genOriSentList == null) return oriSent;
 		ArrayList<String> shortest = StringUtils.getShortest(genOriSentList);
 
 		/*

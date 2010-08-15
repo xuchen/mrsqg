@@ -250,7 +250,20 @@ public class MrsQG {
                     log.error("file: input.txt output.xml");
                     continue;
                 }
-                producePList(files[0], files[1]);
+                producePList(files[0], files[1], false);
+
+			} else if (input.toLowerCase().startsWith("dryrun:")) {
+                // when input is the following format:
+                // FILE: in.txt out.txt
+                // read text from in.txt and output to out.txt
+                String fileLine = input.substring(7).trim();
+                String[] files = fileLine.split("\\s+");
+                if (files.length != 2) {
+                    log.error("file field must only contain two valid files. e.g.:");
+                    log.error("file: input.txt output.xml");
+                    continue;
+                }
+                producePList(files[0], files[1], true);
 
 			} else if (input.toLowerCase().equals("help")||input.toLowerCase().equals("h")) {
 				printUsage();
@@ -259,7 +272,7 @@ public class MrsQG {
 				input = input.trim();
 
 				// generate questions based on text
-				runPipe(input, false);
+				runPipe(input, false, false);
 
 			}
 		}
@@ -278,7 +291,7 @@ public class MrsQG {
 				text = ins.getText();
 
 				// generate questions based on text
-				success = runPipe(text, true);
+				success = runPipe(text, true, true);
 
 				if (success==null) continue;
 				log.info("runPipe is done");
@@ -400,7 +413,7 @@ public class MrsQG {
 	 * @param singleSentence whether the input is a single sentence or not
 	 * @return a mapping between a question and its Pair instance
 	 */
-	private HashMap<String, Pair> runPipe(String input, boolean singleSentence) {
+	private HashMap<String, Pair> runPipe(String input, boolean singleSentence, boolean dryrun) {
 		input = input.trim();
 		boolean usePreSelector = false;
 		double[] scores;
@@ -462,7 +475,7 @@ public class MrsQG {
 		mrxList = subDecomposer.doIt(mrxList);
 		mrxList = apposDecomposer.doIt(mrxList);
 
-		if (lkb==null) {
+		if (lkb==null || dryrun) {
 			// debug in MrsTransformer2
 			MrsTransformer2 t3;
 			if (mrxList != null) {
@@ -474,7 +487,7 @@ public class MrsQG {
 		}
 
 		// generation
-		if (mrxList != null && lkb != null) {
+		if (mrxList != null && lkb != null && !dryrun) {
 			String mrx;
 			MrsTransformer t;
 			MrsTransformer2 t2;
@@ -580,7 +593,7 @@ public class MrsQG {
 			}
 		}
 
-		if (fallback) {
+		if (fallback && !dryrun) {
 			// a second chance on failed sentences.
 			if (declSuccPairs.size() == 0) declSuccPairs = declFailPairs;
 			boolean debug = true;
@@ -752,7 +765,7 @@ public class MrsQG {
 
 	}
 
-	public void producePList(String inFile, String outFile) {
+	public void producePList(String inFile, String outFile, boolean dryrun) {
 		if (inFile == null || outFile == null) {
             return;
         }
@@ -795,15 +808,17 @@ public class MrsQG {
 					int sentCount = 0;
 					for (String sentence:sentences) {
 						sentCount++;
-						quesMapPair = runPipe(sentence, true);
+						quesMapPair = runPipe(sentence, true, dryrun);
 						if (quesMapPair==null) continue;
 
 						for (String question:quesMapPair.keySet()) {
 							pair = quesMapPair.get(question);
 							// skip Y/N questions
-							if (pair.getQuesMrs().getSentType().equals("Y/N")) continue;
+							// if (pair.getQuesMrs().getSentType().equals("Y/N")) continue;
 
 							ansSent = pair.getGenOriCand();
+							if (ansSent == null)
+								ansSent = sentence;
 							sentSet.add(ansSent);
 
 							question = StringUtils.replaceXMLspecials(question);
@@ -829,7 +844,7 @@ public class MrsQG {
 			out.write("</Workbook>");
 			out.close();
 
-			log.info("Summary (without y/n questions):");
+			log.info("Summary:");
 			log.info("Paragraph: "+paragraphCounter
 					+". Original Sentences: "+oriSentCounter
 					+". Actual Sentences: "+sentSet.size()
@@ -1022,9 +1037,11 @@ public class MrsQG {
 		System.out.println("\t\tThen MrsQG serves as a wrapper for cheap. You can talk with cheap interactively through the prompt.");
 		System.out.println("\t6. pg: a sentence.");
 		System.out.println("\t\tThen MrsQG first parses then generates from the sentence (pg stands for Parse-Generate).");
-		System.out.println("\t7. file: input.txt output.xml enerate questions from the text of input.txt and output to output.xml (used by plist of NPCEditor)");
-		System.out.println("\t\tThen MrsQG ");
-		System.out.println("\t8. help (or h)");
+		System.out.println("\t7. file: input.txt output.xml");
+		System.out.println("\t\tThen MrsQG g enerate questions from the text of input.txt and output to output.xml (used by plist of NPCEditor)");
+		System.out.println("\t8. dryrun: input.txt output.xml");
+		System.out.println("\t\tsimilar to 7, but only do parsing and transformation to give a quick pass of all sentences. Used to check errors.");
+		System.out.println("\t9. help (or h)");
 		System.out.println("\t\tPrint this message.");
 		System.out.println();
 	}
