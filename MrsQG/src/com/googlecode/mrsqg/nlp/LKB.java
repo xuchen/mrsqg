@@ -14,6 +14,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import com.googlecode.mrsqg.MrsQG;
 import com.googlecode.mrsqg.util.StringUtils;
 
 
@@ -255,6 +256,27 @@ NIL
 		String raw = getRawOutput();
 		if (raw==null) return null;
 		return parseGen(raw);
+	}
+
+	/**
+	 * Sent an MRS in XML and retrieve generated sentences
+	 * @param mrx
+	 * @return an ArrayList of generated sentences in raw
+	 */
+	public ArrayList<String> doGeneration (String mrx) {
+		long t0, tf;
+
+		sendMrxToGen(mrx);
+
+		log.info("Generation starts at "+MrsQG.getTimestamp());
+		t0 = System.currentTimeMillis();
+
+		ArrayList<String> retList =  getGenSentences();
+		log.info("Generation ends at "+MrsQG.getTimestamp());
+		tf = System.currentTimeMillis();
+		log.info("Generation took "+((tf-t0)/1000.0)+" sec");
+
+		return retList;
 	}
 
 	/**
