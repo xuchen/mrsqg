@@ -233,6 +233,7 @@ public class MrsTransformer {
 
 
 				// change SF to "QUES"
+				q_mrs.cleanHCONS();
 				q_mrs.setSF2QUES();
 				q_mrs.changeFromUnkToNamed();
 				outList.add(q_mrs);
@@ -328,6 +329,7 @@ public class MrsTransformer {
 					q_mrs.addEPtoEPS(measureEP);
 
 					// change SF to "QUES"
+					q_mrs.cleanHCONS();
 					q_mrs.setSF2QUES();
 					q_mrs.setSentType("HOW MANY/MUCH");
 					q_mrs.changeFromUnkToNamed();

@@ -193,7 +193,10 @@ HCONS: < ...h17 qeq h14 >
 					neTypes.add("");
 				}
 
-				q_mrs.removeEPbyFlag(false);
+				if (!q_mrs.removeEPbyFlag(false))
+					continue;
+
+				q_mrs.cleanHCONS();
 
 				if (neTypes.size() == 0) {
 					// generate a "what" question if no NEs are found
