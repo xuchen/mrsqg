@@ -1,11 +1,13 @@
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
 import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
+import com.googlecode.mrsqg.mrs.Var;
 
 /**
  * Apposition decomposer. Apposition is a relationship between
@@ -223,61 +225,48 @@ public class ApposDecomposer extends MrsDecomposer {
 		MRS arg2Mrs = new MRS(mrs);
 		apposEP.setFlag(false);
 
-		int cfrom = apposEP.getCfrom();
-		int cto = apposEP.getCto();
-		EP ep;
-		boolean inside = false;
-		boolean arg2Area = false;
-		// remove all arg2 in arg1Mrs and all arg1 in arg2Mrs
-		for (int i=0; i<mrs.getEps().size(); i++) {
-			ep = mrs.getEps().get(i);
-			if (ep.getCto() == -1 && ep.getCfrom() == -1 && inside) continue;
-			if (ep.getCto() < cfrom) {
-				inside = false;
-			}
-			else if (ep.getCfrom() > cto) {
-				inside = false;
-			}
-			else {
-				inside = true;
-				/*
-				 * We want to have a clear cut between arg1 and arg2 inside this apposition.
-				 * This is a weak judgment: the EP with (ARG0: ARG1value) should be the head
-				 * of the ARG1 phase, it's usually in the last position. So if its ARG0 value
-				 * matches arg1Value, plus that it's not a hiLabel, then this is the end of
-				 * arg1. Following is Arg2 so set arg2Area = true.
-				 */
-				if (arg2Area) {
-					arg1Mrs.getEps().get(i).setFlag(true);
-				} else {
-					arg2Mrs.getEps().get(i).setFlag(true);
-				}
-				if (ep.getValueByFeature("ARG0").equals(arg1Value) &&
-						ep.getValueByFeature("RSTR") == null) {
-					arg2Area = true;
-				}
-			}
+		int cfrom = apposEP.getCfrom(), cto = apposEP.getCto();
+		if (cfrom == cto) {
+			log.error("cfrom and cto of appos_rel are identical!"+apposEP);
+			return null;
 		}
 
-		if(!arg1Mrs.removeEPbyFlag(true)) return null;
-		if(!arg2Mrs.removeEPbyFlag(true)) return null;
+		// remove all arg2 in arg1Mrs and all arg1 in arg2Mrs
 
-		arg1Mrs.changeEPvalue(arg2Value, arg1Value);
-		arg2Mrs.changeEPvalue(arg1Value, arg2Value);
+		// set all arg2-related EP to false
+		EP apposEP1 = arg1Mrs.getEPbyParallelIndex(mrs, apposEP);
+		HashSet<EP> eEPS = arg1Mrs.getEPSnotInRange(cfrom, cto);
+		eEPS.add(apposEP1);
+		arg1Mrs.doDecompositionByLabelSet(arg2Value, eEPS, false, true);
+		// remove appos EP and arg2-related EP
+		apposEP1.setFlag(false);
 
-		arg1Mrs.cleanHCONS();
-		arg2Mrs.cleanHCONS();
+		EP apposEP2 = arg2Mrs.getEPbyParallelIndex(mrs, apposEP);
+		eEPS = arg2Mrs.getEPSnotInRange(cfrom, cto);
+		eEPS.add(apposEP2);
+		arg2Mrs.doDecompositionByLabelSet(arg1Value, eEPS, false, true);
+		// remove appos EP and arg1-related EP
+		apposEP2.setFlag(false);
 
-		arg1Mrs.changeFromUnkToNamed();
-		arg2Mrs.changeFromUnkToNamed();
+		Var arg1Var = apposEP1.getValueVarByFeature("ARG1");
+		arg1Mrs.changeEPvalueVar(arg2Value, arg1Var);
+		Var arg2Var = apposEP2.getValueVarByFeature("ARG2");
+		arg2Mrs.changeEPvalueVar(arg1Value, arg2Var);
 
-		arg1Mrs.setDecomposer("Apposition");
-		arg2Mrs.setDecomposer("Apposition");
+		if (arg1Mrs.removeEPbyFlag(false) && arg2Mrs.removeEPbyFlag(false)) {
+			arg1Mrs.cleanHCONS();
+			arg1Mrs.changeFromUnkToNamed();
+			arg1Mrs.setDecomposer("Apposition");
+			outList.add(arg1Mrs);
 
-		outList.add(arg1Mrs);
-		outList.add(arg2Mrs);
+			arg2Mrs.cleanHCONS();
+			arg2Mrs.changeFromUnkToNamed();
+			arg2Mrs.setDecomposer("Apposition");
+			outList.add(arg2Mrs);
+			return outList;
+		} else
+			return null;
 
-		return outList;
 	}
 
 }

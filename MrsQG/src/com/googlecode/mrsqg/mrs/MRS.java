@@ -462,6 +462,26 @@ public class MRS {
 
 		return ret;
 	}
+
+	/**
+	 * Find out the set of EPs that are not in a range of <cfrom, cto>
+	 * @param cfrom
+	 * @param cto
+	 * @return a HashSet of EP
+	 */
+	public HashSet<EP> getEPSnotInRange (int cfrom, int cto) {
+		HashSet<EP> retSet = new HashSet<EP>();
+
+		// In a well-formed MRS, all EPs are lined up according to
+		// their position in the sentence
+		for (EP ep:this.eps) {
+			if (ep.getCfrom()>=cto|| ep.getCto()<=cfrom) {
+				retSet.add(ep);
+			}
+		}
+
+		return retSet;
+	}
 	/**
 	 * Find out a list of extra type whose extra feature/value match <code>feat</code> and <code>value</code>.
 	 *
@@ -581,6 +601,21 @@ public class MRS {
 			for (FvPair f: ep.getFvpair()) {
 				if (f.getValue() != null && f.getValue().equals(oldValue)) {
 					f.setValue(newValue);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Change all <code>oldValue</code> values to <code>newVar</code>.
+	 * @param oldValue
+	 * @param newVar
+	 */
+	public void changeEPvalueVar (String oldValue, Var newVar) {
+		for (EP ep:this.eps) {
+			for (FvPair f: ep.getFvpair()) {
+				if (f.getVar() != null && f.getValue() != null && f.getVar().getLabel().equals(oldValue)) {
+					f.setVar(newVar);
 				}
 			}
 		}
@@ -1487,9 +1522,9 @@ public class MRS {
 				boolean ep0HasRstr = arg0EPlist.get(0).hasFeature("RSTR");
 				boolean ep1HasRstr = arg0EPlist.get(1).hasFeature("RSTR");
 				if (ep0HasRstr && !ep1HasRstr) {
-					this.charVariableMap.put(arg0, arg0EPlist.get(0));
-				} else if (ep1HasRstr && !ep0HasRstr) {
 					this.charVariableMap.put(arg0, arg0EPlist.get(1));
+				} else if (ep1HasRstr && !ep0HasRstr) {
+					this.charVariableMap.put(arg0, arg0EPlist.get(0));
 				} else {
 					/*
 					 * in some cases, the 2 EPs are not in a qeq relation.
@@ -1849,12 +1884,22 @@ L-HNDL:h8 -> _like_v-1_rel
 
 		this.setAllFlag(true);
 		HashSet<EP> retEPS = decompose(rEPS, eEPS, relaxEQ, keepEQ);
-		for (EP ep:retEPS)
-			ep.setFlag(false);
+		if (retEPS.size()!=0) {
+			for (EP ep:retEPS)
+				ep.setFlag(false);
+		}
 		return retEPS;
 	}
 
 	public HashSet<EP> doDecompositionByLabel (String label, EP eEP, boolean relaxEQ, boolean keepEQ) {
+
+		HashSet<EP> eEPS = new HashSet<EP>();
+		eEPS.add(eEP);
+
+		return doDecompositionByLabelSet(label, eEPS, relaxEQ, keepEQ);
+	}
+
+	public HashSet<EP> doDecompositionByLabelSet (String label, HashSet<EP> eEPS, boolean relaxEQ, boolean keepEQ) {
 		HashSet<EP> rEPS = new HashSet<EP>();
 
 		// find out all the EPs label governs, these are EPs we'd like to keep
@@ -1869,15 +1914,18 @@ L-HNDL:h8 -> _like_v-1_rel
 			rEPS.add(this.charVariableMap.get(label));
 		}
 
-		HashSet<EP> eEPS = new HashSet<EP>();
-		eEPS.add(eEP);
+		if (eEPS == null)
+			eEPS = new HashSet<EP>();
 
 		this.setAllFlag(true);
 		HashSet<EP> retEPS = decompose(rEPS, eEPS, relaxEQ, keepEQ);
-		for (EP ep:retEPS)
-			ep.setFlag(false);
+		if (retEPS.size()!=0) {
+			for (EP ep:retEPS)
+				ep.setFlag(false);
+		}
 		return retEPS;
 	}
+
 
 	public HashSet<EP> decompose(HashSet<EP> rEPS, HashSet<EP> eEPS,
 			boolean relaxEQ, boolean keepEQ) {
