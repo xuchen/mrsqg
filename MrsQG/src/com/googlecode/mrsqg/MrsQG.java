@@ -817,7 +817,7 @@ public class MrsQG {
 							// if (pair.getQuesMrs().getSentType().equals("Y/N")) continue;
 
 							ansSent = pair.getGenOriCand();
-							if (ansSent == null)
+							if (ansSent == null || pair.getQuesMrs().getSentType().equals("WhyDecomposerWhy"))
 								ansSent = sentence;
 							sentSet.add(ansSent);
 
