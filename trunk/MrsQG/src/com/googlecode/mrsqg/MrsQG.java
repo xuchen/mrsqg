@@ -173,7 +173,7 @@ public class MrsQG {
 				t.transform(true);
 			} else if (input.toLowerCase().startsWith("lkb:")) {
 				input = input.substring(4).trim();
-				lkb.sendInput(input);
+				lkb.sendEscapedInput(input);
 				log.info(lkb.getRawOutput());
 			} else if (input.toLowerCase().startsWith("pet:")) {
 				input = input.substring(4).trim();
@@ -489,7 +489,7 @@ public class MrsQG {
 		// generation
 		if (mrxList != null && lkb != null && !dryrun) {
 			String mrx;
-			MrsTransformer t;
+			//MrsTransformer t;
 			MrsTransformer2 t2;
 			int i=0;
 			for (MRS m:mrxList) {
@@ -780,8 +780,8 @@ public class MrsQG {
 		try {
 			BufferedReader in = new BufferedReader(new FileReader(new File(inFile)));
 			BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
-			out.write("<?xml version=\"1.0\"?>\n");
-			out.write("<Workbook>\n");
+			out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+			out.write("<Workbook  xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\">\n");
 			out.write("\t<Row>\n");
 			out.write("\t\t<Cell><Data ss:Type=\"String\">question</Data></Cell>\n");
 			out.write("\t\t<Cell><Data ss:Type=\"String\">text</Data></Cell>\n");
@@ -817,7 +817,7 @@ public class MrsQG {
 							// if (pair.getQuesMrs().getSentType().equals("Y/N")) continue;
 
 							ansSent = pair.getGenOriCand();
-							if (ansSent == null || pair.getQuesMrs().getSentType().equals("WhyDecomposerWhy"))
+							if (ansSent == null || pair.getQuesMrs().getSentType().equals("WHY"))
 								ansSent = sentence;
 							sentSet.add(ansSent);
 

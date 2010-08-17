@@ -135,13 +135,21 @@ public class LKB {
 	 * Send an input string to LKB
 	 */
 	public void sendInput (String input) {
-		//String cmd = input.replaceAll("\n","").replaceAll("\"", "\\\\\"");
+		//input = input.replaceAll("\"", "\\\\\"");
 		InputWriter in = new InputWriter(input);
 		try {
 			in.start();
 		} catch (Exception e) {
 			log.error("Error:", e);
 		}
+	}
+
+	/**
+	 * Escape " from input, this function should be used when reading command from console
+	 * @param input
+	 */
+	public void sendEscapedInput (String input) {
+		sendInput(input.replaceAll("\n","").replaceAll("\"", "\\\""));
 	}
 
 	/**

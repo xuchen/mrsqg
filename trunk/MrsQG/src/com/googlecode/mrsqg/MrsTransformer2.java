@@ -15,6 +15,7 @@ import com.googlecode.mrsqg.mrs.DMRS;
 import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.mrs.Var;
+import com.googlecode.mrsqg.nlp.Cheap;
 
 /**
  * This is the sequel of the original Mrs. Transformer,
@@ -76,7 +77,7 @@ public class MrsTransformer2 extends MrsTransformer {
 		if (trMrsList != null)
 			this.gen_mrs.addAll(trMrsList);
 
-		trMrsList = transformHOWques(terms);
+		trMrsList = transformHowManyQues(terms);
 		if (trMrsList != null)
 			this.gen_mrs.addAll(trMrsList);
 
@@ -101,7 +102,6 @@ public class MrsTransformer2 extends MrsTransformer {
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 		MRS q_mrs;
-		ArrayList<EP> eps;
 		// dependency EP and governor EP
 		EP dEP, gEP;
 		// the set of EPs related with dEP
@@ -222,6 +222,7 @@ HCONS: < ...h17 qeq h14 >
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
 		setupHiLoEP(q_mrs, hiEP, loEP, neType);
+		q_mrs = removeFocusD(q_mrs);
 
 		if (neType.equals("NElocation") && gEP.isPrepositionEP()) {
 			// NElocation generates two types of questions: where and which place
@@ -285,5 +286,195 @@ HCONS: < ...h17 qeq h14 >
 		}
 
 		return neTypes;
+	}
+
+	public ArrayList<MRS> transformHowManyQues (Term[] terms) {
+		if (terms == null) return null;
+		ArrayList<MRS> outList = new ArrayList<MRS>();
+
+		/**
+		 * How many/much/long questions need to add too many EPs which makes
+		 * the transformed MRS pretty fragile. Thus we only do lexical substitution
+		 * here to obtain the transformed MRS.
+		 */
+		/*
+		 * the one hundred twenty apples are there.
+		 * The one hundred men have 5 apples.
+		 * numbers such as above can't be detected by NER
+		 * we need to process CARD_REL
+		 */
+		EP ep, nounEP;
+		HashSet<EP> cardEPS = new HashSet<EP>();
+
+		int cto = -1, size = this.ori_mrs.getEps().size();
+		boolean gotIt = false;
+		for (int i=0; i<size; i++) {
+			ep = this.ori_mrs.getEps().get(i);
+			if (ep.getTypeName().contains("CARD_REL")) {
+				// CARD_REL, BASIC_CARD_REL
+				if (cto == -1) {
+					// the first CARD_REL
+					cto = ep.getCto();
+					cardEPS.clear();
+				} else if (cto != -1 && ep.getCfrom() == cto + 1) {
+					// any consecutive CARD_REL
+					cto = ep.getCto();
+				} else {
+					// a new CARD_REL
+					cto = ep.getCto();
+					cardEPS.clear();
+				}
+				cardEPS.add(ep);
+
+				gotIt = false;
+			} else {
+				if (cto != -1 && cto != ep.getCto()) {
+					gotIt = true;
+					cto = -1;
+				} else {
+					gotIt = false;
+				}
+			}
+
+			if (gotIt == false) {
+				continue;
+			}
+
+			MRS qMrs = new MRS(this.ori_mrs);
+			cardEPS = qMrs.getEPSbyParallelIndex(this.ori_mrs, cardEPS);
+			HashSet<EP> nounEPS = new HashSet<EP>();
+			// got a set of CARD_REL
+			for (EP e:cardEPS) {
+				/*
+				 *  find out the noun EP those card_rel modifies
+				 *  such as people from "one hundred" people
+				 */
+				for (DMRS dmrs:e.getDmrsSet()) {
+					if (dmrs.getDirection()==DMRS.DIRECTION.DEP &&
+							dmrs.getPreSlash()==DMRS.PRE_SLASH.ARG &&
+							(dmrs.getPostSlash()==DMRS.POST_SLASH.NEQ || dmrs.getPostSlash()==DMRS.POST_SLASH.EQ)) {
+						nounEPS.add(dmrs.getEP());
+					}
+				}
+			}
+			if (nounEPS.size() != 1) {
+				log.error("The set of EPS modified by CARD_REL should only contain one EP:"+nounEPS);
+				log.error("DEBUG YOUR CODE!");
+				cardEPS.clear();
+				continue;
+			}
+			qMrs.doDecomposition(cardEPS, nounEPS, false, true);
+			// remove all cardEP related EPs
+			if (!qMrs.removeEPbyFlag(false)) continue;
+
+			nounEP = (EP)nounEPS.toArray()[0];
+			/*
+			 * change the quantifier of nounEP to UDEF_Q_REL
+			 * this is to avoid generate sth. like "the how many apples are there"
+			 */
+			for (DMRS dmrs:nounEP.getDmrsSet()) {
+				if (dmrs.getPreSlash()==DMRS.PRE_SLASH.RSTR && dmrs.getPostSlash()==DMRS.POST_SLASH.H) {
+					dmrs.getEP().setTypeName("UDEF_Q_REL");
+				}
+			}
+			/*
+[ ABSTR_DEG_REL<0:3>
+  LBL: h7
+  ARG0: x8
+]
+        DMRS: [ <-RSTR/H-- WHICH_Q_REL,  <-ARG2/NEQ-- MEASURE_REL]
+[ WHICH_Q_REL<0:3>
+  LBL: h9
+  ARG0: x8
+  RSTR: h11
+  BODY: h10
+]
+        DMRS: [ --RSTR/H-> ABSTR_DEG_REL]
+[ MEASURE_REL<0:3>
+  LBL: h12
+  ARG0: e13 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]
+  ARG1: e14 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]
+  ARG2: x8
+]
+        DMRS: [ --ARG1/EQ-> MUCH-MANY_A_REL,  --ARG2/NEQ-> ABSTR_DEG_REL]
+[ MUCH-MANY_A_REL<4:8>
+  LBL: h12
+  ARG0: e14 [ e SF: PROP TENSE: UNTENSED MOOD: INDICATIVE ]
+  ARG1: x4 [ x PERS: 3 NUM: PL IND: + ]
+]
+        DMRS: [ --ARG1/EQ-> _apple_n_1_rel,  <-ARG1/EQ-- MEASURE_REL]
+[ _apple_n_1_rel<9:15>
+  LBL: h12
+  ARG0: x4 [ x PERS: 3 NUM: PL IND: + ]
+]
+        DMRS: [ <-RSTR/H-- UDEF_Q_REL,  <-ARG1/NEQ-- LOC_NONSP_REL,  <-ARG1/EQ-- MUCH-MANY_A_REL]
+HCONS: < h5 qeq h12 h11 qeq h7 >
+			 */
+			ArrayList<String> labelStore = qMrs.generateUnusedLabel(7);
+			String h7="h"+labelStore.get(0), x8="x"+labelStore.get(1),
+				h9="h"+labelStore.get(2), h10="h"+labelStore.get(3),
+				h11="h"+labelStore.get(4),
+				e13="e"+labelStore.get(5), e14="e"+labelStore.get(6);
+			String h12 = nounEP.getLabel();
+
+			EP abstrEP = new EP("ABSTR_DEG_REL", h7);
+			abstrEP.addSimpleFvpair("ARG0", x8);
+
+			EP whichEP = new EP("WHICH_Q_REL", h9);
+			whichEP.addSimpleFvpair("ARG0", x8);
+			whichEP.addSimpleFvpair("RSTR", h11);
+			whichEP.addSimpleFvpair("BODY", h10);
+
+			qMrs.addEPtoEPS(abstrEP);
+			qMrs.addEPtoEPS(whichEP);
+			qMrs.addToHCONSsimple("qeq", h11, h7);
+
+			EP measureEP = new EP("MEASURE_REL", h12);
+			String[] extraPairs0 = {"SF","PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"};
+			Var var0 = new Var(e13, extraPairs0);
+			measureEP.addFvpair("ARG0", var0);
+			String[] extraPairs1 = {"SF","PROP", "TENSE", "UNTENSED", "MOOD", "INDICATIVE"};
+			Var var1 = new Var(e14, extraPairs1);
+			measureEP.addFvpair("ARG1", var1);
+			measureEP.addSimpleFvpair("ARG2", x8);
+
+			EP muchEP = new EP("MUCH-MANY_A_REL", h12);
+			muchEP.addFvpair("ARG0", var1);
+			Var x4Var = nounEP.getValueVarByFeature("ARG0");
+			muchEP.addFvpair("ARG1", x4Var);
+
+			qMrs.addEPtoEPS(measureEP);
+			qMrs.addEPtoEPS(muchEP);
+
+			qMrs = removeFocusD(qMrs);
+			qMrs.cleanHCONS();
+
+			qMrs.setSF2QUES();
+			qMrs.setSentType("HOW MANY/MUCH");
+			qMrs.changeFromUnkToNamed();
+			qMrs.postprocessing();
+			outList.add(qMrs);
+		}
+
+		return outList.size() == 0 ? null : outList;
+	}
+
+	protected MRS removeFocusD(MRS mrs) {
+		/*
+		 * The first "FOCUS_D_REL" relation which covers the whole
+		 * sentence must be removed otherwise no generation
+		 * In 1996, the trust employed over 7,000 staff
+		 */
+		ArrayList<EP> list = mrs.getEps();
+		int clast = -1;
+		for (EP ep:list) {
+			if (ep.getCto() > clast) clast = ep.getCto();
+		}
+		if (list.get(0).getTypeName().equals("FOCUS_D_REL") &&
+				list.get(0).getCto()==clast) {
+			mrs.removeEP(list.get(0));
+		}
+
+		return mrs;
 	}
 }
