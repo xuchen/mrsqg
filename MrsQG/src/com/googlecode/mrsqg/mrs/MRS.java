@@ -165,6 +165,10 @@ public class MRS {
 	}
 
 	public void postprocessing() {
+		this.charVariableMap.clear();
+		for (EP ep:this.eps) {
+			ep.clearDependencies();
+		}
 		this.buildCoref();
 		this.mapCharacteristicVariables();
 		this.buildDependencies();
@@ -482,6 +486,26 @@ public class MRS {
 
 		return retSet;
 	}
+
+	/**
+	 * Find out the set of EPs that are in a range of <cfrom, cto>
+	 * @param cfrom
+	 * @param cto
+	 * @return a HashSet of EP
+	 */
+	public HashSet<EP> getEPSinRange (int cfrom, int cto) {
+		HashSet<EP> retSet = new HashSet<EP>();
+
+		// In a well-formed MRS, all EPs are lined up according to
+		// their position in the sentence
+		for (EP ep:this.eps) {
+			if (ep.getCfrom()>=cfrom|| ep.getCto()<=cto) {
+				retSet.add(ep);
+			}
+		}
+
+		return retSet;
+	}
 	/**
 	 * Find out a list of extra type whose extra feature/value match <code>feat</code> and <code>value</code>.
 	 *
@@ -551,6 +575,21 @@ public class MRS {
 	 */
 	public EP getEPbyParallelIndex (MRS copyMrs, EP copyEP) {
 		return this.getEps().get(copyMrs.getEps().indexOf(copyEP));
+	}
+
+	/**
+	 * similar with <code>getEPbyParallelIndex</code>, but deal with a set of EPs
+	 * @param copyMrs
+	 * @param copyEPS
+	 * @return a set of EPs
+	 */
+	public HashSet<EP> getEPSbyParallelIndex (MRS copyMrs, HashSet<EP> copyEPS) {
+		HashSet<EP> retEPS = new HashSet<EP>();
+		if (copyEPS == null || copyEPS.size() == 0) return null;
+		for (EP ep:copyEPS) {
+			retEPS.add(this.getEps().get(copyMrs.getEps().indexOf(ep)));
+		}
+		return retEPS;
 	}
 
 	/**
@@ -1329,10 +1368,6 @@ public class MRS {
 
 		if(this.eps.removeAll(removedList)) {
 			// rebuild dependencies since something is removed
-			this.charVariableMap.clear();
-			for (EP ep:this.eps) {
-				ep.clearDependencies();
-			}
 			postprocessing();
 			return true;
 		} else {
