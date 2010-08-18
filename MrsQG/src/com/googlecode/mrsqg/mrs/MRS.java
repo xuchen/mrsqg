@@ -2003,7 +2003,14 @@ L-HNDL:h8 -> _like_v-1_rel
 							postSlash == DMRS.POST_SLASH.EQ && !ep.hasEPemptyArgs()) {
 						continue;
 					}
-					if (!((postSlash == DMRS.POST_SLASH.NEQ || postSlash == DMRS.POST_SLASH.H) && (ep.isVerbEP() || ep.isPassiveEP()))) {
+					if (!((postSlash == DMRS.POST_SLASH.NEQ || postSlash == DMRS.POST_SLASH.H) &&
+							(ep.isVerbEP() || ep.isPassiveEP() || ep.isPrepositionBefore(rEPS)))) {
+						/*
+						 * ep.isPrepositionBefore(rEPS): we want to remove the preposition if rEPS
+						 * is in a PP, such as that "with people suffering badly...", we don't want
+						 * "with", but in a normal sentence, such as "people suffer badly with pain",
+						 * we want to keep the PP.
+						 */
 						retEPS.add(ep);
 					}
 				} else {

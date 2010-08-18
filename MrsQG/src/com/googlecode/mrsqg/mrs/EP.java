@@ -386,6 +386,26 @@ public class EP {
 	}
 
 	/**
+	 * Whether this is a "ing" verb in an relative clause, such as "with people suffering badly."
+	 * @return a boolean value
+	 */
+	public boolean isVerbIngEPinRelative () {
+		boolean ret = false;
+
+		ret = isVerbEP();
+
+		if (ret) {
+			if (this.getValueVarByFeature("ARG0") != null &&
+					this.getValueVarByFeature("ARG0").getExtrapair().containsValue("UNTENSED") &&
+					this.getValueVarByFeature("ARG0").getExtrapair().containsValue("+")) {
+				ret = true;
+			}
+		}
+
+		return ret;
+	}
+
+	/**
 	 * Whether this EP is an EP for prepositions, whose type name matches "_p_".
 	 * @return a boolean value
 	 */
@@ -401,6 +421,26 @@ public class EP {
 		return this.getTypeName().toLowerCase().equals("parg_d_rel");
 	}
 
+	/**
+	 * Whether an EP is a preposition and it's position is before a <code>set</code> of EPS.
+	 * This is used to judge whether <code>set</code> is in a PP or not.
+	 * @param set
+	 * @return a boolean value
+	 */
+	public boolean isPrepositionBefore(HashSet<EP> set) {
+		boolean ret = true;
+		if (this.isPrepositionEP()) {
+			for (EP ep:set) {
+				if (this.getCto() > ep.getCfrom()) {
+					ret = false;
+					break;
+				}
+			}
+		} else
+			ret = false;
+
+		return ret;
+	}
 	/**
 	 * whether ep has any ARG/EQ dependency
 	 * @return a boolean value
