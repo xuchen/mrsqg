@@ -274,12 +274,13 @@ public class Term implements Serializable {
 	/**
 	 * Set the pos_fsc field of this term.
 	 */
-	public void setPosFSC(String[] pos) {
+	public boolean setPosFSC(String[] pos) {
+		boolean success = true;
 		// if this is not a named entity, we'll use this.pos rather than this.pos_fsc
-		if (this.neTypes == null) return;
+		if (this.neTypes == null) return false;
 		if (this.from == this.to) {
 			this.pos_fsc = pos[this.from];
-			return;
+			return true;
 		}
 
 		Set<String> posSet = new HashSet<String>();
@@ -294,7 +295,7 @@ public class Term implements Serializable {
 			// X. Yao 2010-05-16: Disable it to use the new LKB/logon with generation from unknown words.
 //			if (this.pos_fsc.equals("NN"))
 //				this.pos_fsc = "NNP";
-			return;
+			return true;
 		} else {
 			// we should have used the CollinsHeadFinder in Stanford parser
 			// to find out the POS tag of the head. But there are two issues:
@@ -308,8 +309,19 @@ public class Term implements Serializable {
 			// X. Yao 2010-05-16: Disable it to use the new LKB/logon with generation from unknown words.
 //			if (this.pos_fsc.equals("NN"))
 //				this.pos_fsc = "NNP";
-			log.warn("Warning: different POS in term. Using the last one. "+Arrays.toString(posL));
-			return;
+			/**
+			 * X. Yao 2010-08-18:For NEduration/NErange/NElength, they follow a pattern of
+			 * CD NN*, such as "100 years" "1 day" "6 miles', etc. If tagging them as a term,
+			 * we have to ask "how long" or "how far" questions. However, these question words
+			 * require too many EPs and it's not easy to generate such questions. Thus we don't
+			 * recognize them as a whole term, but split them to ask single "how many" questions.
+			 */
+			if (posL.length==2 && posL[0].startsWith("CD") && posL[1].startsWith("NN")) {
+				return false;
+			} else {
+				log.warn("Warning: different POS in term. Using the last one. "+Arrays.toString(posL));
+				return true;
+			}
 		}
 	}
 
