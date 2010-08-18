@@ -50,7 +50,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 				// not main verb: ARG0 value isn't the index of this mrs
 
 				if ((ep.isVerbEP() || ep.isPrepositionEP())&& !ep.getArg0().equals(inMrs.getIndex()) &&
-						!ep.hasEPemptyArgsExceptPassive() && ep.hasEQarg()) {
+						!ep.hasEPemptyArgsExceptPassive() && (ep.hasEQarg() || ep.isVerbIngEPinRelative())) {
 
 					if (ep.getValueVarByFeature("ARG0").getExtrapair().get("SF") != null)
 						if (!ep.getValueVarByFeature("ARG0").getExtrapair().get("SF").startsWith("PROP"))
@@ -66,10 +66,12 @@ public class SubclauseDecomposer extends MrsDecomposer {
 
 					mrs = new MRS(inMrs);
 					oriTense = mrs.getTense();
+					if (oriTense.equals("UNTENSED")) oriTense = "PAST";
 					tEP = mrs.getEps().get(inMrs.getEps().indexOf(ep));
 
 					//mrs.keepDependentEPfromVerbEP(verbEP);
-					mrs.doDecomposition(new HashSet<EP>(Arrays.asList(tEP)), null, true, true);
+					HashSet<EP> decopSet = mrs.doDecomposition(new HashSet<EP>(Arrays.asList(tEP)), null, true, true);
+					decopSet.clear();
 
 					/*
 					 *  set the lowEP of oneArg (verbEP's ARG1, usually before verbEP) to a different label
@@ -110,6 +112,11 @@ public class SubclauseDecomposer extends MrsDecomposer {
 //						log.error("the size of one arg list of the subclause verb isn't 1 or 2:\n"+argList);
 //					}
 
+					if (tEP.isVerbIngEPinRelative()) {
+						tEP.getValueVarByFeature("ARG0").getExtrapair().put("TENSE", oriTense);
+						tEP.getValueVarByFeature("ARG0").getExtrapair().put("PROG", "-");
+					}
+
 					if (tEP.isVerbEP()) {
 						mrs.setIndex(tEP.getArg0());
 					} else {
@@ -120,6 +127,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 						else
 							continue;
 					}
+
 					if (mrs.getTense().equals("UNTENSED"))
 						mrs.setTense(oriTense);
 					mrs.setDecomposer("Subclause");
