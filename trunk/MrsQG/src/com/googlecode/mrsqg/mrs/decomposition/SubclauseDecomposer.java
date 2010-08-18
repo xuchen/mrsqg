@@ -70,8 +70,7 @@ public class SubclauseDecomposer extends MrsDecomposer {
 					tEP = mrs.getEps().get(inMrs.getEps().indexOf(ep));
 
 					//mrs.keepDependentEPfromVerbEP(verbEP);
-					HashSet<EP> decopSet = mrs.doDecomposition(new HashSet<EP>(Arrays.asList(tEP)), null, true, true);
-					decopSet.clear();
+					mrs.doDecomposition(new HashSet<EP>(Arrays.asList(tEP)), null, true, true);
 
 					/*
 					 *  set the lowEP of oneArg (verbEP's ARG1, usually before verbEP) to a different label
