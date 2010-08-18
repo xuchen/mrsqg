@@ -108,7 +108,18 @@ public class MRS {
 		if (this.getSentType().equals("Y/N")) return "yes";
 		else if (ansCrange[0] == 0 && ansCrange[1] == 0) return "";
 		else if (sent == null) return "";
-		else return sent.substring(ansCrange[0], ansCrange[1]);
+		else {
+			String phrase;
+			if (ansCrange[0] > sent.length() || ansCrange[1] > sent.length() ||
+					ansCrange[0] < 0 || ansCrange[1] < 0 || ansCrange[1] - ansCrange[0] <0) {
+				phrase = "";
+			} else
+				phrase = sent.substring(ansCrange[0], ansCrange[1]);
+			if (phrase.endsWith(" ."))
+				phrase = phrase.substring(0, phrase.length()-2);
+			return phrase;
+		}
+
 	}
 
 	/**
@@ -119,11 +130,18 @@ public class MRS {
 		int cfrom=Integer.MAX_VALUE, cto=Integer.MIN_VALUE;
 		if (dEPS == null || dEPS.size() == 0) return;
 		for (EP ep:dEPS) {
+			/*
+			 *  some of EP doesn't have any Cfrom/Cto values, such as
+			 *  NOMINALIZATION_REL, perhaps a bug from ERG/LKB?
+			 */
+			if (ep.getCfrom() == -1 || ep.getCto() == -1) continue;
 			if (ep.getCfrom()<cfrom) cfrom=ep.getCfrom();
 			if (ep.getCto()>cto) cto = ep.getCto();
 		}
 		this.ansCrange[0] = cfrom;
 		this.ansCrange[1] = cto;
+		if (cfrom == -1)
+			log.warn("here");
 	}
 
 
