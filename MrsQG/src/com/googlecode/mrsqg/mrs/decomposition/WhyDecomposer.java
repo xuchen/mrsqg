@@ -7,6 +7,7 @@ package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.log4j.Logger;
 
@@ -62,8 +63,7 @@ public class WhyDecomposer extends MrsDecomposer {
 
 
 	protected ArrayList<MRS> becauseDecompose(MRS inMrs, EP becauseEP, boolean exchange) {
-//		MRS reasonMrs = new MRS(inMrs);
-//		MRS resultMrs = new MRS(inMrs);
+
 		ArrayList<MRS> list = new ArrayList<MRS>();
 
 		String resultHi, reasonHi;
@@ -80,21 +80,15 @@ public class WhyDecomposer extends MrsDecomposer {
 		String reasonLo = null;
 		if (reasonHi!=null)
 			reasonLo = inMrs.getLoLabelFromHconsList(reasonHi);
-//		if (resultHi==null || reasonHi==null || resultLo==null || reasonLo==null) return null;
-//
-//		ElementaryPredication cutEP = null;
 
-		//MRS reasonMrs = inMrs.extractByLabel(reasonHi, becauseEP);
-		//MRS resultMrs = inMrs.extractByLabel(resultHi, becauseEP);
 		MRS reasonMrs = null;
+		HashSet<EP> ansSet = null;
 		if (reasonHi!=null || reasonLo!=null) {
 			reasonMrs= new MRS(inMrs);
-			//reasonMrs.keepDependentEPbyLabel(reasonHi, reasonMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
-			reasonMrs.doDecompositionByLabel(reasonHi, reasonMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)), true, true);
+			ansSet = reasonMrs.doDecompositionByLabel(reasonHi, reasonMrs.getEPbyParallelIndex(inMrs, becauseEP), true, true);
 		}
 		MRS resultMrs = new MRS(inMrs);
-		//resultMrs.keepDependentEPbyLabel(resultHi, resultMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)));
-		resultMrs.doDecompositionByLabel(resultHi, resultMrs.getEps().get(inMrs.getEps().indexOf(becauseEP)), true, true);
+		resultMrs.doDecompositionByLabel(resultHi, resultMrs.getEPbyParallelIndex(inMrs, becauseEP), true, true);
 
 		if (reasonMrs!=null && reasonMrs.removeEPbyFlag(true)) {
 			reasonMrs.cleanHCONS();
@@ -102,6 +96,7 @@ public class WhyDecomposer extends MrsDecomposer {
 
 		if (resultMrs.removeEPbyFlag(true)) {
 			resultMrs.cleanHCONS();
+			resultMrs.setAnsCrange(ansSet);
 		}
 
 		if (exchange && reasonMrs!=null) {

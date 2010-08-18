@@ -443,9 +443,9 @@ public class MrsQG {
 		quesFailPairs = new ArrayList<Pair>();
 
 		// pre-processing, get the output FSC XML in a string fsc
-		Preprocessor p = new Preprocessor();
-		String fsc = p.getFSCbyTerms(input, true, singleSentence);
-		input = p.getOriginalSentence();
+		Preprocessor pre = new Preprocessor();
+		String fsc = pre.getFSCbyTerms(input, true, singleSentence);
+		input = pre.getOriginalSentence();
 		//log.info("\nFSC XML from preprocessing:\n");
 		//log.info(fsc);
 
@@ -459,7 +459,7 @@ public class MrsQG {
 		if (usePreSelector) mrxList = PreSelector.doIt(lkb, origMrsList);
 		else mrxList = origMrsList;
 		boolean success = parser.isSuccess();
-		if (p.getNumTokens() > 15) {
+		if (pre.getNumTokens() > 15) {
 			parser.releaseMemory();
 		}
 		if (!success) return null;
@@ -480,7 +480,7 @@ public class MrsQG {
 			MrsTransformer2 t3;
 			if (mrxList != null) {
 				for (MRS m:mrxList) {
-					t3 = new MrsTransformer2(m, p);
+					t3 = new MrsTransformer2(m, pre);
 					t3.transform(false);
 				}
 			}
@@ -549,7 +549,7 @@ public class MrsQG {
 				// transform
 //				t = new MrsTransformer(m, p);
 //				ArrayList<MRS> trMrsList = t.transform(false);
-				t2 = new MrsTransformer2(m, p);
+				t2 = new MrsTransformer2(m, pre);
 				ArrayList<MRS> trMrsList = t2.transform(false);
 
 				if (trMrsList == null) continue;
@@ -683,6 +683,8 @@ public class MrsQG {
 				log.info("SentType: "+pair.getQuesMrs().getSentType());
 				log.info("Decomposer: "+pair.getQuesMrs().getDecomposer());
 				log.info("Question: "+pair.getGenQuesCand());
+				pair.setAnsPhrase(pair.getQuesMrs().getAnsPhrase(input));
+				log.info("AnswerPhrase: "+pair.getAnsPhrase());
 				if (ranker != null) {
 					pair.printQuesRankedMap();
 				}
@@ -741,6 +743,7 @@ public class MrsQG {
 					for (Pair pp:quesMapbyType.get(t)) {
 						nQ++;
 						log.info(String.format("%.2f: ", pp.getGenQuesCandGrade()*10)+pp.getGenQuesCand());
+						log.info("AnswerPhrase: "+pp.getAnsPhrase());
 					}
 				}
 				log.info("\nGenerated "+nQ+" questions of "+nType+" types.");
@@ -771,7 +774,7 @@ public class MrsQG {
         }
 
         Integer quesIDcount = new Integer(0);
-        String ansSent, sentID;
+        String ansSent, sentID, ansTerm, ansTermID;
         HashSet<String> sentSet = new HashSet<String>();
 
         int paragraphCounter=0;
@@ -817,19 +820,28 @@ public class MrsQG {
 							// if (pair.getQuesMrs().getSentType().equals("Y/N")) continue;
 
 							ansSent = pair.getGenOriCand();
+							ansTerm = pair.getAnsPhrase();
 							if (ansSent == null || pair.getQuesMrs().getSentType().equals("WHY"))
 								ansSent = sentence;
 							sentSet.add(ansSent);
 
 							question = StringUtils.replaceXMLspecials(question);
 							ansSent = StringUtils.replaceXMLspecials(ansSent);
+							ansTerm = StringUtils.replaceXMLspecials(ansTerm);
 							quesIDcount++;
 							sentID = "S"+quesIDcount;
+							ansTermID = "P" + quesIDcount;
 
 							out.write("\t<Row>\n");
 							out.write("\t\t<Cell><Data ss:Type=\"String\">"+question+"</Data></Cell>\n");
 							out.write("\t\t<Cell><Data ss:Type=\"String\">"+ansSent+"</Data></Cell>\n");
 							out.write("\t\t<Cell><Data ss:Type=\"String\">"+sentID+"</Data></Cell>\n");
+							out.write("\t</Row>\n");
+
+							out.write("\t<Row>\n");
+							out.write("\t\t<Cell><Data ss:Type=\"String\">"+question+"</Data></Cell>\n");
+							out.write("\t\t<Cell><Data ss:Type=\"String\">"+ansTerm+"</Data></Cell>\n");
+							out.write("\t\t<Cell><Data ss:Type=\"String\">"+ansTermID+"</Data></Cell>\n");
 							out.write("\t</Row>\n");
 							out.flush();
 

@@ -201,6 +201,11 @@ HCONS: < ...h17 qeq h14 >
 					continue;
 
 				q_mrs.cleanHCONS();
+				if (gEP.isPrepositionEP()) {
+					//remove the preposition to set the answer term more correctly
+					dEPS.remove(gEP);
+				}
+				q_mrs.setAnsCrange(dEPS);
 
 				if (neTypes.size() == 0) {
 					// generate a "what" question if no NEs are found
@@ -367,9 +372,10 @@ HCONS: < ...h17 qeq h14 >
 				cardEPS.clear();
 				continue;
 			}
-			qMrs.doDecomposition(cardEPS, nounEPS, false, true);
+			HashSet<EP> ansEPS = qMrs.doDecomposition(cardEPS, nounEPS, false, true);
 			// remove all cardEP related EPs
 			if (!qMrs.removeEPbyFlag(false)) continue;
+			qMrs.setAnsCrange(ansEPS);
 
 			nounEP = (EP)nounEPS.toArray()[0];
 			/*
@@ -526,8 +532,9 @@ HCONS: < h5 qeq h12 h11 qeq h7 >
 			tEP = qMrs.getEPbyParallelIndex(this.ori_mrs, tEP);
 
 			// removed everything indexed by byEP
-			qMrs.doDecompositionbyEP(tEP, byEP, false, true);
+			HashSet<EP> ansEPS = qMrs.doDecompositionbyEP(tEP, byEP, false, true);
 			if (!qMrs.removeEPbyFlag(false)) continue;
+			qMrs.setAnsCrange(ansEPS);
 
 			/*
 [ UNSPEC_MANNER_REL<11:16>

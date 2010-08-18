@@ -34,6 +34,8 @@ public class Pair {
 	protected String genOriCand;
 	/** unsuccessfully generated original sentence snippet list from <code>oriMrs</code> */
 	protected ArrayList<String> genOriSentFailedList;
+	/** the answer phrase */
+	protected String ansPhrase = "";
 
 	/** a question MRS*/
 	protected MRS quesMrs;
@@ -111,6 +113,8 @@ public class Pair {
 	public void setFlag(boolean flag) {this.flag = flag;}
 	public double getGenQuesCandGrade () {return genQuesCandGrade;}
 	public double[] getOverallScores () {return overallScores;}
+	public String getAnsPhrase () {return ansPhrase;}
+	public void setAnsPhrase(String ansPhrase) {this.ansPhrase = ansPhrase;}
 
 	/**
 	 * Get the generated "original" declarative sentence. It could come from a decomposed

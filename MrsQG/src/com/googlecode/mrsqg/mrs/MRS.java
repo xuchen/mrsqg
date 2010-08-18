@@ -72,6 +72,8 @@ public class MRS {
 	private String sent_type = "PROP";
 	/** which decomposer this MRS comes from. */
 	private ArrayList<String> decomposer = null;
+	/** the character range of answer phrase {cfrom, cto} */
+	private int[] ansCrange = {0,0};
 
 	private ArrayList <EP> eps;
 	private ArrayList<HCONS> hcons;
@@ -98,6 +100,30 @@ public class MRS {
 		this.index = index;
 		// index usually looks like "e2".
 		this.index_vid = index.substring(1);
+	}
+
+	public int[] getAnsCrange () {return this.ansCrange;}
+
+	public String getAnsPhrase (String sent) {
+		if (this.getSentType().equals("Y/N")) return "yes";
+		else if (ansCrange[0] == 0 && ansCrange[1] == 0) return "";
+		else if (sent == null) return "";
+		else return sent.substring(ansCrange[0], ansCrange[1]);
+	}
+
+	/**
+	 * Set the character range of answer term by extracting the range of <code>dEPS</code>
+	 * @param dEPS a set of EPs that represent answer terms
+	 */
+	public void setAnsCrange (HashSet<EP> dEPS) {
+		int cfrom=Integer.MAX_VALUE, cto=Integer.MIN_VALUE;
+		if (dEPS == null || dEPS.size() == 0) return;
+		for (EP ep:dEPS) {
+			if (ep.getCfrom()<cfrom) cfrom=ep.getCfrom();
+			if (ep.getCto()>cto) cto = ep.getCto();
+		}
+		this.ansCrange[0] = cfrom;
+		this.ansCrange[1] = cto;
 	}
 
 
@@ -152,6 +178,8 @@ public class MRS {
 		this.sent_type = old.getSentType();
 		this.eps = new ArrayList<EP>();
 		this.decomposer = new ArrayList<String>();
+		this.ansCrange[0] = old.getAnsCrange()[0];
+		this.ansCrange[1] = old.getAnsCrange()[1];
 		for (String s:old.getDecomposer()) decomposer.add(s);
 		for (EP ep:old.getEps()) {
 			this.eps.add(new EP(ep));
@@ -671,7 +699,8 @@ public class MRS {
 	 */
 	public String getTense () {
 		try {
-			return (getExtraTypeByValue(getIndex()).get(0)).getVar().getExtrapair().get("TENSE");
+			String tense = (getExtraTypeByValue(getIndex()).get(0)).getVar().getExtrapair().get("TENSE");
+			return tense==null?"PRES":tense;
 		} catch (NullPointerException e) {
 			//
 			return "PRES";
