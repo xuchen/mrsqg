@@ -81,6 +81,10 @@ public class MrsTransformer2 extends MrsTransformer {
 		if (trMrsList != null)
 			this.gen_mrs.addAll(trMrsList);
 
+		trMrsList = transformHowQues();
+		if (trMrsList != null)
+			this.gen_mrs.addAll(trMrsList);
+
 		if (print) {
 			for (MRS m:this.gen_mrs) {
 				log.info(m.getSentType()+" question MRX:");
@@ -476,5 +480,107 @@ HCONS: < h5 qeq h12 h11 qeq h7 >
 		}
 
 		return mrs;
+	}
+
+	public ArrayList<MRS> transformHowQues () {
+		ArrayList<MRS> outList = new ArrayList<MRS>();
+
+		/**
+		 * six entries in core.smi:
+		 * _by+means+of_p_rel : ARG0 e, ARG1 u, ARG2 i.
+  		 * _by+way+of_p_rel : ARG0 e, ARG1 u, ARG2 i.
+  		 * _by_p_means_rel : ARG0 e, ARG1 u, ARG2 i.
+  		 * _by_p_n-n_rel : ARG0 e, ARG1 u, ARG2 x.
+  		 * _by_p_rel : ARG0 e, ARG1 u, [ ARG2 i ].
+  		 * _by_p_temp_rel : ARG0 e, ARG1 u, ARG2 i.
+		 *
+		 * we are interested in _by_p_means_rel, _by+means+of_p_rel, _by+way+of_p_rel,
+		 * _by_p_rel (not very accurate)
+		 */
+		HashSet<String> bySet = new HashSet<String>();
+		bySet.add("_BY_P_MEANS_REL");
+		bySet.add("_BY_P_REL");
+		bySet.add("_BY+WAY+OF_P_REL");
+		bySet.add("_BY+MEANS+OF_P_REL");
+
+		EP byEP, tEP;
+
+		for (EP ep:this.ori_mrs.getEps()) {
+			tEP = null;
+			if (!bySet.contains(ep.getTypeName())) {
+				continue;
+			}
+			for (DMRS dmrs:ep.getDmrsSet()) {
+				// the means of by is indexed by an ARG2/NEQ relation
+				if (dmrs.getDirection() == DMRS.DIRECTION.DEP &&
+						dmrs.getPreSlash() == DMRS.PRE_SLASH.ARG &&
+						dmrs.getPostSlash() == DMRS.POST_SLASH.NEQ &&
+						dmrs.getArgNum().equals("2")) {
+					tEP = dmrs.getEP();
+					break;
+				}
+			}
+			if (tEP == null) continue;
+			MRS qMrs = new MRS(this.ori_mrs);
+			byEP = qMrs.getEPbyParallelIndex(this.ori_mrs, ep);
+			tEP = qMrs.getEPbyParallelIndex(this.ori_mrs, tEP);
+
+			// removed everything indexed by byEP
+			qMrs.doDecompositionbyEP(tEP, byEP, false, true);
+			if (!qMrs.removeEPbyFlag(false)) continue;
+
+			/*
+[ UNSPEC_MANNER_REL<11:16>
+  LBL: h8
+  ARG0: e17 [ e SF: PROP ]
+  ARG1: e2 [ e SF: QUES TENSE: PRES MOOD: INDICATIVE PROG: - PERF: - ]
+  ARG2: x16
+]
+        DMRS: [ --ARG1/EQ-> _go_v_1_rel,  --ARG2/NEQ-> MANNER_REL]
+[ WHICH_Q_REL<11:16>
+  LBL: h18
+  ARG0: x16
+  RSTR: h20
+  BODY: h19
+]
+        DMRS: [ --RSTR/H-> MANNER_REL]
+[ MANNER_REL<11:16>
+  LBL: h21
+  ARG0: x16
+]
+        DMRS: [ <-RSTR/H-- WHICH_Q_REL,  <-ARG2/NEQ-- UNSPEC_MANNER_REL]
+>
+HCONS: < ... h20 qeq h21 >
+
+			 */
+			ArrayList<String> labelStore = qMrs.generateUnusedLabel(5);
+			String x16="x"+labelStore.get(0), h18="h"+labelStore.get(1),
+				h20="h"+labelStore.get(2), h19="h"+labelStore.get(3),
+				h21="h"+labelStore.get(4);
+
+			byEP.setTypeName("UNSPEC_MANNER_REL");
+			byEP.setSimpleFvpairByFeatAndValue("ARG2", x16);
+
+			EP whichEP = new EP("WHICH_Q_REL", h18);
+			whichEP.addSimpleFvpair("ARG0", x16);
+			whichEP.addSimpleFvpair("RSTR", h20);
+			whichEP.addSimpleFvpair("BODY", h19);
+
+			EP mannerEP = new EP("MANNER_REL", h21);
+			mannerEP.addSimpleFvpair("ARG0", x16);
+
+			qMrs.addEPtoEPS(whichEP);
+			qMrs.addEPtoEPS(mannerEP);
+			qMrs.addToHCONSsimple("qeq", h20, h21);
+			qMrs.cleanHCONS();
+
+			qMrs.setSF2QUES();
+			qMrs.setSentType("HOW");
+			qMrs.changeFromUnkToNamed();
+			qMrs.postprocessing();
+			outList.add(qMrs);
+		}
+
+		return outList.size() == 0 ? null : outList;
 	}
 }
