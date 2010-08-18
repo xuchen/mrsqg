@@ -238,7 +238,8 @@ public class TermExtractor {
 				if (neTypes.length > 0) {
 					// construct term
 					Term t = new Term(untokText, Term.COMPOUND, neTypes, id, id+length, tokenStart);
-					t.setPosFSC(pos);
+					if (t.setPosFSC(pos) == false)
+						continue;
 					termsL.add(t);
 					// mark tokens as assigned
 					for (int offset = 0; offset < length; offset++)
