@@ -14,11 +14,12 @@ import com.googlecode.mrsqg.mrs.MRS;
  * (for, and, nor, but, or, yet, so) in English,
  * it finds "and"/"but"/"or" and decompose the sentence into (two)
  * different simpler ones. For instance:
+<pre>
  * "John likes Mary a little but hates Anna very much." ->
  * "John likes Mary a little. John hates Anna very much."
  * "John likes Anna a little and Peter hates Anna very much."
  * "John likes Anna a little. Peter hates Anna very much."
- *
+</pre>
  * @author Xuchen Yao
  *
  */

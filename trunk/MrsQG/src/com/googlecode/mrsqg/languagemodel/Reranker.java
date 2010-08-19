@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.googlecode.mrsqg.languagemodel;
 
 import java.io.FileInputStream;
@@ -21,6 +18,10 @@ import kylm.reader.TextStreamSentenceReader;
 import kylm.util.KylmTextUtils;
 
 /**
+ * A ranker class to rank questions. It uses the Kyoto Language Modeling Toolkit
+ * <a href="http://www.phontron.com/kylm/">kylm</a> to read language models.
+ * Detailed explanation is in Section 4.3 of the author's master thesis.
+ *
  * @author Xuchen Yao
  *
  */
@@ -30,6 +31,13 @@ public class Reranker {
 
 	private static Logger log = Logger.getLogger(Reranker.class);
 
+	/**
+	 * Read in a language model file.
+	 *
+	 * It can read "binary" file which is serialized object file from kylm
+	 * @param lmFile a language model file
+	 * @param binary whether the file is binary or not.
+	 */
 	public Reranker(String lmFile, boolean binary) {
 		NgramReader nr;
 		if (binary)
@@ -58,6 +66,11 @@ public class Reranker {
 		return prob;
 	}
 
+	/**
+	 * Given a file containing one sentence per line, output the
+	 * probability of each sentence.
+	 * @param file the file location
+	 */
 	public void batchJob(String file) {
 
 		// get the input stream to load the input
@@ -102,7 +115,7 @@ public class Reranker {
 
 	/**
 	 * Calculate the Fbeta value for each element pair in <code>maxEntScores</code> and <code>lmScores</code>.
-	 * Reference: http://en.wikipedia.org/wiki/F1_score
+	 * Reference: <a href="http://en.wikipedia.org/wiki/F1_score">F1 score</a>
 	 * @param maxEntScores an array of doubles
 	 * @param lmScores an array of doubles
 	 * @param beta weight, 1 means unbiased, 0.5 weighs maxEntScores twice as much as lmScores
@@ -127,14 +140,18 @@ public class Reranker {
 	}
 
 	/**
+	 * Given a language model in args[0] and a file in args[1] containing
+	 * one sentence per line, output the probability of each sentence.
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String lmFile = "/home/xcyao/lm/corpus/questions/questions.en.rclean.adapt.plm";
-		String batchFile = "/home/xcyao/lm/corpus/questions/batch.txt";
-
-		Reranker r = new Reranker(lmFile, false);
-		r.batchJob(batchFile);
+//		String lmFile = "/home/xcyao/lm/corpus/questions/questions.en.rclean.adapt.plm";
+//		String batchFile = "/home/xcyao/lm/corpus/questions/batch.txt";
+//
+//		Reranker r = new Reranker(lmFile, false);
+//		r.batchJob(batchFile);
+		Reranker r = new Reranker(args[0], false);
+		r.batchJob(args[1]);
 
 	}
 

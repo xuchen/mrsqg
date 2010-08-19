@@ -1,6 +1,4 @@
-/**
-pipe: Given that our desires often conflict, it would be impossible for us to live in a society.
- */
+
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
@@ -12,6 +10,12 @@ import com.googlecode.mrsqg.mrs.FvPair;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
+ * A decomposer to decompose subordinate clauses.
+ *
+ * Test sentence:
+<pre>
+Given that our desires often conflict, it would be impossible for us to live in a society.
+</pre>
  * @author Xuchen Yao
  *
  */
@@ -70,7 +74,7 @@ public class SubordinateDecomposer extends MrsDecomposer {
 						if (vEP==null) {
 							log.error("Error: can't find a verb EP from MRS:");
 							log.error(subMrs);
-							log.error("Debug your code!");
+							log.error("DEBUG YOUR CODE!");
 						} else {
 							subMrs.setIndex(vEP.getArg0());
 						}

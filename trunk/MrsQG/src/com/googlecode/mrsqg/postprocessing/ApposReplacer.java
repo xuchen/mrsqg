@@ -102,7 +102,7 @@ public class ApposReplacer extends Fallback {
 						log.error("deleteArg2From "+deleteArg2From+" is smaller than deleteArg1To "+deleteArg1To);
 						log.error("arg1Set:\n"+arg1Set);
 						log.error("arg2Set:\n"+arg2Set);
-						log.error("Debug your code!");
+						log.error("DEBUG YOUR CODE!");
 					}
 
 					// replace arg2 with arg1

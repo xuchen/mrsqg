@@ -36,6 +36,12 @@ import com.googlecode.mrsqg.postprocessing.*;
 import com.googlecode.mrsqg.util.MapUtils;
 import com.googlecode.mrsqg.util.StringUtils;
 
+/**
+ * MrsQG main program.
+ *
+ * @author Xuchen Yao
+ *
+ */
 
 public class MrsQG {
 	/** Apache logger */
@@ -56,17 +62,17 @@ public class MrsQG {
 	/**
 	 * a parser used for producing MRS in xml
 	 */
-	private Cheap parser = null;
+	protected Cheap parser = null;
 
 	/**
 	 * LKB used for generation from MRS in xml
 	 */
-	private LKB lkb = null;
+	protected LKB lkb = null;
 
 	/**
 	 * a question re-ranker based on language models
 	 */
-	private Reranker ranker = null;
+	protected Reranker ranker = null;
 
 	/**
 	 * Whether run the QGSTEC2010 test
@@ -88,13 +94,14 @@ public class MrsQG {
 	 */
 	private boolean fallback;
 
-	// pairs for declarative sentences, could be original, or decomposed.
-	private ArrayList<Pair> declSuccPairs;
-	private ArrayList<Pair> declFailPairs;
-	// pairs for successfully generated questions
-	private ArrayList<Pair> quesSuccPairs;
-	// pairs for not successfully generated questions
-	private ArrayList<Pair> quesFailPairs;
+	/** pairs for declarative sentences, could be original, or decomposed. */
+	protected ArrayList<Pair> declSuccPairs;
+	/** pairs for declarative sentences that can not be generated from LKB. */
+	protected ArrayList<Pair> declFailPairs;
+	/** pairs for successfully generated questions */
+	protected ArrayList<Pair> quesSuccPairs;
+	/** pairs for not successfully generated questions */
+	protected ArrayList<Pair> quesFailPairs;
 
 	private QGSTEC2010 QGSTEC2010processor;
 
@@ -278,6 +285,12 @@ public class MrsQG {
 		}
 	}
 
+	/**
+	 * Batch processing for QGSTEC2010 evaluation.
+	 *
+	 * This functions has not been tested since May, 2010.
+	 */
+	@Deprecated
 	public void runTest() {
 
 		ArrayList<Instance> instanceList = QGSTEC2010processor.getInstanceList();
@@ -325,7 +338,8 @@ public class MrsQG {
 		}
 	}
 
-	public ArrayList<String> retrieveQuestion (String type, String original) {
+	@Deprecated
+	protected ArrayList<String> retrieveQuestion (String type, String original) {
 		String question="";
 		if (type == null) return null;
 		if (type.equals("yes/no")) type="y/n";
@@ -408,9 +422,15 @@ public class MrsQG {
 	}
 
 	/**
-	 * run the pipeline of question generation
+	 * Run the pipeline of parsing-transformation-generation-ranking.
+	 *
+	 * dryrun mode can be employed to avoid the time-consuming generation stage and have a
+	 * quick view of parsing failure or any exceptions.
+	 *
 	 * @param input a sentence string
-	 * @param singleSentence whether the input is a single sentence or not
+	 * @param singleSentence whether the input is a single sentence or not. If not, <code>input</code>
+	 * 	will go through a sentence detector.
+	 * @param dryrun
 	 * @return a mapping between a question and its Pair instance
 	 */
 	private HashMap<String, Pair> runPipe(String input, boolean singleSentence, boolean dryrun) {
@@ -723,7 +743,7 @@ public class MrsQG {
 					if (grade != ppair.getGenQuesCandGrade() &&
 							! (grade.isNaN() && Double.isNaN(ppair.getGenQuesCandGrade()))) {
 						log.error(grade+"!="+ppair.getGenQuesCandGrade()+
-								"Debug your code for "+q);
+								"DEBUG YOUR CODE for "+q);
 					}
 					// question type
 					type = ppair.getQuesMrs().getSentType();
@@ -768,6 +788,16 @@ public class MrsQG {
 
 	}
 
+	/**
+	 * Produce the PList for <a href="http://vhtoolkit.ict.usc.edu/index.php/NPCEditor">
+	 * NPCEditor</a>.
+	 *
+	 * @param inFile A file containing plain text
+	 * @param outFile the output XML file
+	 * @param dryrun dryrun mode
+	 *
+	 * @see MrsQG#runPipe
+	 */
 	public void producePList(String inFile, String outFile, boolean dryrun) {
 		if (inFile == null || outFile == null) {
             return;
@@ -1034,6 +1064,9 @@ public class MrsQG {
 		//		}
 	}
 
+	/**
+	 * Print usage information.
+	 */
 	public static void printUsage() {
 		System.out.println("\nUsage:");
 		System.out.println("\t1. a declarative sentence.");

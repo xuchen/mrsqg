@@ -15,12 +15,14 @@ import com.googlecode.mrsqg.nlp.LKB;
  * WhatReplacer functions as one of the fallbacks of MrsQG. It finds out all the
  * arguments of all verbs in a sentence, replace them with a question word according
  * to the undelrying named entities (otherwise with "what") and try to re-generate.
+<pre>
  * e.g. it gives us an easy way to find north by looking at the stars .
  * --> what gives us an easy way to find north by looking at the stars ?
  * --> it gives what an easy way to find north by looking at the stars ?
  * --> it gives us what to find north by looking at the stars ?
  * --> it gives us an easy way to find what by looking at the stars ?
  * --> it gives us an easy way to find north by looking at what ?
+</pre>
  *
  * @author Xuchen Yao
  *

@@ -1,15 +1,3 @@
-/**
- * This is "Plan B" of MrsQG, employing a fallback strategy of re-generation
- * by re-parsing. That is, if MrsQG failed to generate from MrsTransformer,
- * then the question word will replace the term in a sentence, and be sent to
- * the parser, finally the parsing result will be sent to the generator for a
- * more natural re-organization of the sentence. A rough example of pipelines:
- * <p>
- * "He has 5 apples." -> "He has how many apples?" -> send to parser
- * -> get MRS from parser -> send to the generator -> "How many apples does he have?"
- * <p>
- *  However, plan B doesn't always work that well. So needing plan C...
- */
 package com.googlecode.mrsqg.postprocessing;
 
 import java.util.ArrayList;
@@ -24,6 +12,16 @@ import com.googlecode.mrsqg.nlp.LKB;
 import com.googlecode.mrsqg.analysis.Pair;
 
 /**
+ * This is "Plan B" of MrsQG, employing a fallback strategy of re-generation
+ * by re-parsing. That is, if MrsQG failed to generate from MrsTransformer,
+ * then the question word will replace the term in a sentence, and be sent to
+ * the parser, finally the parsing result will be sent to the generator for a
+ * more natural re-organization of the sentence. A rough example of pipelines:
+ * <p>
+ * "He has 5 apples." -> "He has how many apples?" -> send to parser
+ * -> get MRS from parser -> send to the generator -> "How many apples does he have?"
+ * <p>
+ *  However, plan B doesn't always work that well. So needing plan C...
  * @author Xuchen Yao
  * @since 2010-04-03
  *

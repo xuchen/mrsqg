@@ -17,7 +17,12 @@ import org.apache.log4j.PropertyConfigurator;
 import com.googlecode.mrsqg.MrsQG;
 import com.googlecode.mrsqg.util.StringUtils;
 
-
+/**
+ * Java wrapper code for <code>LKB</code>
+ *
+ * @author Xuchen Yao
+ *
+ */
 public class LKB {
 
 	private static Logger log = Logger.getLogger(LKB.class);
@@ -242,7 +247,7 @@ NIL
 		String[] list = genStr.split("\", \"");
 
 		if(list==null) {
-			log.warn("No split matching, debug your code!");
+			log.warn("No split matching, DEBUG YOUR CODE!");
 			log.warn("generation String:\n"+genStr);
 			return null;
 		}
@@ -331,7 +336,7 @@ NIL
 		String[] list = genStr.split("\\s+");
 
 		if(list==null) {
-			log.warn("No split matching in getMaxEntScores, debug your code!");
+			log.warn("No split matching in getMaxEntScores, DEBUG YOUR CODE!");
 			log.warn("Score String:\n"+genStr);
 			return null;
 		}
@@ -362,6 +367,7 @@ NIL
 
 	/**
 	 * From the cmd (print-gen-summary) LKB produces output like this:
+<pre>
 LKB(5): (print-gen-summary)
 ------
 (Al Gore)
@@ -372,7 +378,7 @@ LKB(5): (print-gen-summary)
 
 NIL
 LKB(6):
-
+</pre>
 	 * This function accepts a raw string like above and return the list
 	 * of all strings inside ().
 	 * @param raw a raw String from the cmd (print-gen-summary)
@@ -596,6 +602,10 @@ LKB(6):
 		}
 	}
 
+	/**
+	 * Get output messages
+	 * @return a string
+	 */
 	public String getOutput() {
 		try {
 			outputSem.acquire();
@@ -607,6 +617,10 @@ LKB(6):
 		return value;
 	}
 
+	/**
+	 * Get error messages
+	 * @return a string
+	 */
 	public String getError() {
 		try {
 			errorSem.acquire();

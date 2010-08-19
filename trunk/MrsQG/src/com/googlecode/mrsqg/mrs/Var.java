@@ -9,10 +9,19 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-/*
- * Data structure used to hold <var> element in an MRS xml file.
- * <var> is used by both <fvpair> and <mrs> thus it can't be
+/**
+ *
+ * A class for values as in feature-value pairs in MRS.
+ * Data structure used to hold &lt;var&gt; element in an MRS xml file.
+ * &lt;var&gt; is used by both &lt;fvpair&gt; and &lt;mrs&gt; thus it can't be
  * declared private in ElementaryPredication
+ *
+ * @author Xuchen Yao
+ *
+ */
+
+/*
+
  */
 public class Var {
 //	;;; <!ELEMENT var (extrapair*)>
@@ -220,6 +229,7 @@ public class Var {
 			// warning:
 			// the original format is: <var vid='4' sort='h'></var>
 			// but this generates: <var vid='4' sort='h'/>
+			// which is harmless after testing.;-)
 			hd.endElement("", "", "var");
 		} catch (SAXException e) {
 			log.error("Error:", e);

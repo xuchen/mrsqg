@@ -1,6 +1,3 @@
-/**
- * Append a "why" to the front.
- */
 package com.googlecode.mrsqg.postprocessing;
 
 import java.util.ArrayList;
@@ -13,6 +10,9 @@ import com.googlecode.mrsqg.nlp.Cheap;
 import com.googlecode.mrsqg.nlp.LKB;
 
 /**
+ *
+ * Append a "why" to the front.
+ *
  * @author Xuchen Yao
  *
  */

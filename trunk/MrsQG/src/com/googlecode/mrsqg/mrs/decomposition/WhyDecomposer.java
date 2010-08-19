@@ -1,8 +1,4 @@
-/**
-pipe: Mice do not like cats because cats catch mice.
-pipe: Because cats catch mice mice do not like cats.
-pipe: Why can't Kitty hear?
- */
+
 package com.googlecode.mrsqg.mrs.decomposition;
 
 import java.util.ArrayList;
@@ -15,6 +11,13 @@ import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 
 /**
+ * A decomposer to decompose relative clauses.
+ * Test sentences:
+<pre>
+Mice do not like cats because cats catch mice.
+Because cats catch mice mice do not like cats.
+Why can't Kitty hear?
+</pre>
  * @author Xuchen Yao
  *
  */

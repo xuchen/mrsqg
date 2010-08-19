@@ -8,6 +8,8 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 
 /**
+ * A class for dependencies in MRS.
+ * Backbone support for {@link com.googlecode.mrsqg.MrsTransformer2}
  * @author Xuchen Yao
  *
  */
@@ -15,18 +17,37 @@ public class DMRS {
 
 	private static Logger log = Logger.getLogger(DMRS.class);
 
+	/**
+	 * Pre-slash values
+	 * @author Xuchen Yao
+	 *
+	 */
 	public static enum PRE_SLASH {
 		NULL, RSTR, ARG, L_INDEX, R_INDEX, L_HNDL, R_HNDL, OTHER, NOTHING
 	}
 
+	/**
+	 * Post-slash values
+	 * @author Xuchen Yao
+	 *
+	 */
 	public static enum POST_SLASH {
 		NULL, H, EQ, NEQ, HEQ, OTHER, NOTHING
 	}
 
+	/**
+	 * Direction values
+	 * @author Xuchen Yao
+	 *
+	 */
 	public enum DIRECTION {
 		NULL, GOV, DEP
 	}
 
+	/**
+	 * A mapping between the name of pre-slash values and its enum in
+	 * {@link com.googlecode.mrsqg.mrs.DMRS.PRE_SLASH}
+	 */
 	public static final HashMap<String, PRE_SLASH> preSlashMap = new HashMap<String, PRE_SLASH>() {
 		{
 			put("RSTR", PRE_SLASH.RSTR);
@@ -43,11 +64,11 @@ public class DMRS {
 	protected DIRECTION direction;
 	/*
 	 * If preSlash == ARG, <code>arg<code> encodes which argument (i.e. 0, 1, 2, ""...).
-	 * In a very rare case, unknown_rel takes ARG and ARG0. see core.smi from erg.
+	 * In a very rare case, unknown_rel takes ARG and ARG0. see core.smi from ERG.
 	 */
 	protected String arg;
 
-	EP ep;
+	protected EP ep;
 
 	public PRE_SLASH getPreSlash() { return preSlash;}
 	public POST_SLASH getPostSlash() { return postSlash;}

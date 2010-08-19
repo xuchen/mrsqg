@@ -162,7 +162,7 @@ public class Rater {
 							countMapPenalty.put(submitter, countPenalty+1);
 						}
 					} else {
-						System.err.println("questions size > 2, debug your code.");
+						System.err.println("questions size > 2, DEBUG YOUR CODE.");
 						System.exit(-1);
 					}
 
@@ -378,7 +378,7 @@ relevance: 2.95	questionType: 1.56	correctness: 3.36	ambiguity: 2.52	variety: 2.
 							countMapPenalty.get(submitter).put(type, countPenalty+1);
 						}
 					} else {
-						System.err.println("questions size > 2, debug your code.");
+						System.err.println("questions size > 2, DEBUG YOUR CODE.");
 						System.exit(-1);
 					}
 
@@ -715,7 +715,7 @@ All: 90 entries, average sent length: 19.20 standard deviation: 6.93 questions: 
 							countMapPenalty.put(submitter, countPenalty+1);
 						}
 					} else {
-						System.err.println("questions size > 2, debug your code.");
+						System.err.println("questions size > 2, DEBUG YOUR CODE.");
 						System.exit(-1);
 					}
 
@@ -876,7 +876,7 @@ relevance: 1.61	questionType: 1.15	correctness: 2.02	ambiguity: 1.52	variety: 1.
 							}
 						}
 					} else {
-						System.err.println("questions size > 2, debug your code.");
+						System.err.println("questions size > 2, DEBUG YOUR CODE.");
 						System.exit(-1);
 					}
 
