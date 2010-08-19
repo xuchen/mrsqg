@@ -1,1 +1,13 @@
+com.googlecode.mrsqg
+com.googlecode.mrsqg.analysis
+com.googlecode.mrsqg.evaluation
+com.googlecode.mrsqg.languagemodel
 com.googlecode.mrsqg.mrs
+com.googlecode.mrsqg.mrs.decomposition
+com.googlecode.mrsqg.mrs.selection
+com.googlecode.mrsqg.nlp
+com.googlecode.mrsqg.nlp.indices
+com.googlecode.mrsqg.nlp.semantics
+com.googlecode.mrsqg.nlp.semantics.ontologies
+com.googlecode.mrsqg.postprocessing
+com.googlecode.mrsqg.util

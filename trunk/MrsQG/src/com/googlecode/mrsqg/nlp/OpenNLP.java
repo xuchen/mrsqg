@@ -377,10 +377,10 @@ public class OpenNLP {
 	}
 
 	/**
-	 * John NP with PP to get a larger chunk.
+	 * Join NP with PP to get a larger chunk.
 	 * @param tokens
 	 * @param chunkTags
-	 * @return
+	 * @return a list of joined chunk tags
 	 */
 	public static String[] joinNounPhrases(String[] tokens, String[] chunkTags) {
 		if (chunkTags.length < 2) return chunkTags;
@@ -407,10 +407,10 @@ public class OpenNLP {
 	}
 
 	/**
-	 * John coordination phrases, such as "John and Mary" are tagged as a bigger NP.
+	 * Join coordination phrases, such as "John and Mary" are tagged as a bigger NP.
 	 * @param tokens
 	 * @param chunkTags
-	 * @return
+	 * @return a list of joined chunk tags
 	 */
 	public static String[] joinCoordPhrases(String[] tokens, String[] chunkTags) {
 		if (chunkTags.length < 2) return chunkTags;

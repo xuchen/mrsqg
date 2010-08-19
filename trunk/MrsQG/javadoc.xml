@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc access="protected" author="true" classpath="lib/lingpipe.jar:lib/opennlp-tools.jar:lib/kylm.jar:lib/jwnl.jar:lib/stanford-ner.jar:lib/trove.jar:lib/log4j.jar:lib/maxent.jar:lib/snowball.jar:lib/xerces.jar:lib/commons-logging.jar" destdir="doc" nodeprecated="false" nodeprecatedlist="false" noindex="false" nonavbar="false" notree="false" packagenames="com.googlecode.mrsqg.mrs.decomposition,com.googlecode.mrsqg.nlp.semantics.ontologies,com.googlecode.mrsqg.languagemodel,com.googlecode.mrsqg.evaluation,com.googlecode.mrsqg.nlp.indices,com.googlecode.mrsqg.nlp,com.googlecode.mrsqg.analysis,com.googlecode.mrsqg,com.googlecode.mrsqg.mrs,com.googlecode.mrsqg.mrs.selection,com.googlecode.mrsqg.nlp.semantics,com.googlecode.mrsqg.util,com.googlecode.mrsqg.postprocessing" source="1.6" sourcepath="src:conf" splitindex="true" use="true" version="true"/>
+    </target>
+</project>
