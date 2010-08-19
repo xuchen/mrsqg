@@ -1,4 +1,4 @@
-MrsQG is written in Java  -- compilation and installation are easy. But it calls PET (C++) to do parsing and LOGON/LKB (LISP) to do generation, thus users need to install these two first.
+MrsQG is written in Java  -- compilation and installation are easy. But it calls PET (C++) to do parsing and LOGON/LKB (Common Lisp) to do generation, thus users need to install these two first.
 
 ==Compile PET==
 
@@ -7,11 +7,11 @@ PET can be obtained from [http://wiki.delph-in.net/moin/PetTop PetTop]. Compilin
 MrsQG runs PET in server mode. A unique signal is needed after PET has output the parsing results. Thus after obtaining the source code of PET, users need to modify the file cheap/cheap.cpp:
 
 Locate to the end of the function interactive() and add the following line before fflush(fstatus);:
-
+{{{
  fprintf(fstatus, "cheap is brutally patched\n");
-
+}}}
 so the overall area looks like this:
-
+{{{
     fprintf(fstatus, "cheap is brutally patched\n");
     fflush(fstatus);
 
@@ -19,7 +19,7 @@ so the overall area looks like this:
 
     id++;
   } /* while */
-
+}}}
 Then follow the normal procedure to install PET. 
 
 ==Install LOGON/LKB==
@@ -35,7 +35,7 @@ Only either LOGON or LKB is needed. So users don't have to install both. When in
 ==Install MrsQG==
 
 Go to [http://code.google.com/p/mrsqg/downloads/list Downloads] and obtain the main program file MrsQG-version.tar.bz2 and the two resource files res1.tar.bz2, res2.tar.bz2. Put them into the same directory, then run:
-
+{{{
 $ tar xjf MrsQG-1.0.tar.bz2
 
 $ tar xjf res1.tar.bz2
@@ -47,7 +47,7 @@ $ mv res MrsQG-1.0
 $ cd MrsQG-1.0
 
 $ ant
-
+}}}
 The two resource files contain some version independent models and should be placed under the top directory of MrsQG.
 
 Java 1.6 is needed to compile/run MrsQG.
@@ -57,9 +57,13 @@ Java 1.6 is needed to compile/run MrsQG.
 Go to the "conf" directory. There should be 5 configuration files:
 
  * log4j.properties: for logging, you can leave it untouched
+
  * mrsqg.properties: for overall configuration, you can leave it untouched if you have more than 7GB RAM.
+
  * cheap.properties: for configuring the PET parser. You should modify the location for the executable "cheap" and the grammar file "english.grm"
+
  * lkb.script: initial loading script for LOGON/LKB. You should modify the location for the ERG script file.
+
  * lkb.properties: for configuring the LOGON/LKB generator. You should modify the location for the executable "logon" or "lkb" and the lkb script file lkb.script as described above
 
 ==Run MrsQG==
@@ -67,40 +71,32 @@ Go to the "conf" directory. There should be 5 configuration files:
 $ ./run.sh
 
 The above command runs MrsQG, if everything is configured correctly. If you are using LKB, then the script usually starts faultlessly. However, logon sometimes doesn't start in the right way. If you observer the following output:
-
+{{{
   Restart actions (select using :continue):
-
    0: Try calling READ-SCRIPT-FILE-AUX again.
-
    1: Try calling LKB:READ-SCRIPT-FILE-AUX instead.
-
    2: Return a value instead of calling READ-SCRIPT-FILE-AUX.
-
    3: Try calling a function other than READ-SCRIPT-FILE-AUX.
-
    4: Setf the symbol-function of READ-SCRIPT-FILE-AUX and call it again.
-
    5: Return to Top Level (an "abort" restart).
-
    6: Abort entirely from this (lisp) process.
-
   [1] TSNLP(2): 
-
+}}}
 
 Then press Ctrl-C to stop and run again. An indication of a successful start should be:
 
+{{{
   [changing package from "COMMON-LISP-USER" to "TSDB"]
-
   TSNLP(1): 
-
   LKB(2): 
-
+}}}
 
 Then wait patiently until you see the usage message.
 
 ==Use MrsQG==
 
 MrsQG prints the following usage information:
+{{{
   Usage:
 
         1. a declarative sentence.
@@ -122,3 +118,20 @@ MrsQG prints the following usage information:
                 similar to 7, but only do parsing and transformation to give a quick pass of all sentences. Used to check errors.
         9. help (or h)
                 Print this message.
+}}}
+
+==Memory consumption of MrsQG==
+
+Here's a memory estimation of different component of MrsQG:
+
+ * PET: 0.5GB~4GB
+
+ * LOGON/LKB: 0.5GB~4GB
+
+ * MrsQG without language model: 0.7GB
+
+ * MrsQG with the small language model (q.lm.gz): 1.5GB
+
+ * MrsQG with the large language model (q.wiki.plm.gz): 4.5GB
+
+Thus to run MrsQG, at least 2GB RAM is needed. 8GB~16GB is preferred. PET/LOGON/LKB's memory usage goes up as the input sentence length increases. The language model package employed by MrsQG is not very memory efficient, thus it consumes a lot of memory even loading a relatively-small language model file.
