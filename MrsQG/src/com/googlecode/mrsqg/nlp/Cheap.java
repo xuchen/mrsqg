@@ -13,11 +13,16 @@ import org.apache.log4j.PropertyConfigurator;
 
 import com.googlecode.mrsqg.mrs.MRS;
 
+/**
+ * Java wrapper code for the <code>cheap</code> parser.
+ * @author Xuchen Yao
+ *
+ */
 
 public class Cheap {
 
 	private static Logger log = Logger.getLogger(Cheap.class);
-	public final String propertyFile = "conf/cheap.properties";
+	public static final String propertyFile = "conf/cheap.properties";
 	private Semaphore outputSem;
 	private String output;
 	private Semaphore errorSem;
@@ -33,7 +38,8 @@ public class Cheap {
 
 	/**
 	 * Cheap constructor
-	 * @param fsc a boolean value indicating weather cheap takes FSC as input format
+	 * @param fsc a boolean value indicating weather cheap should take
+	 *  FSC as input format (otherwise plain text)
 	 */
 	public Cheap(boolean fsc) {
 		Properties prop = new Properties();
@@ -353,8 +359,10 @@ public class Cheap {
 		}
 	}
 
-
-
+	/**
+	 * Get output messages
+	 * @return a string
+	 */
 	public String getOutput() {
 		try {
 			outputSem.acquire();
@@ -366,6 +374,10 @@ public class Cheap {
 		return value;
 	}
 
+	/**
+	 * Get error messages
+	 * @return a string
+	 */
 	public String getError() {
 		try {
 			errorSem.acquire();
@@ -383,206 +395,3 @@ public class Cheap {
 	}
 
 }
-
-/*
-package com.googlecode.mrsqg.nlp;
-
-
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.concurrent.Semaphore;
-
-public class Cheap {
-	private Semaphore outputSem;
-	private String output;
-	private Semaphore errorSem;
-	private String error;
-	private Process p;
-
-	public static void main(String args[]) {
-		Cheap e = new Cheap("cat");
-
-	}
-
-	private class InputWriter extends Thread {
-		private String input;
-
-		public InputWriter(String input) {
-			this.input = input;
-		}
-
-		public void run() {
-			PrintWriter pw = new PrintWriter(p.getOutputStream());
-			pw.println(input);
-			pw.flush();
-		}
-	}
-
-	private class OutputReader extends Thread {
-		public OutputReader() {
-			try {
-				outputSem = new Semaphore(1);
-				outputSem.acquire();
-			} catch (InterruptedException e) {
-				log.error("Error:", e);
-			}
-		}
-
-		public void run() {
-			try {
-				StringBuffer readBuffer = new StringBuffer();
-				BufferedReader isr = new BufferedReader(new InputStreamReader(p
-						.getInputStream()));
-				String buff = new String();
-				while ((buff = isr.readLine()) != null) {
-					readBuffer.append(buff);
-					//System.out.println("Output: "+buff);
-				}
-				output = readBuffer.toString();
-				outputSem.release();
-			} catch (IOException e) {
-				log.error("Error:", e);
-			}
-		}
-	}
-
-	private class ErrorReader extends Thread {
-		public ErrorReader() {
-			try {
-				errorSem = new Semaphore(1);
-				errorSem.acquire();
-			} catch (InterruptedException e) {
-				log.error("Error:", e);
-			}
-		}
-
-		public void run() {
-			try {
-				StringBuffer readBuffer = new StringBuffer();
-				BufferedReader isr = new BufferedReader(new InputStreamReader(p
-						.getErrorStream()));
-				String buff = new String();
-				while ((buff = isr.readLine()) != null) {
-					readBuffer.append(buff);
-				}
-				error = readBuffer.toString();
-				errorSem.release();
-			} catch (IOException e) {
-				log.error("Error:", e);
-			}
-			if (error.length() > 0)
-				System.out.println("Output: "+error);
-		}
-	}
-
-	public Cheap(String command, String input) {
-		try {
-			p = Runtime.getRuntime().exec(makeArray(command));
-			new InputWriter(input).start();
-			new OutputReader().start();
-			new ErrorReader().start();
-			p.waitFor();
-		} catch (IOException e) {
-			log.error("Error:", e);
-		} catch (InterruptedException e) {
-			log.error("Error:", e);
-		}
-	}
-	protected static String readLine() {
-		try {
-			return new java.io.BufferedReader(new
-				java.io.InputStreamReader(System.in)).readLine();
-		}
-		catch(java.io.IOException e) {
-			return new String("");
-		}
-	}
-	public Cheap(String command) {
-		while (true) {
-			System.out.println("Input: ");
-			String input = readLine().trim();
-			if (input.length() == 0) continue;
-			if (input.equalsIgnoreCase("exit")) {
-				System.exit(0);
-			}
-			try {
-				p = Runtime.getRuntime().exec(command);
-				new InputWriter(input).start();
-				new OutputReader().start();
-				new ErrorReader().start();
-				//String buff = getOutput();
-				//System.out.println("Output: "+buff);
-				//p.waitFor();
-			} catch (IOException e) {
-				log.error("Error:", e);
-			} catch (Exception e) {
-				log.error("Error:", e);
-			}
-		}
-	}
-
-	public String getOutput() {
-		try {
-			outputSem.acquire();
-		} catch (InterruptedException e) {
-			log.error("Error:", e);
-		}
-		String value = output;
-		outputSem.release();
-		return value;
-	}
-
-	public String getError() {
-		try {
-			errorSem.acquire();
-		} catch (InterruptedException e) {
-			log.error("Error:", e);
-		}
-		String value = error;
-		errorSem.release();
-		return value;
-	}
-
-	private String[] makeArray(String command) {
-		ArrayList<String> commandArray = new ArrayList<String>();
-		String buff = "";
-		boolean lookForEnd = false;
-		for (int i = 0; i < command.length(); i++) {
-			if (lookForEnd) {
-				if (command.charAt(i) == '\"') {
-					if (buff.length() > 0)
-						commandArray.add(buff);
-					buff = "";
-					lookForEnd = false;
-				} else {
-					buff += command.charAt(i);
-				}
-			} else {
-				if (command.charAt(i) == '\"') {
-					lookForEnd = true;
-				} else if (command.charAt(i) == ' ') {
-					if (buff.length() > 0)
-						commandArray.add(buff);
-					buff = "";
-				} else {
-					buff += command.charAt(i);
-				}
-			}
-		}
-		if (buff.length() > 0)
-			commandArray.add(buff);
-
-		String[] array = new String[commandArray.size()];
-		for (int i = 0; i < commandArray.size(); i++) {
-			array[i] = commandArray.get(i);
-		}
-
-		return array;
-	}
-}
-
-*/

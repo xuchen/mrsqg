@@ -1,9 +1,4 @@
-/**
- * A class to hold all sentence/question pairs, including the intermediate
- * results, such as MRS representations. Generally, a MrsTransformer uses it
- * to store s/q pairs generated from original sentences, and a Fallback uses it
- * to store s/q pairs by re-generation from transformed sentences.
- */
+
 package com.googlecode.mrsqg.analysis;
 
 import java.util.ArrayList;
@@ -19,6 +14,11 @@ import com.googlecode.mrsqg.util.MapUtils;
 import com.googlecode.mrsqg.util.StringUtils;
 
 /**
+ *
+ * A class to hold all sentence/question pairs, including the intermediate
+ * results, such as MRS representations. Generally, a MrsTransformer uses it
+ * to store s/q pairs generated from original sentences, and a Fallback uses it
+ * to store s/q pairs by re-generation from transformed sentences.
  * @author Xuchen Yao
  *
  */

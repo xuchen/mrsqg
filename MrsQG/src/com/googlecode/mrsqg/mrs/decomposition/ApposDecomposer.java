@@ -21,6 +21,7 @@ import com.googlecode.mrsqg.mrs.Var;
  * Then the NER could work better.
  *
  * Test sentences:
+<pre>
 pipe: the girl Anna likes the dog Bart. (apposition)
 pipe: The accident after Hurricane Katrina did not cause a civilizational collapse. (compound)
 
@@ -89,6 +90,7 @@ RELS: <
 ]
 >
 HCONS: < h9 qeq h10 h12 qeq h14 h20 qeq h21 h23 qeq h25 >
+</pre>
  *
  * @author Xuchen Yao
  *

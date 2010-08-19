@@ -5,6 +5,11 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+/**
+ * A class for feature-value pairs such as ARG0: x6 [ x PERS: 3 NUM: SG IND: + ]
+ * @author Xuchen Yao
+ *
+ */
 public class FvPair {
 //	<!ELEMENT fvpair (rargname, (var|constant))>
 //	<!ELEMENT rargname (#PCDATA)>

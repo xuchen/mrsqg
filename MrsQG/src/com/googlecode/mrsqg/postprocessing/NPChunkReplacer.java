@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.googlecode.mrsqg.postprocessing;
 
 import java.util.ArrayList;

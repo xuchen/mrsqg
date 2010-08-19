@@ -1,14 +1,19 @@
 /**
+ * A decomposer to decompose relative clauses.
  * Test sentences:
-pipe: we live in a society which imposed no limits on what we do.
-pipe: we live in a society flooded with people.
-pipe: we live in a society flooded greatly.
-pipe: we live in a society which sucks.
-pipe: we live in a society flooded with people.
-pipe: We live in an imposed society.
-pipe: this is the apple eaten by the cat.
-pipe: Given that our desires often conflict, it would be impossible for us to live in a society.
-pipe: There are three ways in which businesses can respond to the green imperative.
+<pre>
+we live in a society which imposed no limits on what we do.
+we live in a society flooded with people.
+we live in a society flooded greatly.
+we live in a society which sucks.
+we live in a society flooded with people.
+We live in an imposed society.
+this is the apple eaten by the cat.
+Given that our desires often conflict, it would be impossible for us to live in a society.
+There are three ways in which businesses can respond to the green imperative.
+</pre>
+ *
+ * @author Xuchen Yao
  */
 package com.googlecode.mrsqg.mrs.decomposition;
 

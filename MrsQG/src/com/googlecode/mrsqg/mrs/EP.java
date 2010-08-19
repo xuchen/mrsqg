@@ -14,6 +14,7 @@ import com.googlecode.mrsqg.util.StringUtils;
 
 /**
  * A class for Elementary Predication
+ *
  * @author Xuchen Yao
  *
  */
@@ -44,22 +45,49 @@ public class EP {
 	private String label = null;
 	private String label_vid = null;
 	private ArrayList<FvPair> fvpair = null;
+
+	/**
+	 * The use of flag purely serves engineering purposes. In decomposition, some EPs are
+	 * needed to be removed after a copy construction. But it's not easy to trace these EPs
+	 * by any sort of equals() methods. So a flag is set to mark these to-be-removed EPs.
+	 */
+	protected boolean flag = false;
+
 	private FvPair currentFvPair = null;
-	/** A set of EPs which govern the current EP by ARG*. In the theory of a
+	/**
+	 * A set of EPs which govern the current EP by ARG*. In the theory of a
 	 * A -> B relation, A is called a head and B is its dependent. We call
-	 * A a governor here since "head" is ambiguous if used alone. */
+	 * A a governor here since "head" is ambiguous if used alone.
+	 * @deprecated replaced by full DMRS
+	 */
 	private HashSet <EP> governorsByArg = null;
-	/** A set of EPs which govern the current EP by relations other
-	 * than ARG*, such as RSTR */
+	/**
+	 * A set of EPs which govern the current EP by relations other
+	 * than ARG*, such as RSTR
+	 * @deprecated replaced by full DMRS
+	 */
 	private HashSet<EP> governorsByNonArg = null;
 
+	/**
+	 * @deprecated replaced by full DMRS
+	 */
 	private HashSet <EP> dependentsByArg = null;
+
+	/**
+	 * @deprecated replaced by full DMRS
+	 */
 	private HashSet<EP> dependentsByNonArg = null;
 
-	/** the rare /EQ relation as in dmrs.pdf */
+	/**
+	 * the rare /EQ relation as in dmrs.pdf
+	 * @deprecated replaced by full DMRS
+	 */
 	private HashSet<EP> equalLabelSet = null;
 
-	private HashSet<DMRS> dmrsSet = null;
+	/**
+	 * The DMRS relations of this EP
+	 */
+	protected HashSet<DMRS> dmrsSet = null;
 
 	/**
 	* Copy constructor.
@@ -98,6 +126,11 @@ public class EP {
 		dmrsSet = new HashSet<DMRS>();
 	}
 
+	/**
+	 * Construct a new EP by simply setting its type name and label
+	 * @param typeName type name for this EP
+	 * @param label label of this EP
+	 */
 	public EP(String typeName, String label) {
 		this();
 		if (StringUtils.containsUppercase(typeName))
@@ -109,12 +142,6 @@ public class EP {
 		this.setLabel(label);
 	}
 
-	/**
-	 * The use of flag purely serves engineering purposes. In decomposition, some EPs are
-	 * needed to be removed after a copy construction. But it's not easy to trace these EPs
-	 * by any sort of equals() methods. So a flag is set to mark these to-be-removed EPs.
-	 */
-	private boolean flag = false;
 
 	public int getCfrom() {return cfrom;}
 	public int getCto() {return cto;}
@@ -143,6 +170,8 @@ public class EP {
 	/**
 	 * Add an EP to the set of governors which refer to the current EP by ARG*.
 	 * @param ep An EP
+	 *
+	 * @deprecated replaced by full DMRS
 	 */
 	public void addGovernorByArg (EP ep) {
 		if (ep != this)
@@ -153,6 +182,8 @@ public class EP {
 	 * Add an EP to the set of governors which refer to the current EP by relations
 	 * other than ARG*.
 	 * @param ep An EP
+	 *
+	 * @deprecated replaced by full DMRS
 	 */
 	public void addGovernorByNonArg (EP ep) {
 		if (ep != this)
@@ -162,6 +193,8 @@ public class EP {
 	/**
 	 * Add an EP to the set of dependents referred by the current EP by ARG*.
 	 * @param ep An EP
+	 *
+	 * @deprecated replaced by full DMRS
 	 */
 	public void addDependentByArg (EP ep) {
 		if (ep != this)
@@ -172,6 +205,8 @@ public class EP {
 	 * Add an EP to the set of dependents referred by the current EP by relations
 	 * other than ARG*.
 	 * @param ep An EP
+	 *
+	 * @deprecated replaced by full DMRS
 	 */
 	public void addDependentByNonArg (EP ep) {
 		if (ep != this)
@@ -182,6 +217,8 @@ public class EP {
 	 * Add an EP to the set of EPs which have the same label but don't refer each other
 	 * other than ARG*.
 	 * @param ep An EP
+	 *
+	 * @deprecated replaced by full DMRS
 	 */
 	public void addEqualLabelSet (EP ep) {
 		if (ep != this)
@@ -191,7 +228,9 @@ public class EP {
 	/**
 	 * Add an EP set to the set of EPs which have the same label but don't refer each other
 	 * other than ARG*.
-	 * @param ep An EP
+	 * @param epCollection a collection of EP
+	 *
+	 * @deprecated replaced by full DMRS
 	 */
 	public void addAllEqualLabelSet (Collection<EP> epCollection) {
 		for (EP ep:epCollection) {
@@ -200,6 +239,10 @@ public class EP {
 		}
 	}
 
+	/**
+	 * Add a DMRS to the set
+	 * @param d a DMRS
+	 */
 	public void addDmrs (DMRS d) {
 		dmrsSet.add(d);
 	}
@@ -217,7 +260,7 @@ public class EP {
 	/**
 	 * Check whether <code>ep</code> is in the dmrsSet of this EP.
 	 * @param ep
-	 * @return
+	 * @return a boolean value
 	 */
 	public boolean isInDmrsSet (EP ep) {
 		boolean ret = false;
@@ -233,6 +276,8 @@ public class EP {
 	/**
 	 * Return all EPs that are the governor or dependent of this EP
 	 * @return a HashSet of EPs
+	 *
+	 * @deprecated replaced by full DMRS
 	 */
 	public HashSet<EP> getAllConnections() {
 		HashSet<EP> connections = new HashSet<EP>();
@@ -244,6 +289,13 @@ public class EP {
 		return connections;
 	}
 
+	/**
+	 * Set the type name of this EP.
+	 *
+	 * Type names are of 2 types: pred for higher level EPs such as
+	 * APPOS_REL and spred for lexicon level EPs such as _red_a_1_rel.
+	 * @param typeName
+	 */
 	public void setTypeName(String typeName) {
 		if (StringUtils.containsUppercase(typeName)) {
 			this.pred = typeName;
@@ -256,12 +308,14 @@ public class EP {
 	/**
 	 * return all "ARG*" values in this EP.
 	 * for instance, an EP looks like:
+	 * <pre>
 	 * [ _like_v_1_rel<5:10>
   	 * LBL: h8
   	 * ARG0: e9
   	 * ARG1: x6
      * ARG2: x10
 	 * ]
+	 * </pre>
 	 * then it returns a list containing "e9", "x6" and "x10"
 	 *
 	 * @return a HashSet containing all "ARG*" values
@@ -281,12 +335,14 @@ public class EP {
 	/**
 	 * return all "ARG*" except ARG0 values in this EP.
 	 * for instance, an EP looks like:
+	 * <pre>
 	 * [ _like_v_1_rel<5:10>
   	 * LBL: h8
   	 * ARG0: e9
   	 * ARG1: x6
      * ARG2: x10
 	 * ]
+	 * </pre>
 	 * then it returns a list containing "e9", "x6" and "x10"
 	 *
 	 * @return a HashSet containing all "ARG*" values
@@ -442,7 +498,7 @@ public class EP {
 		return ret;
 	}
 	/**
-	 * whether ep has any ARG/EQ dependency
+	 * whether this EP has any ARG* /EQ dependency
 	 * @return a boolean value
 	 */
 	public boolean hasEQarg() {
@@ -457,7 +513,7 @@ public class EP {
 	}
 
 	/**
-	 * whether ep has any ARG/EQ dependency to any non-prepositions or non-verbs
+	 * whether this EP has any ARG* /EQ dependency to any non-prepositions or non-verbs
 	 * @return a boolean value
 	 */
 	public boolean hasEQargToNonPPorVerb() {
@@ -474,7 +530,7 @@ public class EP {
 
 
 	/**
-	 * whether ep has any empty ARG*
+	 * whether this EP has any empty ARG*
 	 * @return a boolean value
 	 */
 	public boolean hasEPemptyArgs () {
@@ -488,6 +544,12 @@ public class EP {
 		return ret;
 	}
 
+	/**
+	 * whether this EP has any empty ARG* excluding passive form.
+	 *
+	 * In passive form a (verb) EP is likely to have an empty argument.
+	 * @return a boolean value
+	 */
 	public boolean hasEPemptyArgsExceptPassive () {
 		boolean ret = false;
 		for (DMRS dmrs:this.dmrsSet) {
@@ -695,7 +757,7 @@ public class EP {
 	 * Set the value of a feature. For instance, set the value of
 	 * <code>feature</code> "ARG0" to "x3" (a Var).
 	 * @param feature feature's name
-	 * @param value a Var
+	 * @param value a string value
 	 */
 	public void setSimpleFvpairByFeatAndValue (String feature, String value) {
 		for (FvPair p:fvpair) {
@@ -724,8 +786,12 @@ public class EP {
 		}
 	}
 
-	public void keepFvpair(String[] pairs) {
-		ArrayList<String> list = StringUtils.arrayToArrayList(pairs);
+	/**
+	 * Only keep the fvpair with the feature list in <code>feats</code>
+	 * @param feats the feature list, such as {"ARG0"}
+	 */
+	public void keepFvpair(String[] feats) {
+		ArrayList<String> list = StringUtils.arrayToArrayList(feats);
 		ArrayList<FvPair> fvlist = new ArrayList<FvPair>();
 
 		for (FvPair p:fvpair) {
@@ -765,6 +831,9 @@ public class EP {
 		cto += shift;
 	}
 
+	/**
+	 * Return a string containing a pretty-formatted EP with dependencies.
+	 */
 	@Override public String toString() {
 //		<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //		<!ATTLIST ep
@@ -858,6 +927,10 @@ public class EP {
 		}
 	}
 
+	/**
+	 * Output EP in XML
+	 * @param hd
+	 */
 	public void serializeXML (ContentHandler hd) {
 //		<!ELEMENT ep ((pred|realpred), label, fvpair*)>
 //		<!ATTLIST ep

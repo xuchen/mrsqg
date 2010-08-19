@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.googlecode.mrsqg.postprocessing;
 
 import java.util.ArrayList;
@@ -30,7 +27,6 @@ public abstract class MrsReplacer {
 	public MrsReplacer (Cheap cheap, LKB lkb, ArrayList<MRS> list) {
 		this.parser = cheap;
 		this.generator = lkb;
-		this.pre = pre;
 		this.origList = list;
 		this.pairs = new ArrayList<Pair>();
 	}

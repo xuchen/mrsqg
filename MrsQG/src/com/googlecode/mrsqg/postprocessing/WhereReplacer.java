@@ -1,9 +1,3 @@
-/**
- *
-pipe: Jackson was killed on August 29, 1958 in Gary, Indiana.
-pipe: Jackson was killed in Gary, Indiana on August 29, 1958.
-pipe: much of the value of a business is concentrated in the value of its information .
- */
 package com.googlecode.mrsqg.postprocessing;
 
 import java.util.ArrayList;

@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.googlecode.mrsqg;
 
 import java.io.File;
@@ -15,7 +12,6 @@ import com.googlecode.mrsqg.mrs.DMRS;
 import com.googlecode.mrsqg.mrs.EP;
 import com.googlecode.mrsqg.mrs.MRS;
 import com.googlecode.mrsqg.mrs.Var;
-import com.googlecode.mrsqg.nlp.Cheap;
 
 /**
  * This is the sequel of the original Mrs. Transformer,
@@ -25,34 +21,44 @@ import com.googlecode.mrsqg.nlp.Cheap;
  * @author Xuchen Yao
  * @version 2010-08-12
  */
+@SuppressWarnings("deprecation")
 public class MrsTransformer2 extends MrsTransformer {
 
 	private static Logger log = Logger.getLogger(MrsTransformer2.class);
 
 	/**
-	 * @param file
-	 * @param p
+	 * Construct a transformer by reading an MRX from <code>file</code> and
+	 * preprocessing with <code>p</code>.
+	 * @param file an XML file containing an MRS
+	 * @param p a preprocessor
 	 */
 	public MrsTransformer2(File file, Preprocessor p) {
 		super(file, p);
 	}
 
 	/**
-	 * @param mrx
-	 * @param p
+	 * Construct a transformer by reading an MRX from <code>mrx</code> and
+	 * preprocessing with <code>p</code>.
+	 * @param mrx an string containing an MRX
+	 * @param p a preprocessor
 	 */
 	public MrsTransformer2(String mrx, Preprocessor p) {
 		super(mrx, p);
 	}
 
 	/**
-	 * @param mrs
-	 * @param p
+	 * Construct a transformer for <code>mrs</code> and
+	 * preprocessing with <code>p</code>.
+	 * @param mrs an XML file containing an MRS
+	 * @param p a preprocessor
 	 */
 	public MrsTransformer2(MRS mrs, Preprocessor p) {
 		super(mrs, p);
 	}
 
+	/**
+	 * Transform the MRS for declarative to interrogative.
+	 */
 	public ArrayList<MRS> transform (boolean print) {
 		ArrayList<MRS> trMrsList;
 		Term[] terms = pre.getTerms()[0];
@@ -101,7 +107,7 @@ public class MrsTransformer2 extends MrsTransformer {
 	 * @param terms all the terms in this MRS.
 	 * @return an ArrayList of generated interrogative MRS, or null if none.
 	 */
-	public ArrayList<MRS> transformWHques (Term[] terms) {
+	protected ArrayList<MRS> transformWHques (Term[] terms) {
 		if (terms == null) return null;
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
@@ -227,6 +233,17 @@ HCONS: < ...h17 qeq h14 >
 		return outList.size() == 0 ? null : outList;
 	}
 
+	/**
+	 * Set up <code>hiEP</code> and <code>loEP</code> according to
+	 * the named entity type <code>neType</code>, and produce an
+	 * extra MRS for where/when questions ('in which place', 'on what date', etc)
+	 * @param q_mrs an MRS for a question
+	 * @param hiEP a high EP in a qeq relation
+	 * @param loEP a low EP in a qeq relation
+	 * @param neType a named entity type
+	 * @param gEP a governor (verb or preposition) EP
+	 * @return a list of MRS
+	 */
 	protected ArrayList<MRS> setupHiLoEPAll (MRS q_mrs, EP hiEP, EP loEP, String neType, EP gEP) {
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
@@ -297,7 +314,12 @@ HCONS: < ...h17 qeq h14 >
 		return neTypes;
 	}
 
-	public ArrayList<MRS> transformHowManyQues (Term[] terms) {
+	/**
+	 * Transform from a declarative to a HOW MANY/MUCH interrogative.
+	 * @param terms all the terms in this MRS.
+	 * @return an ArrayList of generated interrogative MRS, or null if none.
+	 */
+	protected ArrayList<MRS> transformHowManyQues (Term[] terms) {
 		if (terms == null) return null;
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
@@ -469,6 +491,12 @@ HCONS: < h5 qeq h12 h11 qeq h7 >
 		return outList.size() == 0 ? null : outList;
 	}
 
+	/**
+	 * Remove the first FOCUS_D_REL relation in an MRS. Otherwise it
+	 * deosn't generate
+	 * @param mrs an MRS
+	 * @return <code>mrs</code> with FOCUS_D_REL removed
+	 */
 	protected MRS removeFocusD(MRS mrs) {
 		/*
 		 * The first "FOCUS_D_REL" relation which covers the whole
@@ -488,7 +516,12 @@ HCONS: < h5 qeq h12 h11 qeq h7 >
 		return mrs;
 	}
 
-	public ArrayList<MRS> transformHowQues () {
+	/**
+	 * Transform from a declarative to HOW interrogative by recognizing the cue relation
+	 * for 'by'
+	 * @return an ArrayList of generated interrogative MRS, or null if none.
+	 */
+	protected ArrayList<MRS> transformHowQues () {
 		ArrayList<MRS> outList = new ArrayList<MRS>();
 
 		/**

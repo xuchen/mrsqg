@@ -15,6 +15,8 @@ import com.googlecode.mrsqg.mrs.MRS;
  *
  * @author Xuchen Yao
  * @version 2010-03-02
+ *
+ * @deprecated Use {@link com.googlecode.mrsqg.MrsTransformer2} instead
  */
 public class MrsTransformer {
 
@@ -95,7 +97,7 @@ public class MrsTransformer {
 	 *
 	 * @return an interrogative MRS
 	 */
-	public MRS transformYNques () {
+	protected MRS transformYNques () {
 		// generate yes/no question
 		// change SF to "QUES"
 		// e2
@@ -123,7 +125,7 @@ public class MrsTransformer {
 	 * @param terms all the terms in this MRS.
 	 * @return an ArrayList of generated interrogative MRS, or null if none.
 	 */
-	public ArrayList<MRS> transformWHques (Term[] terms) {
+	protected ArrayList<MRS> transformWHques (Term[] terms) {
 		if (terms == null) return null;
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
@@ -149,7 +151,7 @@ public class MrsTransformer {
 					loEP = eps.get(0);
 					lo = loEP.getLabel();
 					// hiEP should be found through a qeq relation
-					hi = MRS.getHiLabelFromHconsList(lo, q_mrs.getHcons());
+					hi = q_mrs.getHiLabelFromHconsList(lo);
 					if (hi == null) continue;
 					ArrayList<EP> rstr = q_mrs.getEPbyFeatAndValue("RSTR", hi);
 					if (rstr==null) continue;
@@ -180,7 +182,7 @@ public class MrsTransformer {
 					if (ep != loEP && ep.getLabel().equals(loEP.getLabel())
 							&& !ep.getTypeName().toLowerCase().contains("_p_") && !ep.getTypeName().toLowerCase().contains("_v_")) {
 						// possibly adjective, such as "next" in "next Monday".
-						// TODO: this way is buggy, do it in DMRS
+						// this way is buggy, do it in DMRS
 						removed.add(ep);
 					}
 				}
@@ -248,7 +250,7 @@ public class MrsTransformer {
 	 * @param terms all the terms in this MRS.
 	 * @return an ArrayList of generated interrogative MRS, or null if none.
 	 */
-	public ArrayList<MRS> transformHOWques (Term[] terms) {
+	protected ArrayList<MRS> transformHOWques (Term[] terms) {
 		if (terms == null) return null;
 
 		ArrayList<MRS> outList = new ArrayList<MRS>();
@@ -272,12 +274,11 @@ public class MrsTransformer {
 						continue;
 					}
 
-					EP hiEP, loEP;
+					EP loEP;
 
 					// one is hi, the other is lo in a qeq relation
 					hiloEPS = MRS.determineHiLowEP (eps, q_mrs);
 					if (hiloEPS == null) continue;
-					hiEP = hiloEPS.get(0);
 					loEP = hiloEPS.get(1);
 
 					// loEP should be "CARD_REL"
@@ -342,6 +343,14 @@ public class MrsTransformer {
 		return outList.size() == 0 ? null : outList;
 	}
 
+	/**
+	 * Set up <code>hiEP</code> and <code>loEP</code> according to
+	 * the named entity type <code>neType</code>.
+	 * @param q_mrs an MRS for a question
+	 * @param hiEP a high EP in a qeq relation
+	 * @param loEP a low EP in a qeq relation
+	 * @param neType a named entity type
+	 */
 	protected void setupHiLoEP (MRS q_mrs, EP hiEP, EP loEP, String neType) {
 
 		// change hiEP to which_q_rel

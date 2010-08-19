@@ -1,12 +1,3 @@
-/**
- * This class searches all plain text corpus with a ".clean" suffix
- * in a directory, tokenize all words, add sentence boundaries (<s>,</s>),
- * and output the result to a single file.
- *
- * OpenNLP tokenizer is required to prepare the corpus since MrsQG also
- * uses OpenNLP tokenizer. We need the same tool to provide the same
- * tokenization.
- */
 package com.googlecode.mrsqg.languagemodel;
 
 import java.io.BufferedReader;
@@ -22,6 +13,13 @@ import java.util.Locale;
 import com.googlecode.mrsqg.nlp.OpenNLP;
 
 /**
+ * This class searches all plain text corpus with a ".clean" suffix
+ * in a directory, tokenize all words, add sentence boundaries (<s>,</s>),
+ * and output the result to a single file.
+ *
+ * OpenNLP tokenizer is required to prepare the corpus since MrsQG also
+ * uses OpenNLP tokenizer. We need the same tool to provide the same
+ * tokenization.
  * @author Xuchen Yao
  *
  */

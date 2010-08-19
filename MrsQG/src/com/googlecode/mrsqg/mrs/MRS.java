@@ -32,7 +32,7 @@ import com.googlecode.mrsqg.nlp.SnowballStemmer;
 import com.googlecode.mrsqg.nlp.indices.IrregularVerbs;
 
 /**
- * An MRS representation class.<p>
+ * An MRS representation class that provides MRS manipulation utilities.<p>
  * Naming convention: <br/>
  * In an example EP: <br/>
  * [ <br/>
@@ -60,25 +60,29 @@ public class MRS {
 	 */
 
 	private static Logger log = Logger.getLogger(MRS.class);
-	// h1
-	private String ltop = "";
-	// 1
-	private String label_vid = "";
-	// e2
-	private String index = "";
-	// 2
-	private String index_vid = "";
-	// the type of sentence, e.g. PROP, WHEN, WHERE, etc
-	private String sent_type = "PROP";
+	/** the LTOP value of this MRS, e.g. h1 */
+	protected String ltop = "";
+	/** the label index number of this MRS, e.g. 10 (from h10)*/
+	protected String label_vid = "";
+	/** the index of this MRS, e.g. e2. Usually this is the ARG0 value of the main verb. */
+	protected String index = "";
+	/** the index number, e.g. 2 (from e2) */
+	protected String index_vid = "";
+	/** the type of sentence, e.g. PROP, WHEN, WHERE, etc */
+	protected String sent_type = "PROP";
 	/** which decomposer this MRS comes from. */
-	private ArrayList<String> decomposer = null;
-	/** the character range of answer phrase {cfrom, cto} */
-	private int[] ansCrange = {0,0};
+	protected ArrayList<String> decomposer = null;
+	/** the character range of answer phrase {cfrom, cto}.
+	 * @see MRS#getAnsPhrase(String)
+	 */
+	protected int[] ansCrange = {0,0};
 
-	private ArrayList <EP> eps;
-	private ArrayList<HCONS> hcons;
+	/** the list of ElementaryPredications */
+	protected ArrayList <EP> eps;
+	/** the list of HCONS (Handle Constraints) */
+	protected ArrayList<HCONS> hcons;
 	/** Every characteristic variable (see dmrs.pdf) is mapped to an EP.*/
-	private HashMap<String, EP> charVariableMap;
+	protected HashMap<String, EP> charVariableMap;
 	private MrsParser parser = new MrsParser();
 
 	public String getLTOP() {return ltop;}
@@ -104,6 +108,15 @@ public class MRS {
 
 	public int[] getAnsCrange () {return this.ansCrange;}
 
+	/**
+	 * Get the answer phrase from the original input sentence <code>sent</code>.
+	 *
+	 * During transformation, the answer phrase is kept in the field {@link MRS#ansCrange}.
+	 * This method gets the answer phrase by returning the substring of <code>sent</code>.
+	 * For Y/N questions, it always returns "yes".
+	 * @param sent the original input sentence where this MRS comes from
+	 * @return an answer phrase
+	 */
 	public String getAnsPhrase (String sent) {
 		if (this.getSentType().equals("Y/N")) return "yes";
 		else if (ansCrange[0] == 0 && ansCrange[1] == 0) return "";
@@ -123,7 +136,10 @@ public class MRS {
 	}
 
 	/**
-	 * Set the character range of answer term by extracting the range of <code>dEPS</code>
+	 * Set the character range of answer term by extracting the range of <code>dEPS</code>.
+	 *
+	 * Usually <code>dEPS</code> comes from the replaced set of EP during transformation.
+	 *
 	 * @param dEPS a set of EPs that represent answer terms
 	 */
 	public void setAnsCrange (HashSet<EP> dEPS) {
@@ -145,6 +161,9 @@ public class MRS {
 	}
 
 
+	/**
+	 * Plain text output of this MRS and dependencies for each EP.
+	 */
 	@Override public String toString() {
 		StringBuilder res = new StringBuilder();
 		res.append("\n");
@@ -174,18 +193,26 @@ public class MRS {
 		charVariableMap = new HashMap<String, EP>();
 	}
 
+	/**
+	 * Read an MRS from an MRX file
+	 * @param file an MRS file in XML format
+	 */
 	public MRS(File file) {
 		this();
 		parse(file);
 	}
 
+	/**
+	 * Read an MRS from an MRX string
+	 * @param mrx a String in MRX
+	 */
 	public MRS(String mrx) {
 		this();
 		parseString(mrx);
 	}
 
 	/**
-	* Copy constructor.
+	* Deep copy constructor.
 	*/
 	public MRS(MRS old) {
 		if (old == null) return;
@@ -210,6 +237,12 @@ public class MRS {
 		this.postprocessing();
 	}
 
+	/**
+	 * Clean up and re-build dependencies for this MRS.
+	 *
+	 * After manipulating (decomposition, transformation) an MRS, this method
+	 * should be called to rebuild the {@link MRS#charVariableMap} and EPS' dependencies.
+	 */
 	public void postprocessing() {
 		this.charVariableMap.clear();
 		for (EP ep:this.eps) {
@@ -324,7 +357,6 @@ public class MRS {
 						log.error("error: <fvpair> outside <ep>");
 					}
 				} else if (parent.equals("hi")) {
-					String sort = atts.getValue("sort");
 					// get the last one in the list
 					HCONS h = hcons.get(hcons.size()-1);
 					// should be sth. like "h11"
@@ -398,6 +430,11 @@ public class MRS {
 
 	/**
 	 * Return all ElementaryPredication starting from cfrom and ending to cto.
+	 *
+	 * @param cfrom the starting position in characters
+	 * @param cto the starting position in characters
+	 *
+	 * @return an ArrayList of EP (empty if it was found)
 	 */
 	public ArrayList<EP> getEPS (int cfrom, int cto) {
 		ArrayList<EP> epsList= new ArrayList<EP>();
@@ -446,7 +483,7 @@ public class MRS {
 
 	/**
 	 * get a list of the feature labels of all EPs
-	 * @return an ArrayList containing all the labels of EPS
+	 * @return an ArrayList containing all the labels of EPS (none if not found)
 	 */
 	public ArrayList<String> getEPSfeatList () {
 		ArrayList<String> list = new ArrayList<String>();
@@ -467,7 +504,7 @@ public class MRS {
      * ARG2: x10<br/>
 	 * ]<br/>
 	 * h8 is label. e9, x6, x10 are handles
-	 * @return an ArrayList containing all the values of EPS
+	 * @return an ArrayList containing all the values of EPS (empty if not found)
 	 */
 	public ArrayList<String> getEPSvalueList () {
 		ArrayList<String> list = new ArrayList<String>();
@@ -481,11 +518,20 @@ public class MRS {
 	}
 
 	/**
-	 * Get the EP before cfrom and cto. This method is mainly used to
+	 * Get the EP before <code>cfrom</code> and <code>cto</code>.
+	 *
+	 * This method is mainly used to
 	 * find out the preposition before a time/location term.
 	 * For instance, "in Germany", one EP is  _IN_P_REL ("in"),
 	 * the other is PROPER_Q_REL ("Germany"), feeding cfrom and cto with
 	 * those of PROPER_Q_REL returns the _IN_P_TEMP_REL EP.
+	 * There can be multiple EPs matching <code>cfrom</code> and
+	 * <code>cto</code> but only the first one is returned.
+	 *
+	 * @param cfrom the starting position in characters
+	 * @param cto the starting position in characters
+	 *
+	 * @return an EP (null if it was found)
 	 *
 	 */
 	public EP getEPbefore (int cfrom, int cto) {
@@ -514,10 +560,12 @@ public class MRS {
 	}
 
 	/**
-	 * Find out the set of EPs that are not in a range of <cfrom, cto>
-	 * @param cfrom
-	 * @param cto
-	 * @return a HashSet of EP
+	 * Find out the set of EPs that are not in a range of <<code>cfrom</code>, <code>cto</code>>
+	 *
+	 * @param cfrom the starting position in characters
+	 * @param cto the starting position in characters
+	 *
+	 * @return a HashSet of EP (empty if it was found)
 	 */
 	public HashSet<EP> getEPSnotInRange (int cfrom, int cto) {
 		HashSet<EP> retSet = new HashSet<EP>();
@@ -534,10 +582,12 @@ public class MRS {
 	}
 
 	/**
-	 * Find out the set of EPs that are in a range of <cfrom, cto>
-	 * @param cfrom
-	 * @param cto
-	 * @return a HashSet of EP
+	 * Find out the set of EPs that are in a range of <<code>cfrom</code>, <code>cto</code>>
+	 *
+	 * @param cfrom the starting position in characters
+	 * @param cto the starting position in characters
+	 *
+	 * @return a HashSet of EP (empty if it was found)
 	 */
 	public HashSet<EP> getEPSinRange (int cfrom, int cto) {
 		HashSet<EP> retSet = new HashSet<EP>();
@@ -564,7 +614,7 @@ public class MRS {
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
 		for (EP ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
-				if (f.getRargname().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
+				if (f.getFeature().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(f);
 				}
 			}
@@ -576,7 +626,7 @@ public class MRS {
 	 * Find out a list of extra type whose extra value match <code>value</code>.
 	 *
 	 * @param value the name of extra value, such as "e2"
-	 * @return a list of matching FvPair
+	 * @return an ArrayList of matching FvPair (null if not found)
 	 */
 	public ArrayList<FvPair> getExtraTypeByValue (String value) {
 
@@ -596,14 +646,14 @@ public class MRS {
 	 *
 	 * @param feat feature name, such as "ARG0"
 	 * @param value value name, such as "e2"
-	 * @return an ArrayList of matching EP
+	 * @return an ArrayList of matching EP (null if not found)
 	 */
 	public ArrayList<EP> getEPbyFeatAndValue (String feat, String value) {
 		if (value==null) return null;
 		ArrayList<EP> list = new ArrayList<EP>();
 		for (EP ep:this.eps) {
 			for (FvPair f: ep.getFvpair()) {
-				if (f.getRargname().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
+				if (f.getFeature().equals(feat) && f.getVar() != null && f.getVar().getLabel().equals(value)) {
 					list.add(ep);
 				}
 			}
@@ -612,9 +662,12 @@ public class MRS {
 	}
 
 	/**
-	 * Retrieve the same EP as <code>copyEP</code> in <code>copyMrs</code>. This is used when
-	 * the current MRS is a copy of <code>copyEP</code>, then we return the same EP as <code>copyEP</code>
-	 * by computing parallel index in the current MRS
+	 * Retrieve the same EP as <code>copyEP</code> in <code>copyMrs</code>.
+	 *
+	 * This is used when the current MRS is a copy of <code>copyEP</code>,
+	 * then we return the same EP as <code>copyEP</code>
+	 * by computing parallel index in the current MRS.
+	 *
 	 * @param copyMrs an MRS which the current MRS is copied from
 	 * @param copyEP one EP in <code>copyMrs</code>
 	 * @return a corresponding EP the "same" to <code>copyEP</code>
@@ -624,10 +677,11 @@ public class MRS {
 	}
 
 	/**
-	 * similar with <code>getEPbyParallelIndex</code>, but deal with a set of EPs
+	 * similar with {@link MRS#getEPbyParallelIndex(MRS, EP)}, but deal with a set of EPs
 	 * @param copyMrs
 	 * @param copyEPS
 	 * @return a set of EPs
+	 *
 	 */
 	public HashSet<EP> getEPSbyParallelIndex (MRS copyMrs, HashSet<EP> copyEPS) {
 		HashSet<EP> retEPS = new HashSet<EP>();
@@ -668,7 +722,7 @@ public class MRS {
 			if (verbList.size() == 1) {
 				verbEP = verbList.get(0);
 			} else {
-				log.warn("this MRS contains more than one verbEP?\n"+verbList);
+				log.warn("DEBUG YOUR CODE: this MRS contains more than one verbEP?\n"+verbList);
 			}
 		}
 
@@ -677,7 +731,7 @@ public class MRS {
 
 	/**
 	 * Change all <code>oldValue</code> values to <code>newValue</code>.
-	 * For instance, change all "x5" to "x6"
+	 * For instance, change all "x5" to "x6".
 	 * @param oldValue "x5"
 	 * @param newValue "x6"
 	 */
@@ -695,6 +749,8 @@ public class MRS {
 	 * Change all <code>oldValue</code> values to <code>newVar</code>.
 	 * @param oldValue
 	 * @param newVar
+	 *
+	 * @see MRS#changeEPvalue(String, String)
 	 */
 	public void changeEPvalueVar (String oldValue, Var newVar) {
 		for (EP ep:this.eps) {
@@ -706,13 +762,19 @@ public class MRS {
 		}
 	}
 
+	/**
+	 * Add <code>ep</code> to the list of EPS.
+	 * @param ep
+	 */
 	public void addEPtoEPS (EP ep) {
 		if (ep!=null) this.eps.add(ep);
 	}
 
 	/**
-	 * Get the tense of this MRS. in a malformed MRS, it's possible that there's no tense found,
-	 * in this case return "PRES"
+	 * Get the tense of this MRS.
+	 *
+	 * In a malformed MRS, it's possible that there's no tense found.
+	 * in this case, returns "PRES"
 	 * @return a string of tense
 	 */
 	public String getTense () {
@@ -736,7 +798,7 @@ public class MRS {
 	}
 
 	/**
-	 * Add a simple HCONS to hcons, such as "h1 qeq h2"
+	 * Add a simple HCONS to HCONS, such as "h1 qeq h2".
 	 * @param hreln "qeq"
 	 * @param hi_vid "1"
 	 * @param hi_sort "h"
@@ -748,12 +810,19 @@ public class MRS {
 		this.hcons.add(new HCONS(hreln, hi_vid, hi_sort, lo_vid, lo_sort));
 	}
 
+	/**
+	 * Add a simple HCONS to HCONS, such as "h1 qeq h2".
+	 *
+	 * @param hreln "qeq"
+	 * @param hi "h1"
+	 * @param lo "lo"
+	 */
 	public void addToHCONSsimple (String hreln, String hi, String lo) {
 		this.hcons.add(new HCONS(hreln, hi, lo));
 	}
 
 	/**
-	 * Given a hiLabel, check the corresponding loLabel in the list.
+	 * Given a hiLabel, retrieve the corresponding loLabel in the list.
 	 * For instance, the list contains a "h1 qeq h2" relation, then
 	 * given a hiLabel "h1", the function returns the loLabel "h2"
 	 * @param hiLabel a hiLabel
@@ -798,12 +867,35 @@ public class MRS {
 	}
 
 	/**
+	 * Given a loLabel, check the corresponding HiLabel in the list.
+	 * For instance, the list contains a "h1 qeq h2" relation, then
+	 * given a loLabel "h2", the function returns the hiLabel "h1"
+	 * @param loLabel a loLabel
+	 * @return a corresponding hiLabel in the list, or null if not found
+	 */
+	public String getHiLabelFromHconsList (String loLabel) {
+		String hiLabel = null;
+		if (loLabel != null) {
+			for (HCONS h:this.hcons) {
+				if(h.getLo().equals(loLabel)) {
+					hiLabel = h.getHi();
+					break;
+				}
+			}
+		}
+		return hiLabel;
+	}
+
+	/**
 	 * Give an EP ArrayList, determine which is the HiEP, and return the
 	 * index (0 or 1).
 	 * @param eps an EP ArrayList
 	 * @param mrs the MRS in which <code>eps</code> comes from
 	 * @return an ArrayList with the 0th the HiEP and the 1st the LoEP, or null if not found
+	 *
+	 * @deprecated this is only used in the first version of {@link com.googlecode.mrsqg#MrsTransformer}
 	 */
+	@Deprecated
 	public static ArrayList<EP> determineHiLowEP (ArrayList<EP> eps, MRS mrs) {
 		ArrayList<EP> hiloEPS = new ArrayList<EP>();
 
@@ -818,7 +910,7 @@ public class MRS {
 			rstr = ep.getValueByFeature("RSTR");
 			if (rstr != null) {
 				if (hiEP != null)
-					log.warn ("more than one EP with RSTR value. Debug your code!"+eps);
+					log.warn ("more than one EP with RSTR value. DEBUG YOUR CODE!"+eps);
 				hiEP = ep;
 				hi = rstr;
 			}
@@ -844,28 +936,10 @@ public class MRS {
 
 	}
 
-	/**
-	 * Given a loLabel, check the corresponding HiLabel in the list.
-	 * For instance, the list contains a "h1 qeq h2" relation, then
-	 * given a loLabel "h2", the function returns the hiLabel "h1"
-	 * @param loLabel a loLabel
-	 * @param list a list possibly containing the hiLabel
-	 * @return a corresponding hiLabel in the list, or null if not found
-	 */
-	public static String getHiLabelFromHconsList (String loLabel, ArrayList<HCONS> list) {
-		String hiLabel = null;
-		if (loLabel != null) {
-			for (HCONS h:list) {
-				if(h.getLo().equals(loLabel)) {
-					hiLabel = h.getHi();
-					break;
-				}
-			}
-		}
-		return hiLabel;
-	}
 
 	/**
+	 * Change the type name of unknown words to avoid generation error.
+	 *
 	 * When FSC is input to cheap, NEs are labeled as NAMED_UNK_REL,
 	 * which generates the following error in LKB generation:
 	 * Warning: invalid predicates: |named_unk_rel("Washington DC")|
@@ -880,12 +954,12 @@ public class MRS {
 	}
 
 	/**
-	 * @deprecated In ERG 1004 this problem is solved.
+	 *
 	 * This is used to check whether there are any basic_yofc_rel to prevent the following error:
 	 * Warning: invalid predicates: |basic_yofc_rel("1980")|, |basic_yofc_rel("1982")|.
 	 *
 	 * The above is usually caused by:
-	 *
+	 * <pre>
           [ _in_p_temp_rel<0:1>
             LBL: h3
             ARG0: e4
@@ -918,6 +992,9 @@ public class MRS {
             ARG0: x6
             ARG1: i11 [ i PERS: 3 NUM: PL ]
             CARG: "1999" ]
+
+ 	 * </pre>
+     * 	@deprecated In ERG 1004 this problem is solved.
 	 */
 	public void preventInvalidPredicate () {
 		String ep1Orig="_IN_P_TEMP_REL", ep1Dest="_IN_P_REL";
@@ -941,9 +1018,11 @@ public class MRS {
 	/**
 	 * Normalize unknown words in an MRS, see erg/lkb/sample.mrs
 	 * or a sample file and *mrs-normalization-heuristics* in
-	 * erg/lkb/mrsglobals.lsp for the rules
+	 * erg/lkb/mrsglobals.lsp for the rules.
+	 *
+	 * This function is only called when parsing an MRS
 	 */
-	public void normalizeUnknownWords () {
+	protected void normalizeUnknownWords () {
 
 		String typeName;
 
@@ -1012,8 +1091,10 @@ public class MRS {
 	}
 
 	/**
-	 * Get all the extra pairs in this MRS. Extra pairs are sth. like: [TENSE: PRES]
-	 * encoded in XML: <extrapair><path>TENSE</path><value>PRES</value></extrapair>
+	 * Get all the extra pairs in this MRS.
+	 *
+	 * Extra pairs are sth. like [TENSE: PRES].
+	 *
 	 * @return an ArrayList of all extra pairs
 	 */
 	public ArrayList<LinkedHashMap<String, String>> getExtrapair () {
@@ -1036,7 +1117,7 @@ public class MRS {
 	/**
 	 * Get a list of FvPair which has value matching <code>value</code>.
 	 * @param value a matching value, such as "x2".
-	 * @return an ArrayList of FvPair
+	 * @return an ArrayList of FvPair (empty if not found)
 	 */
 	public ArrayList<FvPair> getFvPairByValue (String value) {
 		ArrayList<FvPair> list = new ArrayList<FvPair>();
@@ -1080,18 +1161,22 @@ public class MRS {
 	}
 
 	/**
-	 * extract a new MRS from mrs, containing only EPs that are indirectly associated with label.
+	 * Extract a new MRS from <code>mrs</code>, containing only EPs that are indirectly associated with label.
 	 * currently, the label should only be a predicate's label. for instance, an EP looks like:
+	 * <pre>
 	 * [ _like_v_1_rel<5:10>
   	 * LBL: h8
   	 * ARG0: e9
   	 * ARG1: x6
      * ARG2: x10
 	 * ]
+	 * </pre>
 	 * then all EPs with x6 and x10 as ARG* (indirectly) are extracted. Those EPs make a new MRS.
 	 * @param label the label value of the predicate, such as "h8"
 	 * @param mrs the original mrs to be extracted from
 	 * @return a new MRS with only EPs concerning label
+	 *
+	 * @deprecated The same functionality can be achieved by DMRS operation.
 	 */
 	public static MRS extractByLabelValue (String label, MRS mrs) {
 		MRS extracted = new MRS(mrs);
@@ -1150,16 +1235,20 @@ public class MRS {
 	/**
 	 * Extract a new MRS from mrs, containing only EPs that are directly associated with label.
 	 * This method is used when the label isn't a predicate's label. for instance, an EP looks like:
+	 * <pre>
 	 * [ _like_v_1_rel<5:10>
   	 * LBL: h8
   	 * ARG0: e9
   	 * ARG1: x6
      * ARG2: x10
 	 * ]
+	 * </pre>
 	 * then all EPs with x6 and x10 as ARG0 (directly) are extracted. Those EPs make a new MRS.
 	 * @param targetEP an EP to find references for
 	 * @param mrs the original mrs to be extracted from
 	 * @return a new MRS with only EPs concerning <code>targetEP</code>
+	 *
+	 * @deprecated The same functionality can be achieved by DMRS operation.
 	 */
 	public static MRS extractByEPandArg0 (EP targetEP, MRS mrs) {
 
@@ -1193,6 +1282,8 @@ public class MRS {
 	 * @param label a h* label
 	 * @param exceptionEP
 	 * @return a new MRS, or null if none matches
+	 *
+	 * @deprecated The same functionality can be achieved by DMRS operation.
 	 */
 	public MRS extractByLabel (String label, EP exceptionEP) {
 		MRS mrs = new MRS(this);
@@ -1274,7 +1365,6 @@ public class MRS {
 	public int[] extractRangeByXValue (String value, EP exceptionEP) {
 		MRS mrs = this;
 		HashSet<String> set = new HashSet<String>();
-		HashSet<String> moreSet = new HashSet<String>();
 		set.add(value);
 
 		if (exceptionEP != null)
@@ -1329,8 +1419,12 @@ public class MRS {
 	}
 
 	/**
-	 * Clean up the HCONS list. Any HCONS pairs, such as "h1 qeq h2", whose
+	 * Clean up the HCONS list.
+	 *
+	 * Any HCONS pairs, such as "h1 qeq h2", whose
 	 * hiLabel and loLabel can't be both found in the EPS, are removed.
+	 * This step is very important in avoiding unnecessary memory consumption
+	 * in LKB, see <a href="http://lists.delph-in.net/archive/lkb/2010/000242.html">this post</a>.
 	 */
 	public void cleanHCONS () {
 		ArrayList<String> labelList = this.getEPSfeatList();
@@ -1347,9 +1441,9 @@ public class MRS {
 
 	/**
 	 * This method retrieves the labels
-	 * of all EPs which are referred by the ARG0 values of ep.
+	 * of all EPs which are referred by the ARG0 values of <code>ep</code>.
 	 * @param ep An EP which has ARG* entries
-	 * @return a HashSet of labels referred by the ARG0 of this ep
+	 * @return a HashSet of labels referred by the ARG0 of this <code>ep</code> (empty if not found).
 	 */
 	public HashSet<String> getAllReferredLabelByEP (EP ep) {
 		HashSet<String> labelSet = new HashSet<String>();
@@ -1374,8 +1468,10 @@ public class MRS {
 	 * Mark deletion of one EP by judging its ARG0 doesn't refer to
 	 * any ARG* values of <code>ep</code>
 	 * @param ep An EP which has ARG* entries
+	 *
+	 * @deprecated this function is only used by another deprecated function
 	 */
-	public void markDeletionByEPref (EP ep) {
+	protected void markDeletionByEPref (EP ep) {
 
 		HashSet<String> argList = ep.getAllARGvalue();
 
@@ -1402,7 +1498,9 @@ public class MRS {
 	}
 
 	/**
-	 * remove all EPs whose flag is set to <code>flat</code> from the EPS list
+	 * remove all EPs whose flag is set to <code>flag</code> from the EPS list.
+	 *
+	 * After a successful removal, {@link MRS#postprocessing()} is called.
 	 * @return a boolean success status
 	 */
 	public boolean removeEPbyFlag (boolean flag) {
@@ -1495,8 +1593,10 @@ public class MRS {
 	}
 
 	/**
-	 * output as an MRX String
-	 * @return a one-line string with an <mrs> element
+	 * output as an MRX String.
+	 *
+	 * LKB cannot read properly indented XML so a one-line string is output.
+	 * @return a one-line string with an &lt;mrs&gt; element
 	 */
 	public String toMRXstring() {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -1505,6 +1605,10 @@ public class MRS {
 		return mrx;
 	}
 
+	/**
+	 * Output MRS to an OutputStream <code>os</code>.
+	 * @param os an OutputStream
+	 */
 	public void toXML(OutputStream os) {
 		OutputFormat of = new OutputFormat("XML","UTF-8",true);
 		// LKB doesn't support properly indented xml files. thus set indentation off.
@@ -1582,11 +1686,13 @@ public class MRS {
 	}
 
 	/**
-	 * Maps each characteristic variable with an EP, such as:
+	 * Maps each characteristic variable with an EP, such as that
 	 * "x28" maps with:
-	 * 	"_cat_n_1_rel"<8:9>
+	 * 	<pre>
+	   [ "_cat_n_1_rel"<8:9>
             LBL: h32
             ARG0: x28 ]
+        </pre>
 	 */
 	public void mapCharacteristicVariables () {
 		String arg0;
@@ -1628,7 +1734,7 @@ public class MRS {
 					if (dEP != null)
 						this.charVariableMap.put(arg0, dEP);
 					else {
-						log.error("MapCharacteristicVarariable error, debug your code!");
+						log.error("MapCharacteristicVarariable error, DEBUG YOUR CODE!");
 						log.error(arg0EPlist);
 					}
 				}
@@ -1638,7 +1744,7 @@ public class MRS {
 				if (dEP != null)
 					this.charVariableMap.put(arg0, dEP);
 				else {
-					log.error("MapCharacteristicVarariable error, debug your code!");
+					log.error("MapCharacteristicVarariable error, DEBUG YOUR CODE!");
 					log.error(arg0EPlist);
 				}
 			}
@@ -1680,8 +1786,6 @@ public class MRS {
 					 */
 					continue;
 				} else {
-					String arg0 = ep.getArg0();
-
 					for (FvPair pair:ep.getFvpair()) {
 						String feature = pair.getFeature();
 						String value = pair.getValue();
@@ -1798,7 +1902,7 @@ L-HNDL:h8 -> _like_v-1_rel
 					ep.addDmrs(dmrsL);
 					dEP.addDmrs(dmrsR);
 				} else {
-					log.error("Debug your code! Can't find a loEP for "+ep);
+					log.error("DEBUG YOUR CODE! Can't find a loEP for "+ep);
 				}
 			}
 		}
@@ -1927,27 +2031,38 @@ L-HNDL:h8 -> _like_v-1_rel
 				if (dEP!=null) return dEP;
 				else {
 					log.error("Can't find the dependent EP from:\n"+list);
-					log.error("Debug your code (if this is not a /EQ relation)!");
+					log.error("DEBUG YOUR CODE (if this is not a /EQ relation)!");
 					return null;
 				}
 			}
 		}
 	}
 
-	public static int getLevelGovernors (EP ep, int level) {
+	/**
+	 * Find out how many layers of governors <code>ep</code> has.
+	 * @param ep an EP
+	 * @param level initial level offset, usually 0
+	 * @return an integer number
+	 */
+	protected static int getLevelGovernors (EP ep, int level) {
 		HashSet<EP> set = ep.getGovernorsByArg();
 		int max = level, n;
-		EP maxEP;
 		for (EP e:set) {
 			n = getLevelGovernors(e, level+1);
 			if (n > max) {
 				max = n;
-				maxEP = ep;
 			}
 		}
 		return max;
 	}
 
+	/**
+	 * Wrapper code for {@link MRS#decompose(HashSet, HashSet, boolean, boolean)}.
+	 *
+	 * All related EPS are set to a false flag. Must call {@link MRS#removeEPbyFlag(boolean)}
+	 * to remove them.
+	 *
+	 */
 	public HashSet<EP> doDecompositionbyEP (EP rEP, EP eEP, boolean relaxEQ, boolean keepEQ) {
 		HashSet<EP> rEPS = new HashSet<EP>();
 		HashSet<EP> eEPS = new HashSet<EP>();
@@ -1956,6 +2071,18 @@ L-HNDL:h8 -> _like_v-1_rel
 		return doDecomposition(rEPS, eEPS, relaxEQ, keepEQ);
 	}
 
+	/**
+	 * Wrapper code for {@link MRS#decompose(HashSet, HashSet, boolean, boolean)}.
+	 *
+	 * All related EPS are set to a false flag. Must call {@link MRS#removeEPbyFlag(boolean)}
+	 * to remove them.
+	 *
+	 * @param rEPS a set of target EPS
+	 * @param eEPS a set of exception EPS
+	 * @param relaxEQ whether to relax /EQ to /NEQ
+	 * @param keepEQ whether to keep EPs with /EQ relations with <code>rEPS</code>
+	 * @return a set of EPs related to <code>rEPS</code>
+	 */
 	public HashSet<EP> doDecomposition (HashSet<EP> rEPS, HashSet<EP> eEPS, boolean relaxEQ, boolean keepEQ) {
 
 		if (eEPS == null)
@@ -1973,6 +2100,15 @@ L-HNDL:h8 -> _like_v-1_rel
 		return retEPS;
 	}
 
+	/**
+	 * Wrapper code for {@link MRS#decompose(HashSet, HashSet, boolean, boolean)}.
+	 *
+	 * All related EPS are set to a false flag. Must call {@link MRS#removeEPbyFlag(boolean)}
+	 * to remove them.
+	 *
+	 * @param label the label for the target EP
+	 * @param eEP a single exception EP
+	 */
 	public HashSet<EP> doDecompositionByLabel (String label, EP eEP, boolean relaxEQ, boolean keepEQ) {
 
 		HashSet<EP> eEPS = new HashSet<EP>();
@@ -1981,6 +2117,13 @@ L-HNDL:h8 -> _like_v-1_rel
 		return doDecompositionByLabelSet(label, eEPS, relaxEQ, keepEQ);
 	}
 
+	/**
+	 * Wrapper code for {@link MRS#decompose(HashSet, HashSet, boolean, boolean)}.
+	 *
+	 * All related EPS are set to a false flag. Must call {@link MRS#removeEPbyFlag(boolean)}
+	 * to remove them.
+	 *
+	 */
 	public HashSet<EP> doDecompositionByLabelSet (String label, HashSet<EP> eEPS, boolean relaxEQ, boolean keepEQ) {
 		HashSet<EP> rEPS = new HashSet<EP>();
 
@@ -2009,6 +2152,18 @@ L-HNDL:h8 -> _like_v-1_rel
 	}
 
 
+	/**
+	 * Decompose this MRS.
+	 *
+	 * This algorithm find out all EPs that are related to <code>rEPS</code>.
+	 * See detailed explanation in the author's master thesis
+	 *
+	 * @param rEPS a set of target EPS
+	 * @param eEPS a set of exception EPS
+	 * @param relaxEQ whether to relax /EQ to /NEQ
+	 * @param keepEQ whether to keep EPs with /EQ relations with <code>rEPS</code>
+	 * @return a set of EPs related to <code>rEPS</code>
+	 */
 	public HashSet<EP> decompose(HashSet<EP> rEPS, HashSet<EP> eEPS,
 			boolean relaxEQ, boolean keepEQ) {
 		HashSet<EP> retEPS = new HashSet<EP>();
@@ -2079,6 +2234,8 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * other EPs and <code>excepEP</code> are set to true
 	 * @param label a String indicating an EP, starting with an "h" or "x".
 	 * @param excepEP an exception EP, whose flag is always set to true.
+	 *
+	 * @deprecated replaced by full DMRS operation
 	 */
 	public void keepDependentEPbyLabel (String label, EP excepEP) {
 		HashSet<EP> depSet = new HashSet<EP>();
@@ -2099,6 +2256,8 @@ L-HNDL:h8 -> _like_v-1_rel
 	/**
 	 * Used to extract all dependents from a verb EP. vEP is kept.
 	 * @param vEP
+	 *
+	 * @deprecated replaced by full DMRS operation
 	 */
 	public void keepDependentEPfromVerbEP (EP vEP) {
 		this.setAllFlag(true);
@@ -2136,6 +2295,8 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * Used to extract a sentence from a verb EP. vEP is kept.
 	 * @param vEP
 	 * @param excepEP
+	 *
+	 * @deprecated replaced by full DMRS operation
 	 */
 	public void keepDependentEPandVerbEP (EP vEP, EP excepEP) {
 		this.setAllFlag(true);
@@ -2178,6 +2339,8 @@ L-HNDL:h8 -> _like_v-1_rel
 	 * @param depSet
 	 * @param excepEP
 	 * @param flag
+	 *
+	 * @deprecated replaced by full DMRS operation
 	 */
 	public static void setAllConnectionsFlag (HashSet<EP> depSet,
 			EP excepEP, boolean flag) {
@@ -2191,6 +2354,17 @@ L-HNDL:h8 -> _like_v-1_rel
 		}
 	}
 
+	/**
+	 *
+	 * Set the flag of all connections (governors & dependents, excluding prepositions)
+	 * of EP in <code>depSet</code>
+	 * to <code>flag</flag>, with the flag of <code>excepEP</code> unset.
+	 * @param depSet
+	 * @param excepEP
+	 * @param flag
+	 *
+	 * @deprecated replaced by full DMRS operation
+	 */
 	public static void setAllConnectionsFlagExceptPP (HashSet<EP> depSet,
 			EP excepEP, boolean flag) {
 		for (EP ep:depSet) {
@@ -2208,7 +2382,7 @@ L-HNDL:h8 -> _like_v-1_rel
 	/**
 	 * This method parses a MRS document in XML, then calls {@link #buildCoref}.
 	 *
-	 * @param file an MRS XML fil
+	 * @param file an MRS XML file
 	 */
 	public void parse(File file) {
 		this.parser.parse(file);
@@ -2255,6 +2429,11 @@ L-HNDL:h8 -> _like_v-1_rel
 		return list;
 	}
 
+	/**
+	 * Simple test program to read and parse an MRX file
+	 * @param args a list of MRX files
+	 * @throws Exception
+	 */
 	public static void main(String args[])
 	throws Exception {
 		MRS m = new MRS();

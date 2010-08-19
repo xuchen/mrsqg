@@ -5,6 +5,12 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+/**
+ * A class for handle constraints.
+ *
+ * @author Xuchen Yao
+ *
+ */
 public class HCONS {
 //	;;; <!ELEMENT hcons (hi, lo)>
 //	;;; <!ATTLIST hcons
@@ -90,6 +96,10 @@ public class HCONS {
 		this.loVar = new Var(lo);
 	}
 
+	/**
+	 * whether this HCONS is valid
+	 * @return a boolean value
+	 */
 	public boolean checkValid() {
 		if (rel != null && hiVar != null && (loVar != null || loLabel != null) ) {
 			return true;
