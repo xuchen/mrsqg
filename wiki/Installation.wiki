@@ -1,0 +1,33 @@
+MrsQG is written in Java  -- compilation and installation are easy. But it calls PET (C++) to do parsing and LOGON/LKB (LISP) to do generation, thus users need to install these two first.
+
+==Compile PET==
+
+PET can be obtained from [http://wiki.delph-in.net/moin/PetTop PetTop]. Compiling PET from sources is needed.
+
+MrsQG runs PET in server mode. A unique signal is needed after PET has output the parsing results. Thus after obtaining the source code of PET, users need to modify the file cheap/cheap.cpp:
+
+Locate to the end of the function interactive() and add the following line before fflush(fstatus);:
+
+ fprintf(fstatus, "cheap is brutally patched\n");
+
+ so the overall area looks like this:
+
+    fprintf(fstatus, "cheap is brutally patched\n");
+    fflush(fstatus);
+
+    if(Chart != 0) delete Chart;
+
+    id++;
+  } /* while */
+
+Then follow the normal procedure to install PET. 
+
+==Install LOGON/LKB==
+
+LOGON is able to give ranked output with an MaxEnt model so it is recommended over LKB. 
+
+To install LOGON, follow [http://wiki.delph-in.net/moin/LogonInstallation LogonInstallation].
+
+To install LKB, follow [http://wiki.delph-in.net/moin/LkbInstallation LkbInstallation]. The 'test' version rather than 'stable' or 'latest' version is required.
+
+==Install MrsQG==
