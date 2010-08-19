@@ -272,7 +272,7 @@ NIL
 	}
 
 	/**
-	 * Sent an MRS in XML and retrieve generated sentences
+	 * Send an MRS in XML and retrieve generated sentences
 	 * @param mrx
 	 * @return an ArrayList of generated sentences in raw
 	 */

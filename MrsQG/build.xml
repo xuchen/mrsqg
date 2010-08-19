@@ -21,6 +21,7 @@
         <pathelement location="lib/trove.jar"/>
         <pathelement location="lib/jwnl.jar"/>
         <pathelement location="lib/commons-logging.jar"/>
+    	<pathelement location="lib/kylm.jar"/>
     </path>
     <target name="init">
         <mkdir dir="build"/>
