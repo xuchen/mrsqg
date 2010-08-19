@@ -37,10 +37,15 @@ Only either LOGON or LKB is needed. So users don't have to install both. When in
 Go to [http://code.google.com/p/mrsqg/downloads/list Downloads] and obtain the main program file MrsQG-version.tar.bz2 and the two resource files res1.tar.bz2, res2.tar.bz2. Put them into the same directory, then run:
 
 $ tar xjf MrsQG-1.0.tar.bz2
+
 $ tar xjf res1.tar.bz2
+
 $ tar xjf res2.tar.bz2
+
 $ mv res MrsQG-1.0
+
 $ cd MrsQG-1.0
+
 $ ant
 
 The two resource files contain some version independent models and should be placed under the top directory of MrsQG.
@@ -64,20 +69,32 @@ $ ./run.sh
 The above command runs MrsQG, if everything is configured correctly. If you are using LKB, then the script usually starts faultlessly. However, logon sometimes doesn't start in the right way. If you observer the following output:
 
   Restart actions (select using :continue):
+
    0: Try calling READ-SCRIPT-FILE-AUX again.
+
    1: Try calling LKB:READ-SCRIPT-FILE-AUX instead.
+
    2: Return a value instead of calling READ-SCRIPT-FILE-AUX.
+
    3: Try calling a function other than READ-SCRIPT-FILE-AUX.
+
    4: Setf the symbol-function of READ-SCRIPT-FILE-AUX and call it again.
+
    5: Return to Top Level (an "abort" restart).
+
    6: Abort entirely from this (lisp) process.
+
   [1] TSNLP(2): 
+
 
 Then press Ctrl-C to stop and run again. An indication of a successful start should be:
 
   [changing package from "COMMON-LISP-USER" to "TSDB"]
+
   TSNLP(1): 
+
   LKB(2): 
+
 
 Then wait patiently until you see the usage message.
 
@@ -85,6 +102,7 @@ Then wait patiently until you see the usage message.
 
 MrsQG prints the following usage information:
   Usage:
+
         1. a declarative sentence.
                 MrsQG generates a question through pipelines of PET and LKB.
         2. pre: a sentence.
