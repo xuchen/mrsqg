@@ -10,7 +10,7 @@ Locate to the end of the function interactive() and add the following line befor
 
  fprintf(fstatus, "cheap is brutally patched\n");
 
- so the overall area looks like this:
+so the overall area looks like this:
 
     fprintf(fstatus, "cheap is brutally patched\n");
     fflush(fstatus);
@@ -30,4 +30,77 @@ To install LOGON, follow [http://wiki.delph-in.net/moin/LogonInstallation LogonI
 
 To install LKB, follow [http://wiki.delph-in.net/moin/LkbInstallation LkbInstallation]. The 'test' version rather than 'stable' or 'latest' version is required.
 
+Only either LOGON or LKB is needed. So users don't have to install both. When installing LOGON/LKB, ERG is also automatically installed. Users need to locate the grammar file "english.grm" for later usage.
+
 ==Install MrsQG==
+
+Go to [http://code.google.com/p/mrsqg/downloads/list Downloads] and obtain the main program file MrsQG-version.tar.bz2 and the two resource files res1.tar.bz2, res2.tar.bz2. Put them into the same directory, then run:
+
+$ tar xjf MrsQG-1.0.tar.bz2
+$ tar xjf res1.tar.bz2
+$ tar xjf res2.tar.bz2
+$ mv res MrsQG-1.0
+$ cd MrsQG-1.0
+$ ant
+
+The two resource files contain some version independent models and should be placed under the top directory of MrsQG.
+
+Java 1.6 is needed to compile/run MrsQG.
+
+==Configure MrsQG==
+
+Go to the "conf" directory. There should be 5 configuration files:
+
+ * log4j.properties: for logging, you can leave it untouched
+ * mrsqg.properties: for overall configuration, you can leave it untouched if you have more than 7GB RAM.
+ * cheap.properties: for configuring the PET parser. You should modify the location for the executable "cheap" and the grammar file "english.grm"
+ * lkb.script: initial loading script for LOGON/LKB. You should modify the location for the ERG script file.
+ * lkb.properties: for configuring the LOGON/LKB generator. You should modify the location for the executable "logon" or "lkb" and the lkb script file lkb.script as described above
+
+==Run MrsQG==
+
+$ ./run.sh
+
+The above command runs MrsQG, if everything is configured correctly. If you are using LKB, then the script usually starts faultlessly. However, logon sometimes doesn't start in the right way. If you observer the following output:
+
+  Restart actions (select using :continue):
+   0: Try calling READ-SCRIPT-FILE-AUX again.
+   1: Try calling LKB:READ-SCRIPT-FILE-AUX instead.
+   2: Return a value instead of calling READ-SCRIPT-FILE-AUX.
+   3: Try calling a function other than READ-SCRIPT-FILE-AUX.
+   4: Setf the symbol-function of READ-SCRIPT-FILE-AUX and call it again.
+   5: Return to Top Level (an "abort" restart).
+   6: Abort entirely from this (lisp) process.
+  [1] TSNLP(2): 
+
+Then press Ctrl-C to stop and run again. An indication of a successful start should be:
+
+  [changing package from "COMMON-LISP-USER" to "TSDB"]
+  TSNLP(1): 
+  LKB(2): 
+
+Then wait patiently until you see the usage message.
+
+==Use MrsQG==
+
+MrsQG prints the following usage information:
+  Usage:
+        1. a declarative sentence.
+                MrsQG generates a question through pipelines of PET and LKB.
+        2. pre: a sentence.
+                MrsQG generates the pre-processed FSC in XML. Then you can copy/paste this FSC into cheap to parse.
+        3. mrx: an declrative MRS XML (MRX) file.
+                MrsQG reads this MRX and transforms it into interrogative MRX.
+                Then you can copy/paste the transformed MRX to LKB for generation.
+        4. lkb: an LKB command
+                Then MrsQG serves as a wrapper for LKB. You can talk with LKB interactively through the prompt.
+        5. pet: a sentence.
+                Then MrsQG serves as a wrapper for cheap. You can talk with cheap interactively through the prompt.
+        6. pg: a sentence.
+                Then MrsQG first parses then generates from the sentence (pg stands for Parse-Generate).
+        7. file: input.txt output.xml
+                Then MrsQG g enerate questions from the text of input.txt and output to output.xml (used by plist of NPCEditor)
+        8. dryrun: input.txt output.xml
+                similar to 7, but only do parsing and transformation to give a quick pass of all sentences. Used to check errors.
+        9. help (or h)
+                Print this message.
