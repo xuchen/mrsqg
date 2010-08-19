@@ -128,7 +128,7 @@ public class MRS {
 				phrase = "";
 			} else
 				phrase = sent.substring(ansCrange[0], ansCrange[1]);
-			if (phrase.endsWith(" ."))
+			if (phrase.endsWith(" .") || phrase.endsWith(" ,"))
 				phrase = phrase.substring(0, phrase.length()-2);
 			return phrase;
 		}
